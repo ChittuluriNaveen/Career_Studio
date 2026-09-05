@@ -1,21 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { SectionType } from "@prisma/client";
 import {
   Smartphone,
   Tablet,
   Monitor,
   Plus,
-  Layers,
   Save,
-  Trash2,
-  Edit3,
   Check,
-  Layout,
-  Settings as ConfigIcon,
-  Sliders,
-  Sparkles,
 } from "lucide-react";
 
 import DashboardHeader from "@/components/editor/DashboardHeader";
@@ -25,6 +18,7 @@ import SectionList from "@/components/editor/SectionList";
 import DesignPanel from "@/components/editor/panels/DesignPanel";
 import SharePanel from "@/components/editor/panels/SharePanel";
 import SEOPanel from "@/components/editor/panels/SEOPanel";
+import ElementEditorPanel from "@/components/editor/panels/ElementEditorPanel";
 import SectionFormModal from "@/components/editor/SectionFormModal";
 import PageRenderer from "@/components/preview/PageRenderer";
 
@@ -38,23 +32,12 @@ import {
 } from "@/lib/actions/sections";
 import { getBrandThemeAction } from "@/lib/actions/brand";
 import { getJobsAction, getDepartmentsAndLocationsAction } from "@/lib/actions/jobs";
-
-const LAYOUT_VARIANTS = [
-  { id: "01", name: "Default Split", isDefault: true },
-  { id: "02", name: "Stacked Center", isDefault: false },
-  { id: "03", name: "Image Right", isDefault: false },
-  { id: "04", name: "Image Left", isDefault: false },
-  { id: "05", name: "Hero Color Solid", isDefault: false },
-  { id: "06", name: "Minimal Text", isDefault: false },
-  { id: "07", name: "Cards Grid 2-Col", isDefault: false },
-  { id: "08", name: "Cards Grid 3-Col", isDefault: false },
-];
+import { SectionElement, ElementType, getDefaultElementsForSectionType, createDefaultElement } from "@/lib/templates/registry";
 
 export default function CareerStudioPage() {
   const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [activeNavTab, setActiveNavTab] = useState<LeftNavTab>("sections");
-  const [inspectorTab, setInspectorTab] = useState<"content" | "layout" | "config">("content");
-  const [inspectorMode, setInspectorMode] = useState<"form" | "json">("form");
+  const [inspectorTab, setInspectorTab] = useState<"content" | "element" | "config">("content");
 
   const [company, setCompany] = useState<any | null>(null);
   const [sections, setSections] = useState<any[]>([]);
@@ -68,10 +51,9 @@ export default function CareerStudioPage() {
   const [history, setHistory] = useState<any[][]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  // Selected section for right Inspector editing
+  // Selected section and selected element for right Inspector editing
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [inspectorForm, setInspectorForm] = useState<any>({});
-  const [inspectorJson, setInspectorJson] = useState<string>("");
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [savingInspector, setSavingInspector] = useState(false);
 
   // Modal
@@ -122,7 +104,6 @@ export default function CareerStudioPage() {
 
       if (secData.length > 0 && !selectedSectionId) {
         setSelectedSectionId(secData[0].id);
-        populateInspector(secData[0]);
       }
     } catch (err) {
       console.error("Failed to load studio data", err);
@@ -135,82 +116,120 @@ export default function CareerStudioPage() {
     fetchStudioData();
   }, []);
 
-  const populateInspector = (section: any) => {
-    if (!section) return;
-    setInspectorForm({
-      title: section.title || "",
-      subtitle: section.content?.subtitle || "",
-      body: section.content?.body || "",
-      videoUrl: section.content?.videoUrl || "",
-      imageUrl: section.content?.imageUrl || section.content?.backgroundImage || "",
-      ctaText: section.content?.ctaText || "Explore Open Roles",
-      primaryCtaLink: section.content?.primaryCtaLink || section.content?.ctaLink || "",
-      layoutVariant: section.layoutVariant || "01",
-    });
-    setInspectorJson(JSON.stringify(section.content || {}, null, 2));
-  };
-
   const handleSelectSection = (section: any) => {
     setSelectedSectionId(section.id);
-    populateInspector(section);
+    setSelectedElementId(null);
+    setInspectorTab("content");
   };
 
-  const handleSelectLayoutVariant = async (variantId: string) => {
-    if (!selectedSectionId) return;
+  const handleSelectElement = (element: SectionElement) => {
+    setSelectedElementId(element.id);
+    setInspectorTab("element");
+  };
 
+  const selectedSection = sections.find((s) => s.id === selectedSectionId) || sections[0];
+  const currentElements: SectionElement[] =
+    selectedSection && Array.isArray(selectedSection.content?.elements) && selectedSection.content.elements.length > 0
+      ? selectedSection.content.elements
+      : selectedSection
+      ? getDefaultElementsForSectionType(selectedSection.type)
+      : [];
+
+  const selectedElement = currentElements.find((e) => e.id === selectedElementId);
+
+  const handleAddElementToSection = (type: ElementType) => {
+    if (!selectedSection || !type) return;
+    const newElem = createDefaultElement(type, currentElements.length);
+    const newElements = [...currentElements, newElem];
+    const newContent = { ...(selectedSection.content || {}), elements: newElements };
+
+    const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
+    setSections(updatedSections);
+    pushHistory(updatedSections);
+    setSelectedElementId(newElem.id);
+    setInspectorTab("element");
+  };
+
+  const handleDeleteElementFromSection = (elemId: string) => {
+    if (!selectedSection) return;
+    const newElements = currentElements.filter((e) => e.id !== elemId);
+    const newContent = { ...(selectedSection.content || {}), elements: newElements };
+
+    const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
+    setSections(updatedSections);
+    pushHistory(updatedSections);
+    if (selectedElementId === elemId) setSelectedElementId(null);
+  };
+
+  const handleDuplicateElement = (elemId: string) => {
+    if (!selectedSection) return;
+    const target = currentElements.find((e) => e.id === elemId);
+    if (!target) return;
+    const copy: SectionElement = {
+      ...JSON.parse(JSON.stringify(target)),
+      id: `${target.type}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      position: currentElements.length,
+    };
+    const newElements = [...currentElements, copy];
+    const newContent = { ...(selectedSection.content || {}), elements: newElements };
+
+    const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
+    setSections(updatedSections);
+    pushHistory(updatedSections);
+    setSelectedElementId(copy.id);
+    setInspectorTab("element");
+  };
+
+  const handleMoveElement = (elemId: string, direction: "up" | "down") => {
+    if (!selectedSection) return;
+    const idx = currentElements.findIndex((e) => e.id === elemId);
+    if (idx < 0) return;
+    if (direction === "up" && idx === 0) return;
+    if (direction === "down" && idx === currentElements.length - 1) return;
+
+    const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+    const newElements = [...currentElements];
+    const temp = newElements[idx];
+    newElements[idx] = newElements[targetIdx];
+    newElements[targetIdx] = temp;
+
+    const reordered = newElements.map((e, index) => ({ ...e, position: index }));
+    const newContent = { ...(selectedSection.content || {}), elements: reordered };
+
+    const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
+    setSections(updatedSections);
+    pushHistory(updatedSections);
+  };
+
+  const handleUpdateElement = async (updatedElem: SectionElement) => {
+    if (!selectedSection) return;
+
+    const newElements = currentElements.map((e) => (e.id === updatedElem.id ? updatedElem : e));
+    const newContent = { ...(selectedSection.content || {}), elements: newElements };
+
+    const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
+    setSections(updatedSections);
+    pushHistory(updatedSections);
     setSaveStatus("saving");
-    const updated = sections.map((sec) =>
-      sec.id === selectedSectionId ? { ...sec, layoutVariant: variantId } : sec
-    );
-
-    setSections(updated);
-    pushHistory(updated);
-    setInspectorForm((prev: any) => ({ ...prev, layoutVariant: variantId }));
 
     await updateSectionContentAction({
-      id: selectedSectionId,
-      title: inspectorForm.title,
-      content: selectedSection?.content || {},
-      layoutVariant: variantId,
+      id: selectedSection.id,
+      title: selectedSection.title || undefined,
+      content: newContent,
     });
 
     setSaveStatus("saved");
   };
 
   const handleSaveInspector = async () => {
-    if (!selectedSectionId) return;
+    if (!selectedSection) return;
     setSavingInspector(true);
     setSaveStatus("saving");
 
-    let updatedContent: any = {};
-    if (inspectorMode === "json") {
-      try {
-        updatedContent = JSON.parse(inspectorJson);
-      } catch (e) {
-        alert("Invalid JSON format");
-        setSavingInspector(false);
-        setSaveStatus("unsaved");
-        return;
-      }
-    } else {
-      updatedContent = {
-        ...(selectedSection?.content || {}),
-        subtitle: inspectorForm.subtitle,
-        body: inspectorForm.body,
-        videoUrl: inspectorForm.videoUrl,
-        imageUrl: inspectorForm.imageUrl,
-        backgroundImage: inspectorForm.imageUrl,
-        ctaText: inspectorForm.ctaText,
-        ctaLink: inspectorForm.primaryCtaLink,
-        primaryCtaLink: inspectorForm.primaryCtaLink,
-      };
-    }
-
     await updateSectionContentAction({
-      id: selectedSectionId,
-      title: inspectorForm.title,
-      content: updatedContent,
-      layoutVariant: inspectorForm.layoutVariant,
+      id: selectedSection.id,
+      title: selectedSection.title || undefined,
+      content: selectedSection.content || {},
     });
 
     setSavingInspector(false);
@@ -280,8 +299,6 @@ export default function CareerStudioPage() {
     setSaveStatus("saved");
   };
 
-  const selectedSection = sections.find((s) => s.id === selectedSectionId) || sections[0];
-
   return (
     <div className="h-screen flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900">
       {/* Top Bar */}
@@ -343,7 +360,7 @@ export default function CareerStudioPage() {
                   setEditingSectionForModal(null);
                   setIsAddModalOpen(true);
                 }}
-                className="w-full mt-4 py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                className="w-full mt-4 py-2.5 px-4 bg-[#005d52] hover:bg-[#004a41] text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Add Section</span>
@@ -385,7 +402,9 @@ export default function CareerStudioPage() {
                     jobs={jobs}
                     isPreviewMode={true}
                     selectedSectionId={selectedSectionId}
+                    selectedElementId={selectedElementId}
                     onSelectSection={handleSelectSection}
+                    onSelectElement={handleSelectElement}
                     onMoveUp={handleMoveUp}
                     onMoveDown={handleMoveDown}
                     onDuplicateSection={handleDuplicateSection}
@@ -409,7 +428,9 @@ export default function CareerStudioPage() {
                     jobs={jobs}
                     isPreviewMode={true}
                     selectedSectionId={selectedSectionId}
+                    selectedElementId={selectedElementId}
                     onSelectSection={handleSelectSection}
+                    onSelectElement={handleSelectElement}
                     onMoveUp={handleMoveUp}
                     onMoveDown={handleMoveDown}
                     onDuplicateSection={handleDuplicateSection}
@@ -436,7 +457,9 @@ export default function CareerStudioPage() {
                     jobs={jobs}
                     isPreviewMode={true}
                     selectedSectionId={selectedSectionId}
+                    selectedElementId={selectedElementId}
                     onSelectSection={handleSelectSection}
+                    onSelectElement={handleSelectElement}
                     onMoveUp={handleMoveUp}
                     onMoveDown={handleMoveDown}
                     onDuplicateSection={handleDuplicateSection}
@@ -449,10 +472,10 @@ export default function CareerStudioPage() {
           )}
         </div>
 
-        {/* Column 4: Contextual Right Inspector (Content / Layout / Config) */}
+        {/* Column 4: Contextual Right Inspector */}
         <div className="w-80 bg-white border-l border-slate-200 p-4 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs overflow-y-auto">
           <div className="space-y-4">
-            {/* Inspector Tabs (Content | Layout | Config) */}
+            {/* Inspector Navigation Tabs */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <div className="flex items-center gap-1">
                 <button
@@ -464,218 +487,178 @@ export default function CareerStudioPage() {
                       : "border-transparent text-slate-400 hover:text-slate-700"
                   }`}
                 >
-                  Content
+                  Section
                 </button>
                 <button
                   type="button"
-                  onClick={() => setInspectorTab("layout")}
+                  onClick={() => setInspectorTab("element")}
                   className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    inspectorTab === "layout"
+                    inspectorTab === "element"
                       ? "border-teal-700 text-teal-800"
                       : "border-transparent text-slate-400 hover:text-slate-700"
                   }`}
                 >
-                  Layout
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInspectorTab("config")}
-                  className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    inspectorTab === "config"
-                      ? "border-teal-700 text-teal-800"
-                      : "border-transparent text-slate-400 hover:text-slate-700"
-                  }`}
-                >
-                  Config
+                  Element {selectedElement ? `(${selectedElement.type})` : ""}
                 </button>
               </div>
-
-              {inspectorTab === "content" && (
-                <div className="bg-slate-100 p-0.5 rounded-lg flex items-center border border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => setInspectorMode("form")}
-                    className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                      inspectorMode === "form" ? "bg-teal-800 text-white" : "text-slate-500"
-                    }`}
-                  >
-                    Form
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setInspectorMode("json")}
-                    className={`px-2 py-0.5 text-[10px] font-bold rounded ${
-                      inspectorMode === "json" ? "bg-teal-800 text-white" : "text-slate-500"
-                    }`}
-                  >
-                    JSON
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* TAB 1: CONTENT FORM EDITING */}
-            {inspectorTab === "content" && (
+            {/* TAB 1: SECTION TEMPLATE & ELEMENTS TREE */}
+            {inspectorTab === "content" && selectedSection && (
+              <div className="space-y-4 text-xs">
+                <div className="bg-teal-50/70 p-3 rounded-xl border border-teal-200">
+                  <span className="font-extrabold uppercase text-teal-900 block">{selectedSection.title || selectedSection.type}</span>
+                  <span className="text-[11px] text-teal-700 font-mono">
+                    Template: {selectedSection.content?.templateId || "default"}
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Section Display Title</label>
+                  <input
+                    type="text"
+                    value={selectedSection.title || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSections((prev) =>
+                        prev.map((s) => (s.id === selectedSectionId ? { ...s, title: val } : s))
+                      );
+                    }}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingSectionForModal(selectedSection);
+                      setIsAddModalOpen(true);
+                    }}
+                    className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5"
+                  >
+                    <span>Change Section Template</span>
+                  </button>
+                </div>
+
+                {/* Section Elements Manager & Tree */}
+                <div className="pt-4 border-t border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold uppercase tracking-wider text-slate-500 text-[10px]">
+                      Elements in Section ({currentElements.length})
+                    </span>
+                  </div>
+
+                  {/* Add Element Select */}
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleAddElementToSection(e.target.value as ElementType);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="w-full p-2 bg-teal-50 border border-teal-200 text-teal-900 rounded-xl text-xs font-bold focus:ring-2 focus:ring-teal-600"
+                  >
+                    <option value="">+ Add Element to Section...</option>
+                    <option value="heading">Heading (H1 / H2 / H3)</option>
+                    <option value="text">Text / Paragraph</option>
+                    <option value="image">Image</option>
+                    <option value="video">Video Embed</option>
+                    <option value="button">CTA Button</option>
+                    <option value="badge">Badge Pill</option>
+                    <option value="stats">Stats Grid</option>
+                    <option value="list">Benefits List</option>
+                    <option value="gallery">Photo Gallery</option>
+                    <option value="divider">Divider Line</option>
+                    <option value="spacer">Vertical Spacer</option>
+                  </select>
+
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                    {currentElements.map((elem, idx) => {
+                      const isElemSelected = selectedElementId === elem.id;
+                      return (
+                        <div
+                          key={elem.id}
+                          onClick={() => handleSelectElement(elem)}
+                          className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
+                            isElemSelected
+                              ? "bg-teal-50 border-teal-600 ring-1 ring-teal-600 font-bold"
+                              : "bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate pr-2">
+                            <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[9px] font-mono uppercase font-bold">
+                              {elem.type}
+                            </span>
+                            <span className="truncate text-xs font-semibold text-slate-800">
+                              {elem.content?.text || elem.content?.label || elem.content?.alt || `${elem.type} #${idx + 1}`}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMoveElement(elem.id, "up");
+                              }}
+                              disabled={idx === 0}
+                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                              title="Move Up"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMoveElement(elem.id, "down");
+                              }}
+                              disabled={idx === currentElements.length - 1}
+                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                              title="Move Down"
+                            >
+                              ↓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteElementFromSection(elem.id);
+                              }}
+                              className="p-1 text-slate-400 hover:text-red-600"
+                              title="Delete Element"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: ELEMENT LEVEL INSPECTOR */}
+            {inspectorTab === "element" && (
               <>
-                {selectedSection && (
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-800 block">{selectedSection.title || selectedSection.type}</span>
-                      <span className="text-[10px] font-mono text-slate-400">ID: {selectedSection.id}</span>
-                    </div>
-                  </div>
-                )}
-
-                {inspectorMode === "form" ? (
-                  <div className="space-y-3 text-xs">
-                    <div>
-                      <label className="block font-semibold text-slate-600 mb-1">Headline</label>
-                      <input
-                        type="text"
-                        value={inspectorForm.title}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setInspectorForm({ ...inspectorForm, title: val });
-                          setSections((prev) =>
-                            prev.map((s) => (s.id === selectedSectionId ? { ...s, title: val } : s))
-                          );
-                        }}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600 focus:bg-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold text-slate-600 mb-1">Supporting Subtitle</label>
-                      <textarea
-                        rows={3}
-                        value={inspectorForm.subtitle}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setInspectorForm({ ...inspectorForm, subtitle: val });
-                          setSections((prev) =>
-                            prev.map((s) =>
-                              s.id === selectedSectionId
-                                ? { ...s, content: { ...s.content, subtitle: val } }
-                                : s
-                            )
-                          );
-                        }}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600 focus:bg-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold text-slate-600 mb-1">Main Body Narrative</label>
-                      <textarea
-                        rows={4}
-                        value={inspectorForm.body}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setInspectorForm({ ...inspectorForm, body: val });
-                          setSections((prev) =>
-                            prev.map((s) =>
-                              s.id === selectedSectionId
-                                ? { ...s, content: { ...s.content, body: val } }
-                                : s
-                            )
-                          );
-                        }}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600 focus:bg-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-semibold text-slate-600 mb-1">Primary Button Text</label>
-                      <input
-                        type="text"
-                        value={inspectorForm.ctaText}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setInspectorForm({ ...inspectorForm, ctaText: val });
-                          setSections((prev) =>
-                            prev.map((s) =>
-                              s.id === selectedSectionId
-                                ? { ...s, content: { ...s.content, ctaText: val } }
-                                : s
-                            )
-                          );
-                        }}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600"
-                      />
-                    </div>
-                  </div>
+                {selectedElement ? (
+                  <ElementEditorPanel
+                    element={selectedElement}
+                    onUpdateElement={handleUpdateElement}
+                    onDeleteElement={handleDeleteElementFromSection}
+                    onDuplicateElement={handleDuplicateElement}
+                  />
                 ) : (
-                  <div>
-                    <label className="block font-semibold text-slate-600 mb-1">Raw JSON Payload Editor</label>
-                    <textarea
-                      rows={12}
-                      value={inspectorJson}
-                      onChange={(e) => setInspectorJson(e.target.value)}
-                      className="w-full p-2.5 bg-slate-900 text-teal-400 font-mono text-[11px] rounded-xl border border-slate-800 focus:ring-2 focus:ring-teal-600"
-                    />
+                  <div className="text-center py-8 space-y-2 text-slate-400">
+                    <span className="text-2xl">👆</span>
+                    <p className="text-xs font-semibold text-slate-600">No element selected</p>
+                    <p className="text-[11px] text-slate-400">Click any heading, text, image, video, or button on the live canvas to edit its properties.</p>
                   </div>
                 )}
               </>
-            )}
-
-            {/* TAB 2: LAYOUT VARIANTS */}
-            {inspectorTab === "layout" && (
-              <div className="space-y-3">
-                <span className="text-xs font-bold text-slate-700 block">Wireframe Layout Options</span>
-                <div className="grid grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1">
-                  {LAYOUT_VARIANTS.map((variant) => {
-                    const isSelected = (inspectorForm.layoutVariant || "01") === variant.id;
-                    return (
-                      <div
-                        key={variant.id}
-                        onClick={() => handleSelectLayoutVariant(variant.id)}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer space-y-1.5 ${
-                          isSelected
-                            ? "bg-teal-50 border-teal-600 text-teal-900 shadow-2xs font-bold"
-                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-mono uppercase">Variant {variant.id}</span>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-teal-700" />}
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-medium">{variant.name}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* TAB 3: CONFIGURATION */}
-            {inspectorTab === "config" && (
-              <div className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-semibold text-slate-600 mb-1">Section ID</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={selectedSectionId || ""}
-                    className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 font-mono text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-600 mb-1">Anchor ID</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. open-positions"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-semibold text-slate-600 mb-1">Visibility Status</label>
-                  <span className="inline-block px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 font-bold text-[10px] border border-teal-200 uppercase">
-                    Visible
-                  </span>
-                </div>
-              </div>
             )}
           </div>
 
@@ -683,18 +666,37 @@ export default function CareerStudioPage() {
             type="button"
             onClick={handleSaveInspector}
             disabled={savingInspector}
-            className="w-full mt-4 py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1 shadow-xs"
+            className="w-full mt-4 py-2.5 px-4 bg-[#005d52] hover:bg-[#004a41] text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1 shadow-xs cursor-pointer"
           >
             {savingInspector ? (
               <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>Save Section Changes</span>
+                <span>Save All Changes</span>
               </>
             )}
           </button>
         </div>
+      </div>
+
+
+      {/* Bottom Left Floating Issue Badge */}
+      <div className="fixed bottom-3 left-3 z-50 flex items-center gap-1.5 bg-[#dc2626] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-red-700/50">
+        <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-black">
+          N
+        </span>
+        <span>1 Issue</span>
+        <button
+          type="button"
+          onClick={(e) => {
+            const pill = e.currentTarget.parentElement;
+            if (pill) pill.style.display = "none";
+          }}
+          className="ml-1 text-white/80 hover:text-white font-bold text-xs"
+        >
+          ×
+        </button>
       </div>
 
       {/* Add / Edit Section Modal */}

@@ -242,7 +242,7 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
         type="button"
         onClick={() => handleSave()}
         disabled={saving}
-        className="w-full py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5"
+        className="w-full py-2.5 px-4 bg-[#005d52] hover:bg-[#004a41] text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
       >
         {saving ? (
           <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />

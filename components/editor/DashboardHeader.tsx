@@ -178,7 +178,7 @@ export default function DashboardHeader({
           <button
             type="button"
             onClick={() => setIsPublishModalOpen(true)}
-            className="px-4 py-1.5 bg-teal-800 hover:bg-teal-900 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+            className="px-4 py-1.5 bg-[#005d52] hover:bg-[#004a41] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <span>Publish</span>
           </button>
