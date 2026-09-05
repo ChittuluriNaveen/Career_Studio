@@ -20,6 +20,25 @@ enum JobType {
   HYBRID
 }
 
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+}
+
+enum WorkMode {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
+enum JobStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
 enum SectionType {
   HERO
   ABOUT_US
@@ -62,6 +81,7 @@ model Company {
   departments     Department[]
   locations       Location[]
   mediaAssets     Media[]
+  applications    Application[]
 
   @@index([slug])
 }
@@ -138,23 +158,64 @@ model Location {
 }
 
 model Job {
-  id           String      @id @default(cuid())
-  title        String
-  slug         String
-  description  String?
-  jobType      JobType     @default(FULL_TIME)
-  isPublished  Boolean     @default(true)
-  companyId    String
-  company      Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  departmentId String?
-  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  locationId   String?
-  location     Location?   @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id               String         @id @default(cuid())
+  title            String
+  slug             String
+  departmentName   String         @default("General")
+  employmentType   EmploymentType @default(FULL_TIME)
+  workMode         WorkMode       @default(HYBRID)
+  locationCity     String         @default("Remote")
+  locationCountry  String         @default("Global")
+  salaryMin        Float?
+  salaryMax        Float?
+  currency         String?        @default("USD")
+  salaryVisible    Boolean        @default(false)
+  summary          String?        @db.Text
+  description      String?        @db.Text
+  responsibilities String[]       @default([])
+  requirements     String[]       @default([])
+  preferredSkills  String[]       @default([])
+  benefits         String[]       @default([])
+  datePosted       DateTime?
+  expiryDate       DateTime?
+  status           JobStatus      @default(DRAFT)
+  jobType          JobType        @default(FULL_TIME)
+  isPublished      Boolean        @default(true)
+  companyId        String
+  company          Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  departmentId     String?
+  department       Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  locationId       String?
+  location         Location?      @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  applications     Application[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@index([companyId])
   @@index([slug])
+  @@index([status])
+  @@index([companyId, status])
+  @@index([locationCity])
+  @@index([employmentType])
+  @@index([workMode])
+}
+
+model Application {
+  id             String   @id @default(cuid())
+  jobId          String
+  job            Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  companyId      String
+  company        Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  candidateName  String
+  candidateEmail String
+  resumeUrl      String?
+  coverLetter    String?  @db.Text
+  status         String   @default("PENDING")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([companyId])
 }
 
 model Media {

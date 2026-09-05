@@ -317,6 +317,7 @@ export default function CareersPageRenderer({
                     locations={locations}
                     primaryColor={primaryColor}
                     theme={theme}
+                    companySlug={company.slug}
                   />
                 </div>
               ) : null;
