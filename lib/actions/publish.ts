@@ -37,9 +37,13 @@ export async function publishCareersPageAction() {
       }),
     ]);
 
-    // 2. Purge Next.js static cache for candidate view
-    revalidatePath(`/${companySlug}/careers`);
-    revalidatePath(`/dashboard/editor`);
+    // 2. Purge Next.js static cache for candidate & recruiter views
+    if (companySlug) {
+      revalidatePath(`/${companySlug}/careers`);
+      revalidatePath(`/company/${companySlug}/design`);
+      revalidatePath(`/company/${companySlug}/preview`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true, publishedAt: new Date() };
   } catch (error: any) {

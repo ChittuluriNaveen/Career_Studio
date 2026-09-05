@@ -3,9 +3,25 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { brandThemeSchema, type BrandThemeInput } from "@/lib/validators/brand";
 
-export async function getBrandThemeAction() {
+export interface CompanyDetailsInput {
+  name: string;
+  website?: string | null;
+  industry?: string | null;
+  companySize?: string | null;
+  location?: string | null;
+  description?: string | null;
+  logoUrl?: string | null;
+  bannerUrl?: string | null;
+  cultureVideoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  tagline?: string | null;
+  aboutText?: string | null;
+  fontFamily?: string | null;
+}
+
+export async function getCompanyDetailsAction() {
   const session = await auth();
   if (!session?.user?.companyId) {
     throw new Error("Unauthorized: Recruiter session required");
@@ -18,40 +34,51 @@ export async function getBrandThemeAction() {
   return company;
 }
 
-export async function updateBrandThemeAction(input: BrandThemeInput) {
+export const getBrandThemeAction = getCompanyDetailsAction;
+
+export async function updateCompanyDetailsAction(input: CompanyDetailsInput) {
   const session = await auth();
   if (!session?.user?.companyId) {
     return { success: false, error: "Unauthorized: Recruiter session required" };
   }
 
-  const validated = brandThemeSchema.safeParse(input);
-  if (!validated.success) {
-    return { success: false, error: validated.error.issues[0].message };
+  if (!input.name || input.name.trim() === "") {
+    return { success: false, error: "Company name is required" };
   }
-
-  const { name, tagline, aboutText, primaryColor, secondaryColor, fontFamily, logoUrl, bannerUrl } = validated.data;
 
   try {
     const updatedCompany = await db.company.update({
       where: { id: session.user.companyId },
       data: {
-        name,
-        tagline: tagline || null,
-        aboutText: aboutText || null,
-        primaryColor,
-        secondaryColor,
-        fontFamily,
-        logoUrl: logoUrl || null,
-        bannerUrl: bannerUrl || null,
+        name: input.name.trim(),
+        website: input.website || null,
+        industry: input.industry || null,
+        companySize: input.companySize || null,
+        location: input.location || null,
+        description: input.description || null,
+        logoUrl: input.logoUrl || null,
+        bannerUrl: input.bannerUrl || null,
+        cultureVideoUrl: input.cultureVideoUrl || null,
+        primaryColor: input.primaryColor || "#4F46E5",
+        secondaryColor: input.secondaryColor || "#10B981",
+        ...(input.tagline !== undefined ? { tagline: input.tagline } : {}),
+        ...(input.aboutText !== undefined ? { aboutText: input.aboutText } : {}),
+        ...(input.fontFamily ? { fontFamily: input.fontFamily } : {}),
       },
     });
 
-    revalidatePath("/dashboard/settings");
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers`);
+    const slug = session.user.companySlug || updatedCompany.slug;
+
+    revalidatePath(`/company/${slug}/details`);
+    revalidatePath(`/company/${slug}/design`);
+    revalidatePath(`/company/${slug}/preview`);
+    revalidatePath(`/${slug}/careers`);
+    revalidatePath("/dashboard");
 
     return { success: true, company: updatedCompany };
   } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update brand theme" };
+    return { success: false, error: error.message || "Failed to update company details" };
   }
 }
+
+export const updateBrandThemeAction = updateCompanyDetailsAction;

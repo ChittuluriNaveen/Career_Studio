@@ -7,9 +7,9 @@ interface StructuredDataProps {
   jobs: Array<{
     id: string;
     title: string;
-    description: string;
+    description?: string | null;
     jobType: string;
-    location: { name: string };
+    location?: { name: string } | null;
     createdAt: Date | string;
   }>;
 }
@@ -48,7 +48,7 @@ export default function StructuredData({ company, jobs }: StructuredDataProps) {
       "@type": "Place",
       address: {
         "@type": "PostalAddress",
-        addressLocality: job.location.name,
+        addressLocality: job.location?.name || "Remote",
       },
     },
     employmentType: job.jobType === "FULL_TIME" ? "FULL_TIME" : "OTHER",

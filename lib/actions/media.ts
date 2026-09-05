@@ -38,8 +38,12 @@ export async function createMediaRecordAction(input: {
       },
     });
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath("/dashboard/settings");
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/design`);
+      revalidatePath(`/company/${session.user.companySlug}/details`);
+      revalidatePath(`/${session.user.companySlug}/careers`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true, media };
   } catch (error: any) {
@@ -61,7 +65,11 @@ export async function deleteMediaRecordAction(id: string) {
       },
     });
 
-    revalidatePath("/dashboard/editor");
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/design`);
+      revalidatePath(`/company/${session.user.companySlug}/details`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (error: any) {

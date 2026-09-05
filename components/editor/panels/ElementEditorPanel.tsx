@@ -18,9 +18,11 @@ import {
   Link2,
 } from "lucide-react";
 import MediaPickerModal from "@/components/editor/MediaPickerModal";
+import CompanyVariableChips from "@/components/editor/CompanyVariableChips";
 
 interface ElementEditorPanelProps {
   element: SectionElement;
+  company?: any;
   onUpdateElement: (updated: SectionElement) => void;
   onDeleteElement?: (id: string) => void;
   onDuplicateElement?: (id: string) => void;
@@ -28,6 +30,7 @@ interface ElementEditorPanelProps {
 
 export default function ElementEditorPanel({
   element,
+  company,
   onUpdateElement,
   onDeleteElement,
   onDuplicateElement,
@@ -45,6 +48,11 @@ export default function ElementEditorPanel({
     });
   };
 
+  const handleInsertTagToField = (key: string, tag: string) => {
+    const currentVal = element.content[key] || "";
+    updateContentField(key, currentVal ? `${currentVal} ${tag}` : tag);
+  };
+
   return (
     <div className="space-y-5 text-xs">
       <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between">
@@ -59,7 +67,7 @@ export default function ElementEditorPanel({
             <button
               type="button"
               onClick={() => onDuplicateElement(element.id)}
-              className="p-1 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-600"
+              className="p-1 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold text-[10px]"
               title="Duplicate Element"
             >
               + Copy
@@ -128,6 +136,12 @@ export default function ElementEditorPanel({
       {/* 1. Heading Element */}
       {element.type === "heading" && (
         <div className="space-y-3">
+          <CompanyVariableChips
+            company={company}
+            onInsertVariable={(tag) => handleInsertTagToField("text", tag)}
+            label="Insert Company Variable Chips (@)"
+          />
+
           <div>
             <label className="block font-semibold text-slate-600 mb-1">Heading Text</label>
             <input
@@ -153,22 +167,36 @@ export default function ElementEditorPanel({
         </div>
       )}
 
-      {/* 2. Text / Paragraph Element */}
+      {/* 2. Text / Paragraph / Badge Element */}
       {(element.type === "text" || element.type === "badge") && (
-        <div>
-          <label className="block font-semibold text-slate-600 mb-1">Text Content</label>
-          <textarea
-            rows={4}
-            value={element.content.text || ""}
-            onChange={(e) => updateContentField("text", e.target.value)}
-            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600 focus:bg-white"
+        <div className="space-y-3">
+          <CompanyVariableChips
+            company={company}
+            onInsertVariable={(tag) => handleInsertTagToField("text", tag)}
+            label="Insert Company Variable Chips (@)"
           />
+
+          <div>
+            <label className="block font-semibold text-slate-600 mb-1">Text Content</label>
+            <textarea
+              rows={4}
+              value={element.content.text || ""}
+              onChange={(e) => updateContentField("text", e.target.value)}
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600 focus:bg-white"
+            />
+          </div>
         </div>
       )}
 
       {/* 3. Image Element */}
       {element.type === "image" && (
         <div className="space-y-3">
+          <CompanyVariableChips
+            company={company}
+            onInsertVariable={(tag) => handleInsertTagToField("url", tag)}
+            label="Use Company Image Asset (@)"
+          />
+
           <div>
             <label className="block font-semibold text-slate-600 mb-1">Image URL</label>
             <div className="flex items-center gap-2">
@@ -176,7 +204,7 @@ export default function ElementEditorPanel({
                 type="text"
                 value={element.content.url || ""}
                 onChange={(e) => updateContentField("url", e.target.value)}
-                placeholder="https://..."
+                placeholder="https://... or @company_banner"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs"
               />
               <button
@@ -220,6 +248,12 @@ export default function ElementEditorPanel({
       {/* 4. Video Element */}
       {element.type === "video" && (
         <div className="space-y-3">
+          <CompanyVariableChips
+            company={company}
+            onInsertVariable={(tag) => handleInsertTagToField("videoUrl", tag)}
+            label="Use Company Video Asset (@)"
+          />
+
           <div>
             <label className="block font-semibold text-slate-600 mb-1">Video Embed URL (YouTube/Vimeo)</label>
             <input
@@ -259,6 +293,12 @@ export default function ElementEditorPanel({
       {/* 5. Button Element */}
       {element.type === "button" && (
         <div className="space-y-3">
+          <CompanyVariableChips
+            company={company}
+            onInsertVariable={(tag) => handleInsertTagToField("label", tag)}
+            label="Insert Company Variable Chips (@)"
+          />
+
           <div>
             <label className="block font-semibold text-slate-600 mb-1">Button Label</label>
             <input
@@ -299,27 +339,27 @@ export default function ElementEditorPanel({
                     : { id: Date.now().toString(), title: "New Benefit", description: "Details..." };
                 updateContentField("items", [...currentItems, newItem]);
               }}
-              className="px-2.5 py-1 bg-teal-800 text-white rounded-lg text-[10px] font-bold flex items-center gap-1"
+              className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-md text-[11px]"
             >
-              <Plus className="w-3 h-3" />
-              <span>Add Item</span>
+              + Add Item
             </button>
           </div>
 
           <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
             {(element.content.items || []).map((item: any, idx: number) => (
-              <div key={item.id || idx} className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div key={item.id || idx} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[10px] uppercase text-slate-500">Item #{idx + 1}</span>
+                  <span className="font-extrabold text-[10px] text-slate-500">Item #{idx + 1}</span>
                   <button
                     type="button"
                     onClick={() => {
-                      const updated = (element.content.items || []).filter((_: any, i: number) => i !== idx);
-                      updateContentField("items", updated);
+                      const currentItems = element.content.items || [];
+                      const updatedItems = currentItems.filter((_: any, i: number) => i !== idx);
+                      updateContentField("items", updatedItems);
                     }}
-                    className="p-1 text-slate-400 hover:text-red-600"
+                    className="text-red-500 hover:text-red-700 font-bold text-xs"
                   >
-                    <Trash2 className="w-3 h-3" />
+                    × Remove
                   </button>
                 </div>
 
@@ -327,12 +367,12 @@ export default function ElementEditorPanel({
                   type="text"
                   value={item.title || ""}
                   onChange={(e) => {
-                    const updated = [...(element.content.items || [])];
-                    updated[idx] = { ...updated[idx], title: e.target.value };
-                    updateContentField("items", updated);
+                    const updatedItems = [...(element.content.items || [])];
+                    updatedItems[idx] = { ...updatedItems[idx], title: e.target.value };
+                    updateContentField("items", updatedItems);
                   }}
-                  placeholder="Title"
-                  className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-semibold"
+                  placeholder="Item Title"
+                  className="w-full p-2 bg-white border border-slate-200 rounded-lg font-semibold text-xs"
                 />
 
                 {element.type === "stats" && (
@@ -340,41 +380,43 @@ export default function ElementEditorPanel({
                     type="text"
                     value={item.value || ""}
                     onChange={(e) => {
-                      const updated = [...(element.content.items || [])];
-                      updated[idx] = { ...updated[idx], value: e.target.value };
-                      updateContentField("items", updated);
+                      const updatedItems = [...(element.content.items || [])];
+                      updatedItems[idx] = { ...updatedItems[idx], value: e.target.value };
+                      updateContentField("items", updatedItems);
                     }}
-                    placeholder="Stat Value (e.g. 500+)"
-                    className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs font-bold"
-                  />
-                )}
-
-                {element.type === "gallery" && (
-                  <input
-                    type="text"
-                    value={item.url || ""}
-                    onChange={(e) => {
-                      const updated = [...(element.content.items || [])];
-                      updated[idx] = { ...updated[idx], url: e.target.value };
-                      updateContentField("items", updated);
-                    }}
-                    placeholder="Image URL"
-                    className="w-full p-1.5 bg-white border border-slate-200 rounded text-[11px] font-mono"
+                    placeholder="Metric Value (e.g. 50+)"
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
                   />
                 )}
 
                 {element.type === "list" && (
-                  <textarea
-                    rows={2}
+                  <input
+                    type="text"
                     value={item.description || ""}
                     onChange={(e) => {
-                      const updated = [...(element.content.items || [])];
-                      updated[idx] = { ...updated[idx], description: e.target.value };
-                      updateContentField("items", updated);
+                      const updatedItems = [...(element.content.items || [])];
+                      updatedItems[idx] = { ...updatedItems[idx], description: e.target.value };
+                      updateContentField("items", updatedItems);
                     }}
-                    placeholder="Description"
-                    className="w-full p-1.5 bg-white border border-slate-200 rounded text-xs"
+                    placeholder="Description detail..."
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
                   />
+                )}
+
+                {element.type === "gallery" && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={item.url || ""}
+                      onChange={(e) => {
+                        const updatedItems = [...(element.content.items || [])];
+                        updatedItems[idx] = { ...updatedItems[idx], url: e.target.value };
+                        updateContentField("items", updatedItems);
+                      }}
+                      placeholder="Image URL"
+                      className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                    />
+                  </div>
                 )}
               </div>
             ))}
@@ -382,7 +424,7 @@ export default function ElementEditorPanel({
         </div>
       )}
 
-      {/* Media Browser Modal */}
+      {/* Media Picker Modal */}
       <MediaPickerModal
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}

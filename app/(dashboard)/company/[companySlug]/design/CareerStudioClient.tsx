@@ -19,7 +19,7 @@ import DesignPanel from "@/components/editor/panels/DesignPanel";
 import SharePanel from "@/components/editor/panels/SharePanel";
 import SEOPanel from "@/components/editor/panels/SEOPanel";
 import ElementEditorPanel from "@/components/editor/panels/ElementEditorPanel";
-import SectionFormModal from "@/components/editor/SectionFormModal";
+
 import PageRenderer from "@/components/preview/PageRenderer";
 
 import {
@@ -32,12 +32,25 @@ import {
 } from "@/lib/actions/sections";
 import { getBrandThemeAction } from "@/lib/actions/brand";
 import { getJobsAction, getDepartmentsAndLocationsAction } from "@/lib/actions/jobs";
-import { SectionElement, ElementType, getDefaultElementsForSectionType, createDefaultElement } from "@/lib/templates/registry";
+import {
+  SectionElement,
+  ElementType,
+  getDefaultElementsForSectionType,
+  createDefaultElement,
+  TEMPLATE_REGISTRY,
+  preserveElementsOnTemplateSwitch,
+} from "@/lib/templates/registry";
+import TemplatePickerPanel from "@/components/editor/panels/TemplatePickerPanel";
+import { addSectionAction } from "@/lib/actions/sections";
 
-export default function CareerStudioPage() {
+interface CareerStudioClientProps {
+  companySlug: string;
+}
+
+export default function CareerStudioClient({ companySlug }: CareerStudioClientProps) {
   const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [activeNavTab, setActiveNavTab] = useState<LeftNavTab>("sections");
-  const [inspectorTab, setInspectorTab] = useState<"content" | "element" | "config">("content");
+  const [inspectorTab, setInspectorTab] = useState<"content" | "templates" | "element">("content");
 
   const [company, setCompany] = useState<any | null>(null);
   const [sections, setSections] = useState<any[]>([]);
@@ -55,10 +68,6 @@ export default function CareerStudioPage() {
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [savingInspector, setSavingInspector] = useState(false);
-
-  // Modal
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingSectionForModal, setEditingSectionForModal] = useState<any | null>(null);
 
   const pushHistory = (newSections: any[]) => {
     const updatedHistory = history.slice(0, historyIndex + 1);
@@ -122,7 +131,10 @@ export default function CareerStudioPage() {
     setInspectorTab("content");
   };
 
-  const handleSelectElement = (element: SectionElement) => {
+  const handleSelectElement = (element: SectionElement, sectionId?: string) => {
+    if (sectionId && sectionId !== selectedSectionId) {
+      setSelectedSectionId(sectionId);
+    }
     setSelectedElementId(element.id);
     setInspectorTab("element");
   };
@@ -136,6 +148,68 @@ export default function CareerStudioPage() {
       : [];
 
   const selectedElement = currentElements.find((e) => e.id === selectedElementId);
+
+  const handleApplyTemplateInline = async (templateId: string) => {
+    if (!selectedSection) return;
+
+    const templateConfig = TEMPLATE_REGISTRY[templateId];
+    if (!templateConfig) return;
+
+    const elementsToSave =
+      Array.isArray(selectedSection.content?.elements) && selectedSection.content.elements.length > 0
+        ? preserveElementsOnTemplateSwitch(selectedSection.content.elements, templateId)
+        : templateConfig.defaultElements;
+
+    const newContent = {
+      ...(selectedSection.content || {}),
+      templateId,
+      layout: templateConfig.layout,
+      elements: elementsToSave,
+    };
+
+    const updatedSections = sections.map((s) =>
+      s.id === selectedSection.id
+        ? { ...s, type: templateConfig.sectionType, title: templateConfig.name, content: newContent }
+        : s
+    );
+
+    setSections(updatedSections);
+    pushHistory(updatedSections);
+    setSaveStatus("saving");
+
+    await updateSectionContentAction({
+      id: selectedSection.id,
+      title: templateConfig.name,
+      content: newContent,
+    });
+
+    setSaveStatus("saved");
+  };
+
+  const handleAddNewSectionFromTemplateInline = async (templateId: string) => {
+    const templateConfig = TEMPLATE_REGISTRY[templateId];
+    if (!templateConfig) return;
+
+    const contentPayload = {
+      templateId,
+      layout: templateConfig.layout,
+      elements: templateConfig.defaultElements,
+    };
+
+    setSaveStatus("saving");
+    const res = await addSectionAction({
+      type: templateConfig.sectionType,
+      title: templateConfig.name,
+      content: contentPayload,
+    });
+
+    if (res.success && res.section) {
+      setSaveStatus("saved");
+      await fetchStudioData();
+      setSelectedSectionId(res.section.id);
+      setInspectorTab("content");
+    }
+  };
 
   const handleAddElementToSection = (type: ElementType) => {
     if (!selectedSection || !type) return;
@@ -300,7 +374,7 @@ export default function CareerStudioPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900">
       {/* Top Bar */}
       {company && (
         <DashboardHeader
@@ -329,273 +403,196 @@ export default function CareerStudioPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                   <div>
-                    <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Sections</h2>
-                    <p className="text-[11px] text-slate-400">Draggable page outline ({sections.length})</p>
+                    <h2 className="font-bold text-sm text-slate-900">Sections Architecture</h2>
+                    <p className="text-[11px] text-slate-500">Reorder, select & manage sections</p>
                   </div>
-                  <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-                    Saved
-                  </span>
-                </div>
-
-                {loading ? (
-                  <div className="p-4 text-center text-xs text-slate-400">Loading sections...</div>
-                ) : (
-                  <SectionList
-                    initialSections={sections}
-                    selectedSectionId={selectedSectionId}
-                    onSelectSection={handleSelectSection}
-                    onEditSection={(sec) => {
-                      setEditingSectionForModal(sec);
-                      setIsAddModalOpen(true);
-                    }}
-                    onDeleteSection={handleDeleteSection}
-                    onSectionsUpdated={fetchStudioData}
-                  />
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingSectionForModal(null);
-                  setIsAddModalOpen(true);
-                }}
-                className="w-full mt-4 py-2.5 px-4 bg-[#005d52] hover:bg-[#004a41] text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Add Section</span>
-              </button>
-            </div>
-          )}
-
-          {activeNavTab === "design" && company && (
-            <DesignPanel company={company} onCompanyUpdated={(c) => setCompany(c)} />
-          )}
-
-          {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
-
-          {activeNavTab === "seo" && company && <SEOPanel company={company} />}
-        </div>
-
-        {/* Column 3: Large Central Live Website Preview */}
-        <div className="flex-1 bg-slate-200/60 p-4 sm:p-6 overflow-y-auto flex flex-col items-center justify-start">
-          {deviceMode === "desktop" && (
-            <div className="device-frame-desktop w-full max-w-5xl shadow-xl rounded-2xl overflow-hidden bg-white border border-slate-300">
-              <div className="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
-                </div>
-                <div className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1 text-[11px] font-mono text-slate-600 flex items-center justify-center gap-1.5 shadow-2xs">
-                  <span>🔒</span>
-                  <span>https://{company?.slug || "acme"}.example.com/careers</span>
-                </div>
-              </div>
-              <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
-                {company && (
-                  <PageRenderer
-                    company={company}
-                    sections={sections}
-                    departments={departments}
-                    locations={locations}
-                    jobs={jobs}
-                    isPreviewMode={true}
-                    selectedSectionId={selectedSectionId}
-                    selectedElementId={selectedElementId}
-                    onSelectSection={handleSelectSection}
-                    onSelectElement={handleSelectElement}
-                    onMoveUp={handleMoveUp}
-                    onMoveDown={handleMoveDown}
-                    onDuplicateSection={handleDuplicateSection}
-                    onToggleHideSection={handleToggleHideSection}
-                    onDeleteSection={handleDeleteSection}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {deviceMode === "tablet" && (
-            <div className="device-frame-tablet w-[768px] max-w-full shadow-2xl rounded-3xl overflow-hidden bg-white border-8 border-slate-800">
-              <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
-                {company && (
-                  <PageRenderer
-                    company={company}
-                    sections={sections}
-                    departments={departments}
-                    locations={locations}
-                    jobs={jobs}
-                    isPreviewMode={true}
-                    selectedSectionId={selectedSectionId}
-                    selectedElementId={selectedElementId}
-                    onSelectSection={handleSelectSection}
-                    onSelectElement={handleSelectElement}
-                    onMoveUp={handleMoveUp}
-                    onMoveDown={handleMoveDown}
-                    onDuplicateSection={handleDuplicateSection}
-                    onToggleHideSection={handleToggleHideSection}
-                    onDeleteSection={handleDeleteSection}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {deviceMode === "mobile" && (
-            <div className="device-frame-mobile w-[375px] max-w-full shadow-2xl rounded-[40px] overflow-hidden bg-white border-[10px] border-slate-900 relative">
-              <div className="w-32 h-4 bg-slate-900 mx-auto rounded-b-xl absolute top-0 inset-x-0 z-50 flex items-center justify-center">
-                <span className="w-10 h-1 rounded-full bg-slate-700" />
-              </div>
-              <div className="pt-4 max-h-[calc(100vh-10rem)] overflow-y-auto">
-                {company && (
-                  <PageRenderer
-                    company={company}
-                    sections={sections}
-                    departments={departments}
-                    locations={locations}
-                    jobs={jobs}
-                    isPreviewMode={true}
-                    selectedSectionId={selectedSectionId}
-                    selectedElementId={selectedElementId}
-                    onSelectSection={handleSelectSection}
-                    onSelectElement={handleSelectElement}
-                    onMoveUp={handleMoveUp}
-                    onMoveDown={handleMoveDown}
-                    onDuplicateSection={handleDuplicateSection}
-                    onToggleHideSection={handleToggleHideSection}
-                    onDeleteSection={handleDeleteSection}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Column 4: Contextual Right Inspector */}
-        <div className="w-80 bg-white border-l border-slate-200 p-4 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs overflow-y-auto">
-          <div className="space-y-4">
-            {/* Inspector Navigation Tabs */}
-            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setInspectorTab("content")}
-                  className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    inspectorTab === "content"
-                      ? "border-teal-700 text-teal-800"
-                      : "border-transparent text-slate-400 hover:text-slate-700"
-                  }`}
-                >
-                  Section
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInspectorTab("element")}
-                  className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    inspectorTab === "element"
-                      ? "border-teal-700 text-teal-800"
-                      : "border-transparent text-slate-400 hover:text-slate-700"
-                  }`}
-                >
-                  Element {selectedElement ? `(${selectedElement.type})` : ""}
-                </button>
-              </div>
-            </div>
-
-            {/* TAB 1: SECTION TEMPLATE & ELEMENTS TREE */}
-            {inspectorTab === "content" && selectedSection && (
-              <div className="space-y-4 text-xs">
-                <div className="bg-teal-50/70 p-3 rounded-xl border border-teal-200">
-                  <span className="font-extrabold uppercase text-teal-900 block">{selectedSection.title || selectedSection.type}</span>
-                  <span className="text-[11px] text-teal-700 font-mono">
-                    Template: {selectedSection.content?.templateId || "default"}
-                  </span>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Section Display Title</label>
-                  <input
-                    type="text"
-                    value={selectedSection.title || ""}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setSections((prev) =>
-                        prev.map((s) => (s.id === selectedSectionId ? { ...s, title: val } : s))
-                      );
-                    }}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold"
-                  />
-                </div>
-
-                <div className="pt-2 border-t border-slate-100 space-y-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      setEditingSectionForModal(selectedSection);
-                      setIsAddModalOpen(true);
-                    }}
-                    className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5"
+                    onClick={() => setInspectorTab("templates")}
+                    className="flex items-center gap-1 text-[11px] bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold px-2 py-1 rounded-md transition-all cursor-pointer border border-indigo-200"
                   >
-                    <span>Change Section Template</span>
+                    <Plus className="w-3 h-3" />
+                    <span>Add</span>
                   </button>
                 </div>
 
-                {/* Section Elements Manager & Tree */}
-                <div className="pt-4 border-t border-slate-200 space-y-3">
+                <SectionList
+                  sections={sections}
+                  selectedSectionId={selectedSectionId}
+                  onSelectSection={handleSelectSection}
+                  onDeleteSection={handleDeleteSection}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                  onDuplicateSection={handleDuplicateSection}
+                  onToggleHideSection={handleToggleHideSection}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeNavTab === "design" && company && <DesignPanel company={company} onUpdate={fetchStudioData} />}
+          {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
+          {activeNavTab === "seo" && company && <SEOPanel company={company} />}
+        </div>
+
+        {/* Column 3: Center Responsive Preview Canvas */}
+        <div className="flex-1 bg-slate-200 overflow-y-auto p-4 md:p-8 flex justify-center items-start">
+          <div
+            className={`transition-all duration-300 bg-white rounded-xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
+              deviceMode === "mobile"
+                ? "w-[375px]"
+                : deviceMode === "tablet"
+                ? "w-[768px]"
+                : "w-full max-w-5xl"
+            }`}
+          >
+            {loading ? (
+              <div className="flex flex-col items-center justify-center h-96 space-y-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
+                <p className="text-xs text-slate-500 font-medium">Loading Careers Studio...</p>
+              </div>
+            ) : company ? (
+              <PageRenderer
+                company={company}
+                sections={sections}
+                jobs={jobs}
+                departments={departments}
+                locations={locations}
+                selectedSectionId={selectedSectionId}
+                selectedElementId={selectedElementId}
+                onSelectSection={handleSelectSection}
+                onSelectElement={handleSelectElement}
+                isPreviewMode={true}
+              />
+            ) : null}
+          </div>
+        </div>
+
+        {/* Column 4: Right Inspector Side Box */}
+        <div className="w-80 bg-white border-l border-slate-200 flex flex-col justify-between flex-shrink-0 p-4 z-10 overflow-y-auto shadow-2xs">
+          <div className="space-y-4">
+            {/* Inspector Navigation Tabs */}
+            <div className="flex border-b border-slate-200 pb-2 gap-1 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setInspectorTab("content")}
+                className={`flex-1 py-1.5 rounded-md text-center transition-all cursor-pointer ${
+                  inspectorTab === "content"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                Section
+              </button>
+              <button
+                type="button"
+                onClick={() => setInspectorTab("templates")}
+                className={`flex-1 py-1.5 rounded-md text-center transition-all cursor-pointer ${
+                  inspectorTab === "templates"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                Templates
+              </button>
+              <button
+                type="button"
+                onClick={() => setInspectorTab("element")}
+                className={`flex-1 py-1.5 rounded-md text-center transition-all cursor-pointer relative ${
+                  inspectorTab === "element"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                Element
+                {selectedElement && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-indigo-500"></span>
+                )}
+              </button>
+            </div>
+
+            {/* TAB 1: SECTION CONTENT & ELEMENTS TREE */}
+            {inspectorTab === "content" && selectedSection && (
+              <div className="space-y-4">
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-extrabold uppercase tracking-wider text-slate-500 text-[10px]">
-                      Elements in Section ({currentElements.length})
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                      {selectedSection.type}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => setInspectorTab("templates")}
+                      className="text-[11px] font-bold text-indigo-600 hover:underline"
+                    >
+                      Switch Template →
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Section Title</label>
+                    <input
+                      type="text"
+                      value={selectedSection.title || ""}
+                      onChange={(e) => {
+                        const newTitle = e.target.value;
+                        const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, title: newTitle } : s));
+                        setSections(updated);
+                      }}
+                      className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900"
+                    />
+                  </div>
+                </div>
+
+                {/* Elements Tree Header */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-900">Elements Tree</span>
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleAddElementToSection(e.target.value as ElementType);
+                          e.target.value = "";
+                        }
+                      }}
+                      className="text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded px-2 py-1 cursor-pointer"
+                      defaultValue=""
+                    >
+                      <option value="" disabled>+ Add Element</option>
+                      <option value="heading">Heading</option>
+                      <option value="text">Text Paragraph</option>
+                      <option value="richtext">Rich Text</option>
+                      <option value="button">Button CTA</option>
+                      <option value="image">Image</option>
+                      <option value="video">Video Embed</option>
+                      <option value="badge">Badge</option>
+                      <option value="icon">Icon Feature</option>
+                      <option value="stats">Stat Metric</option>
+                      <option value="gallery">Gallery Grid</option>
+                      <option value="list">Feature List</option>
+                      <option value="divider">Divider</option>
+                      <option value="spacer">Spacer</option>
+                    </select>
                   </div>
 
-                  {/* Add Element Select */}
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        handleAddElementToSection(e.target.value as ElementType);
-                        e.target.value = "";
-                      }
-                    }}
-                    className="w-full p-2 bg-teal-50 border border-teal-200 text-teal-900 rounded-xl text-xs font-bold focus:ring-2 focus:ring-teal-600"
-                  >
-                    <option value="">+ Add Element to Section...</option>
-                    <option value="heading">Heading (H1 / H2 / H3)</option>
-                    <option value="text">Text / Paragraph</option>
-                    <option value="image">Image</option>
-                    <option value="video">Video Embed</option>
-                    <option value="button">CTA Button</option>
-                    <option value="badge">Badge Pill</option>
-                    <option value="stats">Stats Grid</option>
-                    <option value="list">Benefits List</option>
-                    <option value="gallery">Photo Gallery</option>
-                    <option value="divider">Divider Line</option>
-                    <option value="spacer">Vertical Spacer</option>
-                  </select>
-
-                  <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                  {/* List of Section Elements */}
+                  <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
                     {currentElements.map((elem, idx) => {
-                      const isElemSelected = selectedElementId === elem.id;
+                      const isSelected = selectedElementId === elem.id;
                       return (
                         <div
                           key={elem.id}
-                          onClick={() => handleSelectElement(elem)}
-                          className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
-                            isElemSelected
-                              ? "bg-teal-50 border-teal-600 ring-1 ring-teal-600 font-bold"
-                              : "bg-slate-50/80 border-slate-200 hover:bg-slate-100 text-slate-700"
+                          onClick={() => handleSelectElement(elem, selectedSection.id)}
+                          className={`p-2 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-all ${
+                            isSelected
+                              ? "bg-indigo-50 border-indigo-500 text-indigo-900 font-bold"
+                              : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
                           }`}
                         >
-                          <div className="flex items-center gap-2 truncate pr-2">
-                            <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[9px] font-mono uppercase font-bold">
-                              {elem.type}
-                            </span>
-                            <span className="truncate text-xs font-semibold text-slate-800">
-                              {elem.content?.text || elem.content?.label || elem.content?.alt || `${elem.type} #${idx + 1}`}
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            <span className="text-[10px] font-bold text-slate-400 w-4">{idx + 1}.</span>
+                            <span className="font-semibold capitalize text-slate-800 truncate">
+                              {elem.type}: {elem.content?.text || elem.content?.heading || elem.content?.url || elem.id}
                             </span>
                           </div>
-
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
@@ -627,7 +624,7 @@ export default function CareerStudioPage() {
                                 e.stopPropagation();
                                 handleDeleteElementFromSection(elem.id);
                               }}
-                              className="p-1 text-slate-400 hover:text-red-600"
+                              className="p-1 text-slate-400 hover:text-red-600 font-bold"
                               title="Delete Element"
                             >
                               ×
@@ -641,12 +638,22 @@ export default function CareerStudioPage() {
               </div>
             )}
 
-            {/* TAB 2: ELEMENT LEVEL INSPECTOR */}
+            {/* TAB 2: INLINE TEMPLATE PICKER PANEL */}
+            {inspectorTab === "templates" && (
+              <TemplatePickerPanel
+                selectedSection={selectedSection}
+                onApplyTemplateToSection={handleApplyTemplateInline}
+                onAddNewSectionFromTemplate={handleAddNewSectionFromTemplateInline}
+              />
+            )}
+
+            {/* TAB 3: ELEMENT LEVEL INSPECTOR */}
             {inspectorTab === "element" && (
               <>
                 {selectedElement ? (
                   <ElementEditorPanel
                     element={selectedElement}
+                    company={company}
                     onUpdateElement={handleUpdateElement}
                     onDeleteElement={handleDeleteElementFromSection}
                     onDuplicateElement={handleDuplicateElement}
@@ -679,35 +686,6 @@ export default function CareerStudioPage() {
           </button>
         </div>
       </div>
-
-
-      {/* Bottom Left Floating Issue Badge */}
-      <div className="fixed bottom-3 left-3 z-50 flex items-center gap-1.5 bg-[#dc2626] text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-red-700/50">
-        <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-black">
-          N
-        </span>
-        <span>1 Issue</span>
-        <button
-          type="button"
-          onClick={(e) => {
-            const pill = e.currentTarget.parentElement;
-            if (pill) pill.style.display = "none";
-          }}
-          className="ml-1 text-white/80 hover:text-white font-bold text-xs"
-        >
-          ×
-        </button>
-      </div>
-
-      {/* Add / Edit Section Modal */}
-      <SectionFormModal
-        isOpen={isAddModalOpen}
-        onClose={() => {
-          setIsAddModalOpen(false);
-          fetchStudioData();
-        }}
-        sectionToEdit={editingSectionForModal}
-      />
     </div>
   );
 }

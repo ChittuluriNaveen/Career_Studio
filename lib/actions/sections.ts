@@ -14,6 +14,15 @@ import {
   type ToggleSectionVisibilityInput,
 } from "@/lib/validators/section";
 
+function revalidateAll(slug?: string) {
+  if (slug) {
+    revalidatePath(`/company/${slug}/design`);
+    revalidatePath(`/company/${slug}/preview`);
+    revalidatePath(`/${slug}/careers`);
+  }
+  revalidatePath("/dashboard");
+}
+
 export async function getSectionsAction() {
   const session = await auth();
   if (!session?.user?.companyId) {
@@ -73,8 +82,7 @@ export async function addSectionAction(input: CreateSectionInput) {
       },
     });
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers/preview`);
+    revalidateAll(session.user.companySlug);
 
     return { success: true, section };
   } catch (error: any) {
@@ -112,8 +120,7 @@ export async function updateSectionOrderAction(input: UpdateSectionOrderInput) {
       )
     );
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers/preview`);
+    revalidateAll(session.user.companySlug);
 
     return { success: true };
   } catch (error: any) {
@@ -158,8 +165,7 @@ export async function updateSectionContentAction(input: UpdateSectionContentInpu
       },
     });
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers/preview`);
+    revalidateAll(session.user.companySlug);
 
     return { success: true, count: 1, section: updated };
   } catch (error: any) {
@@ -201,8 +207,7 @@ export async function toggleSectionVisibilityAction(input: ToggleSectionVisibili
       },
     });
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers/preview`);
+    revalidateAll(session.user.companySlug);
 
     return { success: true, section: updated };
   } catch (error: any) {
@@ -246,8 +251,7 @@ export async function duplicateSectionAction(id: string) {
       },
     });
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers/preview`);
+    revalidateAll(session.user.companySlug);
 
     return { success: true, section: duplicate };
   } catch (error: any) {
@@ -271,11 +275,41 @@ export async function deleteSectionAction(id: string) {
       },
     });
 
-    revalidatePath("/dashboard/editor");
-    revalidatePath(`/${session.user.companySlug}/careers/preview`);
+    revalidateAll(session.user.companySlug);
 
     return { success: true, count: deleted.count };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to delete section" };
   }
 }
+
+export async function publishCareersPageAction() {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    return { success: false, error: "Unauthorized: Recruiter session required" };
+  }
+
+  const companyId = session.user.companyId;
+
+  try {
+    // 1. Mark all enabled sections as published
+    await db.pageSection.updateMany({
+      where: { companyId, enabled: true },
+      data: { isPublished: true, isDraft: false },
+    });
+
+    // 2. Update CareersPage record
+    await db.careersPage.upsert({
+      where: { companyId },
+      create: { companyId, isPublished: true, publishedAt: new Date() },
+      update: { isPublished: true, publishedAt: new Date() },
+    });
+
+    revalidateAll(session.user.companySlug);
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to publish careers page" };
+  }
+}
+

@@ -8,6 +8,8 @@ interface TemplateRendererProps {
   templateId: string;
   elements: SectionElement[];
   layout?: SectionLayoutConfig;
+  company?: any;
+  jobsCount?: number;
   companyPrimaryColor?: string;
   isPreviewMode?: boolean;
   selectedElementId?: string | null;
@@ -19,6 +21,8 @@ export default function TemplateRenderer({
   templateId,
   elements,
   layout,
+  company,
+  jobsCount = 0,
   companyPrimaryColor = "#005d52",
   isPreviewMode = false,
   selectedElementId,
@@ -73,6 +77,8 @@ export default function TemplateRenderer({
               <ElementRenderer
                 key={element.id}
                 element={element}
+                company={company}
+                jobsCount={jobsCount}
                 companyPrimaryColor={companyPrimaryColor}
                 isPreviewMode={isPreviewMode}
                 isSelected={selectedElementId === element.id}
@@ -87,6 +93,8 @@ export default function TemplateRenderer({
               <ElementRenderer
                 key={element.id}
                 element={element}
+                company={company}
+                jobsCount={jobsCount}
                 companyPrimaryColor={companyPrimaryColor}
                 isPreviewMode={isPreviewMode}
                 isSelected={selectedElementId === element.id}
@@ -109,6 +117,8 @@ export default function TemplateRenderer({
         <ElementRenderer
           key={element.id}
           element={element}
+          company={company}
+          jobsCount={jobsCount}
           companyPrimaryColor={companyPrimaryColor}
           isPreviewMode={isPreviewMode}
           isSelected={selectedElementId === element.id}

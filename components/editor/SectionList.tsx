@@ -210,30 +210,39 @@ function SortableSectionCard({
 }
 
 interface SectionListProps {
-  initialSections: Section[];
+  initialSections?: Section[];
+  sections?: Section[];
   selectedSectionId?: string | null;
   onSelectSection?: (section: Section) => void;
-  onEditSection: (section: Section) => void;
+  onEditSection?: (section: Section) => void;
   onDeleteSection: (id: string) => void;
+  onMoveUp?: (id: string) => void;
+  onMoveDown?: (id: string) => void;
+  onDuplicateSection?: (id: string) => void;
+  onToggleHideSection?: (id: string, currentEnabled: boolean) => void;
   onSectionsUpdated?: () => void;
 }
 
 export default function SectionList({
   initialSections,
+  sections: propSections,
   selectedSectionId,
   onSelectSection,
   onEditSection,
   onDeleteSection,
+  onDuplicateSection,
+  onToggleHideSection,
   onSectionsUpdated,
 }: SectionListProps) {
-  const [sections, setSections] = useState(initialSections);
+  const activeList = propSections || initialSections || [];
+  const [sections, setSections] = useState(activeList);
   const [reordering, setReordering] = useState(false);
 
   // Sync internal state when parent props change
-  const parentIds = initialSections.map((s) => `${s.id}-${s.enabled}-${s.orderIndex}`).join(",");
+  const parentIds = activeList.map((s) => `${s.id}-${s.enabled}-${s.orderIndex}`).join(",");
   const localIds = sections.map((s) => `${s.id}-${s.enabled}-${s.orderIndex}`).join(",");
   if (parentIds !== localIds) {
-    setSections(initialSections);
+    setSections(activeList);
   }
 
   const sensors = useSensors(
@@ -272,6 +281,10 @@ export default function SectionList({
   };
 
   const handleToggleVisibility = async (id: string, currentEnabled: boolean) => {
+    if (onToggleHideSection) {
+      onToggleHideSection(id, currentEnabled);
+      return;
+    }
     setSections((prev) =>
       prev.map((sec) => (sec.id === id ? { ...sec, enabled: !currentEnabled } : sec))
     );
@@ -280,6 +293,10 @@ export default function SectionList({
   };
 
   const handleDuplicate = async (id: string) => {
+    if (onDuplicateSection) {
+      onDuplicateSection(id);
+      return;
+    }
     const res = await duplicateSectionAction(id);
     if (res.success && onSectionsUpdated) {
       onSectionsUpdated();
@@ -291,7 +308,7 @@ export default function SectionList({
       <div className="text-center py-8 space-y-2 text-slate-400">
         <div className="text-2xl">📄</div>
         <p className="text-xs font-medium text-slate-600">No sections added yet</p>
-        <p className="text-[11px] text-slate-400">Click "+ Add section" below to pick from the MVP section library.</p>
+        <p className="text-[11px] text-slate-400">Click "+ Add section" below to pick from the section library.</p>
       </div>
     );
   }
@@ -313,7 +330,7 @@ export default function SectionList({
               section={section}
               isSelected={selectedSectionId === section.id}
               onSelect={onSelectSection || (() => {})}
-              onEdit={onEditSection}
+              onEdit={onEditSection || (() => {})}
               onDelete={onDeleteSection}
               onToggleVisibility={handleToggleVisibility}
               onDuplicate={handleDuplicate}

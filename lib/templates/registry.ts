@@ -80,7 +80,7 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         position: 0,
         enabled: true,
         alignment: "center",
-        content: { text: "We Are Hiring · 15 Open Roles" },
+        content: { text: "We Are Hiring at @company_name · @active_jobs_count Open Roles" },
       },
       {
         id: "hero-heading-1",
@@ -88,7 +88,7 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         position: 1,
         enabled: true,
         alignment: "center",
-        content: { text: "Shape the Future of Enterprise Technology", level: 1 },
+        content: { text: "Build the Future of @company_industry with @company_name", level: 1 },
       },
       {
         id: "hero-text-1",
@@ -97,7 +97,7 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         enabled: true,
         alignment: "center",
         content: {
-          text: "Join our world-class engineering team to build scalable, mission-critical systems used by over 50,000 global enterprises.",
+          text: "Join @company_name in @company_location to build scalable, mission-critical systems. @company_tagline",
         },
       },
       {

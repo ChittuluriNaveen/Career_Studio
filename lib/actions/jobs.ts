@@ -20,6 +20,23 @@ export async function getJobsAction() {
   return jobs;
 }
 
+export async function getJobByIdAction(jobId: string) {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    throw new Error("Unauthorized: Recruiter session required");
+  }
+
+  const job = await db.job.findFirst({
+    where: {
+      id: jobId,
+      companyId: session.user.companyId, // Strict tenant isolation
+    },
+    include: { department: true, location: true },
+  });
+
+  return job;
+}
+
 export async function getDepartmentsAndLocationsAction() {
   const session = await auth();
   if (!session?.user?.companyId) {
@@ -69,12 +86,65 @@ export async function createJobAction(input: JobInput) {
       },
     });
 
-    revalidatePath("/dashboard/jobs");
-    revalidatePath(`/${session.user.companySlug}/careers`);
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/jobs`);
+      revalidatePath(`/${session.user.companySlug}/careers`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true, job };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create job" };
+  }
+}
+
+export async function updateJobAction(jobId: string, input: JobInput) {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    return { success: false, error: "Unauthorized: Recruiter session required" };
+  }
+
+  const validated = jobSchema.safeParse(input);
+  if (!validated.success) {
+    return { success: false, error: validated.error.issues[0].message };
+  }
+
+  const { title, description, jobType, departmentId, locationId, isPublished } = validated.data;
+
+  try {
+    const existingJob = await db.job.findFirst({
+      where: {
+        id: jobId,
+        companyId: session.user.companyId, // Strict tenant isolation
+      },
+    });
+
+    if (!existingJob) {
+      return { success: false, error: "Job not found or access denied" };
+    }
+
+    const updatedJob = await db.job.update({
+      where: { id: jobId },
+      data: {
+        title,
+        description,
+        jobType,
+        departmentId,
+        locationId,
+        isPublished,
+      },
+    });
+
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/jobs`);
+      revalidatePath(`/company/${session.user.companySlug}/jobs/${jobId}`);
+      revalidatePath(`/${session.user.companySlug}/careers`);
+    }
+    revalidatePath("/dashboard");
+
+    return { success: true, job: updatedJob };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to update job" };
   }
 }
 
@@ -93,8 +163,11 @@ export async function toggleJobPublishAction(jobId: string, isPublished: boolean
       data: { isPublished },
     });
 
-    revalidatePath("/dashboard/jobs");
-    revalidatePath(`/${session.user.companySlug}/careers`);
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/jobs`);
+      revalidatePath(`/${session.user.companySlug}/careers`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (error: any) {
@@ -116,8 +189,11 @@ export async function deleteJobAction(jobId: string) {
       },
     });
 
-    revalidatePath("/dashboard/jobs");
-    revalidatePath(`/${session.user.companySlug}/careers`);
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/jobs`);
+      revalidatePath(`/${session.user.companySlug}/careers`);
+    }
+    revalidatePath("/dashboard");
 
     return { success: true };
   } catch (error: any) {

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, Check, Sparkles, Sliders, Upload, Image as ImageIcon } from "lucide-react";
+import { Check, Sparkles, Sliders, Upload, Palette, Eye, Layout } from "lucide-react";
 import { updateBrandThemeAction } from "@/lib/actions/brand";
 import MediaPickerModal from "@/components/editor/MediaPickerModal";
+import { THEME_REGISTRY, getThemeByCompany } from "@/lib/themes/registry";
 
 interface DesignPanelProps {
   company: {
@@ -19,23 +20,18 @@ interface DesignPanelProps {
     sectionSpacing?: string;
   };
   onCompanyUpdated?: (updated: any) => void;
+  onUpdate?: () => void;
 }
 
-const PRESET_THEMES = [
-  { name: "Modern Clinical", primary: "#0d9488", secondary: "#0f172a", font: "Inter", radius: 12 },
-  { name: "Royal Tech", primary: "#2563eb", secondary: "#1e293b", font: "Roboto", radius: 16 },
-  { name: "Emerald Bio", primary: "#059669", secondary: "#064e3b", font: "Outfit", radius: 20 },
-  { name: "Purple Future", primary: "#7c3aed", secondary: "#4c1d95", font: "Poppins", radius: 14 },
-  { name: "Slate Minimal", primary: "#475569", secondary: "#0f172a", font: "Geist", radius: 8 },
-];
+export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: DesignPanelProps) {
+  const currentTheme = getThemeByCompany(company);
 
-export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelProps) {
   const [formData, setFormData] = useState({
     name: company.name || "",
-    primaryColor: company.primaryColor || "#0d9488",
-    secondaryColor: company.secondaryColor || "#0f172a",
-    fontFamily: (company.fontFamily || "Inter") as "Inter" | "Roboto" | "Outfit" | "Poppins" | "Geist",
-    cornerRadius: company.cornerRadius ?? 12,
+    primaryColor: company.primaryColor || currentTheme.primaryColor,
+    secondaryColor: company.secondaryColor || currentTheme.id,
+    fontFamily: (company.fontFamily || currentTheme.fontFamily) as any,
+    cornerRadius: company.cornerRadius ?? 16,
     sectionSpacing: company.sectionSpacing || "3.5rem",
     logoUrl: company.logoUrl || "",
     bannerUrl: company.bannerUrl || "",
@@ -44,13 +40,15 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
   const [saving, setSaving] = useState(false);
   const [activeMediaTarget, setActiveMediaTarget] = useState<"logo" | "banner" | null>(null);
 
-  const applyPreset = (preset: typeof PRESET_THEMES[0]) => {
+  const handleSelectTheme = (themeId: string) => {
+    const theme = THEME_REGISTRY[themeId];
+    if (!theme) return;
+
     const updated = {
       ...formData,
-      primaryColor: preset.primary,
-      secondaryColor: preset.secondary,
-      fontFamily: preset.font as any,
-      cornerRadius: preset.radius,
+      primaryColor: theme.primaryColor,
+      secondaryColor: theme.id, // Store theme key in secondary color for persistence
+      fontFamily: theme.fontFamily as any,
     };
     setFormData(updated);
     handleSave(updated);
@@ -60,61 +58,85 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
     setSaving(true);
     const res = await updateBrandThemeAction(dataToSave);
     setSaving(false);
-    if (res.success && onCompanyUpdated) {
-      onCompanyUpdated(res.company);
+    if (res.success) {
+      if (onCompanyUpdated) onCompanyUpdated(res.company);
+      if (onUpdate) onUpdate();
     }
   };
 
   return (
-    <div className="p-4 space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
-      <div className="pb-2 border-b border-slate-100">
-        <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Design & Visual Identity</h2>
-        <p className="text-[11px] text-slate-400">Site-wide branding, colors & typography</p>
+    <div className="p-4 space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto font-sans">
+      <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider flex items-center gap-1.5">
+            <Palette className="w-4 h-4 text-indigo-600" />
+            <span>Theme Studio & Branding</span>
+          </h2>
+          <p className="text-[11px] text-slate-400">Select portal themes, colors & glassmorphism</p>
+        </div>
       </div>
 
-      {/* Theme Presets */}
-      <div className="space-y-2">
-        <label className="block text-xs font-bold text-slate-700">Theme Presets</label>
-        <div className="grid grid-cols-2 gap-2">
-          {PRESET_THEMES.map((p) => {
-            const isSelected = formData.primaryColor === p.primary;
+      {/* 1. PORTAL THEMES SELECTION */}
+      <div className="space-y-3">
+        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <span>Select Portal Theme</span>
+        </label>
+        <div className="grid grid-cols-1 gap-2.5">
+          {Object.values(THEME_REGISTRY).map((t) => {
+            const isSelected = formData.secondaryColor === t.id || formData.primaryColor === t.primaryColor;
             return (
               <button
-                key={p.name}
+                key={t.id}
                 type="button"
-                onClick={() => applyPreset(p)}
-                className={`p-2.5 rounded-xl border text-left space-y-1.5 transition-all ${
-                  isSelected ? "bg-teal-50 border-teal-600 ring-2 ring-teal-600/20" : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                onClick={() => handleSelectTheme(t.id)}
+                className={`p-3 rounded-2xl border text-left space-y-2 transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-indigo-50/90 border-indigo-600 ring-2 ring-indigo-600/30 shadow-sm"
+                    : "bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-800">{p.name}</span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-teal-700" />}
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border shadow-2xs"
+                      style={{ backgroundColor: t.primaryColor }}
+                    />
+                    <span className="text-xs font-extrabold text-slate-900">{t.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                        t.mode === "dark" ? "bg-slate-900 text-teal-300" : "bg-white text-slate-700 border"
+                      }`}
+                    >
+                      {t.mode}
+                    </span>
+                    {isSelected && <Check className="w-4 h-4 text-indigo-600" />}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: p.primary }} />
-                  <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: p.secondary }} />
-                  <span className="text-[9px] font-mono text-slate-400 ml-1">{p.font}</span>
-                </div>
+                <p className="text-[11px] text-slate-500 leading-tight">{t.description}</p>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Color Palette */}
-      <div className="space-y-3 pt-3 border-t border-slate-100">
-        <label className="block text-xs font-bold text-slate-700">Color Palette</label>
-        
+      {/* 2. COLOR PALETTE ADJUSTMENTS */}
+      <div className="space-y-3 pt-4 border-t border-slate-100">
+        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Custom Brand Colors
+        </label>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Primary Color</label>
+            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Primary Color</label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={formData.primaryColor}
                 onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0"
+                className="w-9 h-9 rounded-xl border border-slate-200 cursor-pointer p-0"
               />
               <input
                 type="text"
@@ -126,48 +148,47 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 mb-1">Secondary Color</label>
+            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Theme Mode / Accent</label>
             <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={formData.secondaryColor}
-                onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
-                className="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer p-0"
-              />
               <input
                 type="text"
                 value={formData.secondaryColor}
                 onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-xs font-mono"
+                placeholder="theme-id or hex"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Typography */}
+      {/* 3. TYPOGRAPHY */}
       <div className="space-y-2 pt-3 border-t border-slate-100">
-        <label className="block text-xs font-bold text-slate-700">Typography Family</label>
+        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Typography Font
+        </label>
         <select
           value={formData.fontFamily}
           onChange={(e) => setFormData({ ...formData, fontFamily: e.target.value as any })}
-          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-semibold"
+          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-semibold cursor-pointer"
         >
           <option value="Inter">Inter (Clean Modern Sans)</option>
-          <option value="Roboto">Roboto (Enterprise Formal)</option>
-          <option value="Outfit">Outfit (Tech Biotech Sans)</option>
+          <option value="Outfit">Outfit (Tech Bio Biotech)</option>
+          <option value="Roboto">Roboto (Enterprise Corporate)</option>
           <option value="Poppins">Poppins (Friendly Geometric)</option>
           <option value="Geist">Geist (Developer Vercel Style)</option>
         </select>
       </div>
 
-      {/* Geometry Sliders */}
+      {/* 4. GEOMETRY & SPACING */}
       <div className="space-y-4 pt-3 border-t border-slate-100">
-        <label className="block text-xs font-bold text-slate-700">Geometry & Spacing</label>
-        
+        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Card Geometry & Spacing
+        </label>
+
         <div>
           <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 mb-1">
-            <span>Corner Radius ({formData.cornerRadius}px)</span>
+            <span>Card Corner Radius ({formData.cornerRadius}px)</span>
           </div>
           <input
             type="range"
@@ -175,30 +196,32 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
             max={32}
             value={formData.cornerRadius}
             onChange={(e) => setFormData({ ...formData, cornerRadius: parseInt(e.target.value) })}
-            className="w-full accent-teal-700 cursor-pointer"
+            className="w-full accent-indigo-600 cursor-pointer"
           />
         </div>
 
         <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Section Spacing</label>
+          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Section Padding Spacing</label>
           <select
             value={formData.sectionSpacing}
             onChange={(e) => setFormData({ ...formData, sectionSpacing: e.target.value })}
-            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs"
+            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs cursor-pointer"
           >
             <option value="2rem">Compact (32px)</option>
-            <option value="3.5rem">Default Comfortable (56px)</option>
+            <option value="3.5rem">Comfortable (56px)</option>
             <option value="5rem">Spacious Premium (80px)</option>
           </select>
         </div>
       </div>
 
-      {/* Brand Assets */}
+      {/* 5. BRAND ASSETS */}
       <div className="space-y-3 pt-3 border-t border-slate-100">
-        <label className="block text-xs font-bold text-slate-700">Brand Assets</label>
-        
+        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Brand Assets
+        </label>
+
         <div className="space-y-2">
-          <label className="block text-[11px] font-semibold text-slate-500">Company Logo</label>
+          <label className="block text-[11px] font-semibold text-slate-600">Company Logo</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -210,7 +233,7 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
             <button
               type="button"
               onClick={() => setActiveMediaTarget("logo")}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 text-xs font-bold whitespace-nowrap"
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 text-xs font-bold whitespace-nowrap cursor-pointer"
             >
               Browse
             </button>
@@ -218,7 +241,7 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
         </div>
 
         <div className="space-y-2">
-          <label className="block text-[11px] font-semibold text-slate-500">Hero Banner Image</label>
+          <label className="block text-[11px] font-semibold text-slate-600">Hero Banner Background Image</label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -230,7 +253,7 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
             <button
               type="button"
               onClick={() => setActiveMediaTarget("banner")}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 text-xs font-bold whitespace-nowrap"
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg text-slate-700 text-xs font-bold whitespace-nowrap cursor-pointer"
             >
               Browse
             </button>
@@ -242,12 +265,15 @@ export default function DesignPanel({ company, onCompanyUpdated }: DesignPanelPr
         type="button"
         onClick={() => handleSave()}
         disabled={saving}
-        className="w-full py-2.5 px-4 bg-[#005d52] hover:bg-[#004a41] text-white font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+        className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
       >
         {saving ? (
           <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
         ) : (
-          <span>Save Design Settings</span>
+          <>
+            <Check className="w-4 h-4" />
+            <span>Apply Theme & Save Branding</span>
+          </>
         )}
       </button>
 

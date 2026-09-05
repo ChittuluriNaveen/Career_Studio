@@ -34,28 +34,34 @@ enum SectionType {
 }
 
 model Company {
-  id             String        @id @default(cuid())
-  name           String
-  slug           String        @unique
-  logoUrl        String?
-  bannerUrl      String?
-  primaryColor   String        @default("#2563eb")
-  secondaryColor String        @default("#1e293b")
-  fontFamily     String        @default("Inter")
-  tagline        String?
-  aboutText      String?
-  cornerRadius    Int           @default(12)
-  sectionSpacing  String        @default("3.5rem")
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  name            String
+  slug            String        @unique
+  logoUrl         String?
+  bannerUrl       String?
+  website         String?
+  industry        String?
+  companySize     String?
+  location        String?
+  description     String?
+  cultureVideoUrl String?
+  primaryColor    String        @default("#2563eb")
+  secondaryColor  String        @default("#1e293b")
+  fontFamily      String        @default("Inter")
+  tagline         String?
+  aboutText       String?
+  cornerRadius     Int           @default(12)
+  sectionSpacing   String        @default("3.5rem")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  users          User[]
-  careersPages   CareersPage[]
-  sections       PageSection[]
-  jobs           Job[]
-  departments    Department[]
-  locations      Location[]
-  mediaAssets    Media[]
+  users           User[]
+  careersPages    CareersPage[]
+  sections        PageSection[]
+  jobs            Job[]
+  departments     Department[]
+  locations       Location[]
+  mediaAssets     Media[]
 
   @@index([slug])
 }
@@ -78,16 +84,13 @@ model CareersPage {
   id              String        @id @default(cuid())
   companyId       String        @unique
   company         Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  metaTitle       String?
-  metaDescription String?
   isPublished     Boolean       @default(false)
   publishedAt     DateTime?
+  metaTitle       String?
+  metaDescription String?
+  sections        PageSection[]
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-
-  sections        PageSection[]
-
-  @@index([companyId])
 }
 
 model PageSection {
@@ -98,9 +101,9 @@ model PageSection {
   company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   type          SectionType
   title         String?
-  content       Json
+  content       Json        @default("{}")
   layoutVariant String      @default("01")
-  orderIndex    Int
+  orderIndex    Int         @default(0)
   enabled       Boolean     @default(true)
   isDraft       Boolean     @default(true)
   isPublished   Boolean     @default(false)
@@ -108,19 +111,7 @@ model PageSection {
   updatedAt     DateTime    @updatedAt
 
   @@index([companyId])
-  @@index([careersPageId, orderIndex])
-}
-
-model Media {
-  id        String   @id @default(cuid())
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  url       String
-  type      String   // "image" | "video" | "logo" | "banner"
-  altText   String?
-  createdAt DateTime @default(now())
-
-  @@index([companyId])
+  @@index([careersPageId])
 }
 
 model Department {
@@ -129,9 +120,9 @@ model Department {
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   jobs      Job[]
+  createdAt DateTime @default(now())
 
   @@unique([name, companyId])
-  @@index([companyId])
 }
 
 model Location {
@@ -141,28 +132,39 @@ model Location {
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   jobs      Job[]
+  createdAt DateTime @default(now())
 
   @@unique([name, companyId])
-  @@index([companyId])
 }
 
 model Job {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   title        String
   slug         String
-  description  String
-  jobType      JobType
-  isPublished  Boolean    @default(true)
+  description  String?
+  jobType      JobType     @default(FULL_TIME)
+  isPublished  Boolean     @default(true)
   companyId    String
-  company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-  locationId   String
-  location     Location   @relation(fields: [locationId], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  company      Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  locationId   String?
+  location     Location?   @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
-  @@index([companyId, isPublished])
-  @@index([companyId, title])
-  @@index([companyId, jobType])
+  @@index([companyId])
+  @@index([slug])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  url       String
+  type      String   @default("image")
+  altText   String?
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
 }
