@@ -17,6 +17,8 @@ import {
   Type,
   Link2,
 } from "lucide-react";
+import ElementStylePanel from "./ElementStylePanel";
+import { ElementStyles } from "@/lib/templates/registry";
 import MediaPickerModal from "@/components/editor/MediaPickerModal";
 import CompanyVariableChips from "@/components/editor/CompanyVariableChips";
 
@@ -26,6 +28,7 @@ interface ElementEditorPanelProps {
   onUpdateElement: (updated: SectionElement) => void;
   onDeleteElement?: (id: string) => void;
   onDuplicateElement?: (id: string) => void;
+  activeDeviceMode?: "desktop" | "tablet" | "mobile";
 }
 
 export default function ElementEditorPanel({
@@ -34,7 +37,9 @@ export default function ElementEditorPanel({
   onUpdateElement,
   onDeleteElement,
   onDuplicateElement,
+  activeDeviceMode = "desktop",
 }: ElementEditorPanelProps) {
+  const [editorTab, setEditorTab] = useState<"content" | "style">("content");
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const [mediaTargetField, setMediaTargetField] = useState<"url" | "posterUrl">("url");
 
@@ -67,7 +72,7 @@ export default function ElementEditorPanel({
             <button
               type="button"
               onClick={() => onDuplicateElement(element.id)}
-              className="p-1 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold text-[10px]"
+              className="p-1.5 rounded bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 font-bold text-[10px] cursor-pointer"
               title="Duplicate Element"
             >
               + Copy
@@ -77,7 +82,7 @@ export default function ElementEditorPanel({
             <button
               type="button"
               onClick={() => onDeleteElement(element.id)}
-              className="p-1 rounded bg-red-50 border border-red-200 hover:bg-red-100 text-red-600"
+              className="p-1.5 rounded bg-red-50 border border-red-200 hover:bg-red-100 text-red-600 cursor-pointer"
               title="Delete Element"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -85,6 +90,42 @@ export default function ElementEditorPanel({
           )}
         </div>
       </div>
+
+      {/* Sub-Tabs: Content vs Style */}
+      <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold gap-1">
+        <button
+          type="button"
+          onClick={() => setEditorTab("content")}
+          className={`flex-1 py-1.5 rounded-lg text-center transition-all cursor-pointer ${
+            editorTab === "content"
+              ? "bg-white text-slate-900 shadow-xs border border-slate-200 font-extrabold"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          Content
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditorTab("style")}
+          className={`flex-1 py-1.5 rounded-lg text-center transition-all cursor-pointer ${
+            editorTab === "style"
+              ? "bg-slate-900 text-white shadow-xs font-extrabold"
+              : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          Style & Responsive
+        </button>
+      </div>
+
+      {editorTab === "style" ? (
+        <ElementStylePanel
+          element={element}
+          onUpdateElementStyles={(styles) => onUpdateElement({ ...element, styles })}
+          onResetElementStyles={() => onUpdateElement({ ...element, styles: {} })}
+          activeDeviceMode={activeDeviceMode}
+        />
+      ) : (
+        <>
 
       {/* Alignment Selector */}
       <div>
@@ -310,14 +351,44 @@ export default function ElementEditorPanel({
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-600 mb-1">Link URL</label>
+            <label className="block font-semibold text-slate-600 mb-1">Link URL or Section Anchor (#)</label>
             <input
               type="text"
               value={element.content.linkUrl || ""}
               onChange={(e) => updateContentField("linkUrl", e.target.value)}
-              placeholder="#open-positions or https://..."
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs"
+              placeholder="#jobs, #about, #benefits, #culture, #apply or https://..."
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs mb-2"
             />
+
+            {/* Quick Section Anchor Chips */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                Quick Internal Section Anchor Links:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  { tag: "#jobs", label: "Open Positions" },
+                  { tag: "#about", label: "About Us" },
+                  { tag: "#benefits", label: "Perks & Benefits" },
+                  { tag: "#culture", label: "Culture" },
+                  { tag: "#hero", label: "Hero Top" },
+                  { tag: "#apply", label: "Apply Now" },
+                ].map((anchor) => (
+                  <button
+                    key={anchor.tag}
+                    type="button"
+                    onClick={() => updateContentField("linkUrl", anchor.tag)}
+                    className={`px-2 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
+                      element.content.linkUrl === anchor.tag
+                        ? "bg-teal-600 text-white border-teal-700 shadow-2xs"
+                        : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    {anchor.tag} ({anchor.label})
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -433,6 +504,8 @@ export default function ElementEditorPanel({
           setIsMediaPickerOpen(false);
         }}
       />
+        </>
+      )}
     </div>
   );
 }

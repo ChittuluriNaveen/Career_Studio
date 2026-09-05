@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { SectionElement } from "@/lib/templates/registry";
 import { Sparkles, CheckCircle2, Play, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { interpolateCompanyVariables } from "@/lib/templates/variables";
 import { getThemeByCompany } from "@/lib/themes/registry";
+import { getElementStyles } from "@/lib/templates/stylesResolver";
 
 interface ElementRendererProps {
   element: SectionElement;
@@ -15,6 +16,7 @@ interface ElementRendererProps {
   isSelected?: boolean;
   onSelectElement?: (element: SectionElement) => void;
   jobsComponent?: React.ReactNode;
+  deviceMode?: "desktop" | "tablet" | "mobile";
 }
 
 export default function ElementRenderer({
@@ -26,14 +28,18 @@ export default function ElementRenderer({
   isSelected = false,
   onSelectElement,
   jobsComponent,
+  deviceMode = "desktop",
 }: ElementRendererProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   if (!element.enabled) return null;
 
   const theme = getThemeByCompany(company);
   const primaryColor = company?.primaryColor || companyPrimaryColor;
   const isDarkMode = theme.mode === "dark";
+
+  const computedStyles = getElementStyles(element, deviceMode);
 
   const alignClass =
     element.alignment === "center"
@@ -50,7 +56,7 @@ export default function ElementRenderer({
     }
   };
 
-  const wrapperClasses = `relative transition-all w-full min-w-0 max-w-full ${
+  const wrapperClasses = `relative transition-all min-w-0 ${
     isPreviewMode ? "cursor-pointer group hover:ring-2 hover:ring-cyan-400/50 hover:ring-offset-2 rounded-lg p-1" : ""
   } ${isSelected ? "ring-2 ring-cyan-500 ring-offset-2 rounded-lg bg-cyan-500/10" : ""}`;
 
@@ -100,11 +106,15 @@ export default function ElementRenderer({
   const galleryItems = element.content.items || [];
 
   return (
-    <div onClick={handleElementClick} className={wrapperClasses}>
+    <div ref={containerRef} onClick={handleElementClick} className={wrapperClasses} style={computedStyles}>
       {isPreviewMode && isSelected && (
-        <span className="absolute -top-3 left-2 z-30 bg-cyan-800 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow-xs uppercase">
-          {element.type}
-        </span>
+        <>
+          <span className="absolute -top-3 left-2 z-30 bg-cyan-800 text-white text-[9px] font-mono px-1.5 py-0.5 rounded shadow-xs uppercase">
+            {element.type}
+          </span>
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-cyan-500 rounded-full border-2 border-white z-30 shadow-md cursor-se-resize" title="Resize Element" />
+          <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-4 bg-cyan-500 rounded-sm border border-white z-30 shadow-xs cursor-e-resize" title="Resize Width" />
+        </>
       )}
 
       {isPreviewMode && <div className="absolute inset-0 z-20 cursor-pointer" />}
@@ -115,24 +125,27 @@ export default function ElementRenderer({
           {element.content.level === 1 ? (
             <h1
               className={`text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.15] break-words overflow-wrap-anywhere min-w-0 max-w-full ${
-                isDarkMode ? "text-white" : "text-slate-900"
+                isDarkMode && !computedStyles.color ? "text-white" : !computedStyles.color ? "text-slate-900" : ""
               }`}
+              style={computedStyles}
             >
               {renderText(element.content.text, "Heading Title")}
             </h1>
           ) : element.content.level === 3 ? (
             <h3
               className={`text-xl sm:text-2xl font-extrabold tracking-tight break-words overflow-wrap-anywhere min-w-0 max-w-full ${
-                isDarkMode ? "text-slate-200" : "text-slate-900"
+                isDarkMode && !computedStyles.color ? "text-slate-200" : !computedStyles.color ? "text-slate-900" : ""
               }`}
+              style={computedStyles}
             >
               {renderText(element.content.text, "Section Subtitle")}
             </h3>
           ) : (
             <h2
               className={`text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight break-words overflow-wrap-anywhere min-w-0 max-w-full ${
-                isDarkMode ? "text-white" : "text-slate-900"
+                isDarkMode && !computedStyles.color ? "text-white" : !computedStyles.color ? "text-slate-900" : ""
               }`}
+              style={computedStyles}
             >
               {renderText(element.content.text, "Section Heading")}
             </h2>
@@ -145,8 +158,9 @@ export default function ElementRenderer({
         <div className={`w-full min-w-0 max-w-full ${alignClass}`}>
           <p
             className={`text-sm sm:text-base md:text-lg font-normal leading-relaxed break-words overflow-wrap-anywhere min-w-0 whitespace-pre-line ${
-              isDarkMode ? "text-slate-300" : "text-slate-600"
+              isDarkMode && !computedStyles.color ? "text-slate-300" : !computedStyles.color ? "text-slate-600" : ""
             }`}
+            style={computedStyles}
           >
             {renderText(element.content.text, "Enter narrative text body here...")}
           </p>
@@ -162,6 +176,7 @@ export default function ElementRenderer({
               backgroundColor: `${primaryColor}20`,
               color: primaryColor,
               borderColor: `${primaryColor}50`,
+              ...computedStyles,
             }}
           >
             <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
@@ -175,8 +190,23 @@ export default function ElementRenderer({
         <div className={`w-full flex ${alignClass}`}>
           <a
             href={renderText(element.content.linkUrl, "#jobs")}
+            onClick={(e) => {
+              if (isPreviewMode) return;
+              const href = renderText(element.content.linkUrl, "#jobs");
+              if (href.startsWith("#")) {
+                e.preventDefault();
+                const targetId = href.substring(1);
+                const targetElem =
+                  document.getElementById(targetId) ||
+                  document.querySelector(`[id*="${targetId}"]`) ||
+                  document.getElementById("open-positions");
+                if (targetElem) {
+                  targetElem.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }
+            }}
             className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center break-words max-w-full cursor-pointer"
-            style={{ backgroundColor: primaryColor }}
+            style={{ backgroundColor: primaryColor, ...computedStyles }}
           >
             <span>{renderText(element.content.label, "Click Here")}</span>
           </a>
@@ -185,15 +215,19 @@ export default function ElementRenderer({
 
       {/* 5. IMAGE ELEMENT */}
       {element.type === "image" && (
-        <div className={`w-full overflow-hidden rounded-2xl border shadow-lg ${isDarkMode ? "border-slate-800" : "border-slate-200/80"} ${alignClass}`}>
+        <div
+          className={`w-full overflow-hidden rounded-2xl border shadow-lg ${isDarkMode ? "border-slate-800" : "border-slate-200/80"} ${alignClass}`}
+          style={computedStyles}
+        >
           {resolveImageUrl(element.content.url) ? (
-            <div className="relative w-full h-64 sm:h-80 md:h-96">
+            <div className="relative w-full h-64 sm:h-80 md:h-96" style={{ height: computedStyles.height || undefined }}>
               <img
                 src={resolveImageUrl(element.content.url)}
                 alt={renderText(element.content.alt, "Careers visual")}
                 className={`w-full h-full ${
                   element.content.fit === "contain" ? "object-contain bg-black/20" : "object-cover"
                 } rounded-2xl`}
+                style={{ objectFit: computedStyles.objectFit as any }}
               />
             </div>
           ) : (

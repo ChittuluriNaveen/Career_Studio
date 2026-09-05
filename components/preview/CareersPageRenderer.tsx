@@ -58,6 +58,7 @@ interface CareersPageRendererProps {
   onDuplicateSection?: (id: string) => void;
   onToggleHideSection?: (id: string, currentEnabled: boolean) => void;
   onDeleteSection?: (id: string) => void;
+  deviceMode?: "desktop" | "tablet" | "mobile";
 }
 
 export default function CareersPageRenderer({
@@ -76,6 +77,7 @@ export default function CareersPageRenderer({
   onDuplicateSection,
   onToggleHideSection,
   onDeleteSection,
+  deviceMode = "desktop",
 }: CareersPageRendererProps) {
   // Resolve Theme styling parameters dynamically
   const theme = getThemeByCompany(company);
@@ -345,6 +347,7 @@ export default function CareersPageRenderer({
                     if (onSelectElement) onSelectElement(elem, section.id);
                   }}
                   jobsComponent={renderJobsGrid}
+                  deviceMode={deviceMode}
                 />
               </div>
             );

@@ -125,6 +125,31 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     fetchStudioData();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        if (e.shiftKey) {
+          e.preventDefault();
+          handleRedo();
+        } else {
+          e.preventDefault();
+          handleUndo();
+        }
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [historyIndex, history]);
+
   const handleSelectSection = (section: any) => {
     setSelectedSectionId(section.id);
     setSelectedElementId(null);
@@ -463,6 +488,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                 onSelectSection={handleSelectSection}
                 onSelectElement={handleSelectElement}
                 isPreviewMode={true}
+                deviceMode={deviceMode}
               />
             ) : null}
           </div>
@@ -657,6 +683,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                     onUpdateElement={handleUpdateElement}
                     onDeleteElement={handleDeleteElementFromSection}
                     onDuplicateElement={handleDuplicateElement}
+                    activeDeviceMode={deviceMode}
                   />
                 ) : (
                   <div className="text-center py-8 space-y-2 text-slate-400">

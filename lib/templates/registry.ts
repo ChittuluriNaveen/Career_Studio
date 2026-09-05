@@ -15,6 +15,62 @@ export type ElementType =
   | "stats"
   | "list";
 
+export interface ElementStyles {
+  layout?: {
+    width?: string;
+    height?: string;
+    maxWidth?: string;
+    minHeight?: string;
+    display?: string;
+    flexDirection?: string;
+    justifyContent?: string;
+    alignItems?: string;
+    gap?: string;
+    objectFit?: "cover" | "contain" | "fill" | "none";
+  };
+  spacing?: {
+    marginTop?: string;
+    marginRight?: string;
+    marginBottom?: string;
+    marginLeft?: string;
+    paddingTop?: string;
+    paddingRight?: string;
+    paddingBottom?: string;
+    paddingLeft?: string;
+  };
+  typography?: {
+    fontFamily?: string;
+    fontSize?: string;
+    fontWeight?: string;
+    lineHeight?: string;
+    letterSpacing?: string;
+    textAlign?: "left" | "center" | "right" | "justify";
+  };
+  colors?: {
+    color?: string;
+    backgroundColor?: string;
+    borderColor?: string;
+  };
+  border?: {
+    width?: string;
+    style?: "none" | "solid" | "dashed" | "dotted";
+    radius?: string;
+    color?: string;
+  };
+  shadow?: {
+    preset?: "none" | "sm" | "md" | "lg" | "xl";
+  };
+  effects?: {
+    opacity?: number;
+    backdropBlur?: string;
+    glass?: "none" | "light" | "medium" | "strong";
+  };
+  responsive?: {
+    tablet?: Partial<Omit<ElementStyles, "responsive">>;
+    mobile?: Partial<Omit<ElementStyles, "responsive">>;
+  };
+}
+
 export interface SectionElement {
   id: string;
   type: ElementType;
@@ -22,6 +78,7 @@ export interface SectionElement {
   enabled: boolean;
   width?: "full" | "half" | "third";
   alignment?: "left" | "center" | "right";
+  styles?: ElementStyles;
   content: {
     text?: string;
     subtitle?: string;
