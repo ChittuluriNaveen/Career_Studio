@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { SectionType } from "@prisma/client";
 import {
   Smartphone,
   Tablet,
   Monitor,
   Plus,
-  X,
   Layers,
   Save,
   Trash2,
@@ -18,10 +17,25 @@ import {
   Sliders,
   Sparkles,
 } from "lucide-react";
-import SectionFormModal from "@/components/editor/SectionFormModal";
+
+import DashboardHeader from "@/components/editor/DashboardHeader";
+import LeftIconRail, { LeftNavTab } from "@/components/editor/LeftIconRail";
+import PagesPanel from "@/components/editor/panels/PagesPanel";
 import SectionList from "@/components/editor/SectionList";
+import DesignPanel from "@/components/editor/panels/DesignPanel";
+import SharePanel from "@/components/editor/panels/SharePanel";
+import SEOPanel from "@/components/editor/panels/SEOPanel";
+import SectionFormModal from "@/components/editor/SectionFormModal";
 import PageRenderer from "@/components/preview/PageRenderer";
-import { getSectionsAction, deleteSectionAction, updateSectionContentAction } from "@/lib/actions/sections";
+
+import {
+  getSectionsAction,
+  deleteSectionAction,
+  updateSectionContentAction,
+  updateSectionOrderAction,
+  toggleSectionVisibilityAction,
+  duplicateSectionAction,
+} from "@/lib/actions/sections";
 import { getBrandThemeAction } from "@/lib/actions/brand";
 import { getJobsAction, getDepartmentsAndLocationsAction } from "@/lib/actions/jobs";
 
@@ -36,9 +50,10 @@ const LAYOUT_VARIANTS = [
   { id: "08", name: "Cards Grid 3-Col", isDefault: false },
 ];
 
-export default function StudioEditorPage() {
+export default function CareerStudioPage() {
   const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "desktop">("desktop");
-  const [activeTab, setActiveTab] = useState<"content" | "layout" | "config">("content");
+  const [activeNavTab, setActiveNavTab] = useState<LeftNavTab>("sections");
+  const [inspectorTab, setInspectorTab] = useState<"content" | "layout" | "config">("content");
   const [inspectorMode, setInspectorMode] = useState<"form" | "json">("form");
 
   const [company, setCompany] = useState<any | null>(null);
@@ -47,6 +62,11 @@ export default function StudioEditorPage() {
   const [locations, setLocations] = useState<any[]>([]);
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+
+  // Undo / Redo Stack History
+  const [history, setHistory] = useState<any[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   // Selected section for right Inspector editing
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
@@ -57,6 +77,28 @@ export default function StudioEditorPage() {
   // Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingSectionForModal, setEditingSectionForModal] = useState<any | null>(null);
+
+  const pushHistory = (newSections: any[]) => {
+    const updatedHistory = history.slice(0, historyIndex + 1);
+    setHistory([...updatedHistory, newSections]);
+    setHistoryIndex(updatedHistory.length);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prev = history[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      setSections(prev);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const next = history[historyIndex + 1];
+      setHistoryIndex(historyIndex + 1);
+      setSections(next);
+    }
+  };
 
   const fetchStudioData = async () => {
     try {
@@ -72,6 +114,11 @@ export default function StudioEditorPage() {
       setJobs(jobsData);
       setDepartments(metaData.departments);
       setLocations(metaData.locations);
+
+      if (historyIndex === -1) {
+        setHistory([secData]);
+        setHistoryIndex(0);
+      }
 
       if (secData.length > 0 && !selectedSectionId) {
         setSelectedSectionId(secData[0].id);
@@ -111,11 +158,13 @@ export default function StudioEditorPage() {
   const handleSelectLayoutVariant = async (variantId: string) => {
     if (!selectedSectionId) return;
 
-    setSections((prev) =>
-      prev.map((sec) =>
-        sec.id === selectedSectionId ? { ...sec, layoutVariant: variantId } : sec
-      )
+    setSaveStatus("saving");
+    const updated = sections.map((sec) =>
+      sec.id === selectedSectionId ? { ...sec, layoutVariant: variantId } : sec
     );
+
+    setSections(updated);
+    pushHistory(updated);
     setInspectorForm((prev: any) => ({ ...prev, layoutVariant: variantId }));
 
     await updateSectionContentAction({
@@ -124,11 +173,14 @@ export default function StudioEditorPage() {
       content: selectedSection?.content || {},
       layoutVariant: variantId,
     });
+
+    setSaveStatus("saved");
   };
 
   const handleSaveInspector = async () => {
     if (!selectedSectionId) return;
     setSavingInspector(true);
+    setSaveStatus("saving");
 
     let updatedContent: any = {};
     if (inspectorMode === "json") {
@@ -137,6 +189,7 @@ export default function StudioEditorPage() {
       } catch (e) {
         alert("Invalid JSON format");
         setSavingInspector(false);
+        setSaveStatus("unsaved");
         return;
       }
     } else {
@@ -161,146 +214,168 @@ export default function StudioEditorPage() {
     });
 
     setSavingInspector(false);
+    setSaveStatus("saved");
     fetchStudioData();
   };
 
   const handleDeleteSection = async (id: string) => {
     if (confirm("Delete section from careers page canvas?")) {
+      setSaveStatus("saving");
       await deleteSectionAction(id);
+      setSaveStatus("saved");
       fetchStudioData();
     }
+  };
+
+  const handleMoveUp = async (id: string) => {
+    const idx = sections.findIndex((s) => s.id === id);
+    if (idx <= 0) return;
+    const reordered = [...sections];
+    const temp = reordered[idx];
+    reordered[idx] = reordered[idx - 1];
+    reordered[idx - 1] = temp;
+
+    const updated = reordered.map((s, index) => ({ ...s, orderIndex: index }));
+    setSections(updated);
+    pushHistory(updated);
+
+    await updateSectionOrderAction({
+      sections: updated.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
+    });
+  };
+
+  const handleMoveDown = async (id: string) => {
+    const idx = sections.findIndex((s) => s.id === id);
+    if (idx < 0 || idx >= sections.length - 1) return;
+    const reordered = [...sections];
+    const temp = reordered[idx];
+    reordered[idx] = reordered[idx + 1];
+    reordered[idx + 1] = temp;
+
+    const updated = reordered.map((s, index) => ({ ...s, orderIndex: index }));
+    setSections(updated);
+    pushHistory(updated);
+
+    await updateSectionOrderAction({
+      sections: updated.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
+    });
+  };
+
+  const handleDuplicateSection = async (id: string) => {
+    setSaveStatus("saving");
+    await duplicateSectionAction(id);
+    setSaveStatus("saved");
+    fetchStudioData();
+  };
+
+  const handleToggleHideSection = async (id: string, currentEnabled: boolean) => {
+    setSaveStatus("saving");
+    const updated = sections.map((sec) =>
+      sec.id === id ? { ...sec, enabled: !currentEnabled } : sec
+    );
+    setSections(updated);
+    pushHistory(updated);
+
+    await toggleSectionVisibilityAction({ id, enabled: !currentEnabled });
+    setSaveStatus("saved");
   };
 
   const selectedSection = sections.find((s) => s.id === selectedSectionId) || sections[0];
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col gap-3">
-      {/* Top Viewport Switcher Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-2 px-4 flex items-center justify-between shadow-2xs">
-        <div className="flex items-center gap-3">
-          <div className="text-xs font-bold text-slate-700 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-teal-700" />
-            <span>Careers Canvas Studio</span>
-          </div>
-          {company && (
-            <a
-              href={`/${company.slug}/careers/preview`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold flex items-center gap-1.5 hover:bg-teal-100 transition-colors"
-            >
-              <Monitor className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Preview draft</span>
-            </a>
-          )}
-        </div>
+    <div className="h-screen flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900">
+      {/* Top Bar */}
+      {company && (
+        <DashboardHeader
+          company={company}
+          deviceMode={deviceMode}
+          setDeviceMode={setDeviceMode}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          saveStatus={saveStatus}
+        />
+      )}
 
-        {/* Device Mode Buttons */}
-        <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
-          <button
-            type="button"
-            onClick={() => setDeviceMode("mobile")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-              deviceMode === "mobile"
-                ? "bg-teal-800 text-white shadow-xs"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Mobile</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeviceMode("tablet")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-              deviceMode === "tablet"
-                ? "bg-teal-800 text-white shadow-xs"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <Tablet className="w-3.5 h-3.5" />
-            <span>Tablet</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeviceMode("desktop")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-              deviceMode === "desktop"
-                ? "bg-teal-800 text-white shadow-xs"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span>Desktop</span>
-          </button>
-        </div>
+      {/* 4-Column Career Studio Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Column 1: Narrow Vertical Icon Rail */}
+        <LeftIconRail activeTab={activeNavTab} setActiveTab={setActiveNavTab} />
 
-        <div className="text-xs text-slate-400 font-mono hidden sm:block">
-          {deviceMode === "mobile" ? "Mobile Viewport" : deviceMode === "tablet" ? "Tablet Frame" : "Desktop Browser"}
-        </div>
-      </div>
+        {/* Column 2: Switchable Secondary Panel */}
+        <div className="w-80 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs">
+          {activeNavTab === "pages" && company && <PagesPanel companySlug={company.slug} />}
+          
+          {activeNavTab === "sections" && (
+            <div className="p-4 space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div>
+                    <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Sections</h2>
+                    <p className="text-[11px] text-slate-400">Draggable page outline ({sections.length})</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+                    Saved
+                  </span>
+                </div>
 
-      {/* 3-Column Studio Workspace */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 overflow-hidden">
-        {/* Column 1: Sections Canvas — dnd-kit drag-to-reorder */}
-        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between overflow-y-auto shadow-2xs">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <div>
-                <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Sections</h2>
-                <p className="text-[11px] text-slate-400">Drag to reorder</p>
+                {loading ? (
+                  <div className="p-4 text-center text-xs text-slate-400">Loading sections...</div>
+                ) : (
+                  <SectionList
+                    initialSections={sections}
+                    selectedSectionId={selectedSectionId}
+                    onSelectSection={handleSelectSection}
+                    onEditSection={(sec) => {
+                      setEditingSectionForModal(sec);
+                      setIsAddModalOpen(true);
+                    }}
+                    onDeleteSection={handleDeleteSection}
+                    onSectionsUpdated={fetchStudioData}
+                  />
+                )}
               </div>
-              <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-                {sections.length}
-              </span>
-            </div>
 
-            {loading ? (
-              <div className="p-4 text-center text-xs text-slate-400">Loading sections...</div>
-            ) : (
-              <SectionList
-                initialSections={sections}
-                selectedSectionId={selectedSectionId}
-                onSelectSection={handleSelectSection}
-                onEditSection={(sec) => {
-                  setEditingSectionForModal(sec);
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingSectionForModal(null);
                   setIsAddModalOpen(true);
                 }}
-                onDeleteSection={handleDeleteSection}
-                onSectionsUpdated={fetchStudioData}
-              />
-            )}
-          </div>
+                className="w-full mt-4 py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Section</span>
+              </button>
+            </div>
+          )}
 
-          <button
-            type="button"
-            onClick={() => {
-              setEditingSectionForModal(null);
-              setIsAddModalOpen(true);
-            }}
-            className="w-full mt-4 py-2.5 px-4 bg-teal-800 hover:bg-teal-900 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1 shadow-xs"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ Add Section</span>
-          </button>
+          {activeNavTab === "design" && company && (
+            <DesignPanel company={company} onCompanyUpdated={(c) => setCompany(c)} />
+          )}
+
+          {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
+
+          {activeNavTab === "seo" && company && <SEOPanel company={company} />}
         </div>
 
-        {/* Column 2: Center Interactive Live Device Canvas */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-start overflow-y-auto pr-1">
+        {/* Column 3: Large Central Live Website Preview */}
+        <div className="flex-1 bg-slate-200/60 p-4 sm:p-6 overflow-y-auto flex flex-col items-center justify-start">
           {deviceMode === "desktop" && (
-            <div className="device-frame-desktop w-full">
-              <div className="bg-slate-100 border-b border-slate-200 px-3 py-2 flex items-center gap-3 text-xs">
-                <div className="flex items-center gap-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+            <div className="device-frame-desktop w-full max-w-5xl shadow-xl rounded-2xl overflow-hidden bg-white border border-slate-300">
+              <div className="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-400 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-amber-400 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
                 </div>
-                <div className="flex-1 bg-white border border-slate-200 rounded px-2.5 py-0.5 text-[10px] font-mono text-slate-500 flex items-center justify-center gap-1">
+                <div className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1 text-[11px] font-mono text-slate-600 flex items-center justify-center gap-1.5 shadow-2xs">
                   <span>🔒</span>
-                  <span>{company?.slug}.whitecarrot.careers/careers</span>
+                  <span>https://{company?.slug || "acme"}.example.com/careers</span>
                 </div>
               </div>
-              <div className="max-h-[600px] overflow-y-auto">
+              <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
                 {company && (
                   <PageRenderer
                     company={company}
@@ -309,6 +384,13 @@ export default function StudioEditorPage() {
                     locations={locations}
                     jobs={jobs}
                     isPreviewMode={true}
+                    selectedSectionId={selectedSectionId}
+                    onSelectSection={handleSelectSection}
+                    onMoveUp={handleMoveUp}
+                    onMoveDown={handleMoveDown}
+                    onDuplicateSection={handleDuplicateSection}
+                    onToggleHideSection={handleToggleHideSection}
+                    onDeleteSection={handleDeleteSection}
                   />
                 )}
               </div>
@@ -316,8 +398,8 @@ export default function StudioEditorPage() {
           )}
 
           {deviceMode === "tablet" && (
-            <div className="device-frame-tablet w-[768px] max-w-full">
-              <div className="max-h-[600px] overflow-y-auto">
+            <div className="device-frame-tablet w-[768px] max-w-full shadow-2xl rounded-3xl overflow-hidden bg-white border-8 border-slate-800">
+              <div className="max-h-[calc(100vh-10rem)] overflow-y-auto">
                 {company && (
                   <PageRenderer
                     company={company}
@@ -326,6 +408,13 @@ export default function StudioEditorPage() {
                     locations={locations}
                     jobs={jobs}
                     isPreviewMode={true}
+                    selectedSectionId={selectedSectionId}
+                    onSelectSection={handleSelectSection}
+                    onMoveUp={handleMoveUp}
+                    onMoveDown={handleMoveDown}
+                    onDuplicateSection={handleDuplicateSection}
+                    onToggleHideSection={handleToggleHideSection}
+                    onDeleteSection={handleDeleteSection}
                   />
                 )}
               </div>
@@ -333,8 +422,11 @@ export default function StudioEditorPage() {
           )}
 
           {deviceMode === "mobile" && (
-            <div className="device-frame-mobile w-[375px] max-w-full">
-              <div className="pt-5 max-h-[600px] overflow-y-auto">
+            <div className="device-frame-mobile w-[375px] max-w-full shadow-2xl rounded-[40px] overflow-hidden bg-white border-[10px] border-slate-900 relative">
+              <div className="w-32 h-4 bg-slate-900 mx-auto rounded-b-xl absolute top-0 inset-x-0 z-50 flex items-center justify-center">
+                <span className="w-10 h-1 rounded-full bg-slate-700" />
+              </div>
+              <div className="pt-4 max-h-[calc(100vh-10rem)] overflow-y-auto">
                 {company && (
                   <PageRenderer
                     company={company}
@@ -343,6 +435,13 @@ export default function StudioEditorPage() {
                     locations={locations}
                     jobs={jobs}
                     isPreviewMode={true}
+                    selectedSectionId={selectedSectionId}
+                    onSelectSection={handleSelectSection}
+                    onMoveUp={handleMoveUp}
+                    onMoveDown={handleMoveDown}
+                    onDuplicateSection={handleDuplicateSection}
+                    onToggleHideSection={handleToggleHideSection}
+                    onDeleteSection={handleDeleteSection}
                   />
                 )}
               </div>
@@ -350,17 +449,17 @@ export default function StudioEditorPage() {
           )}
         </div>
 
-        {/* Column 3: Right Inspector Panel (Content / Layout / Config) */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between overflow-y-auto shadow-2xs">
+        {/* Column 4: Contextual Right Inspector (Content / Layout / Config) */}
+        <div className="w-80 bg-white border-l border-slate-200 p-4 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs overflow-y-auto">
           <div className="space-y-4">
             {/* Inspector Tabs (Content | Layout | Config) */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => setActiveTab("content")}
+                  onClick={() => setInspectorTab("content")}
                   className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    activeTab === "content"
+                    inspectorTab === "content"
                       ? "border-teal-700 text-teal-800"
                       : "border-transparent text-slate-400 hover:text-slate-700"
                   }`}
@@ -369,9 +468,9 @@ export default function StudioEditorPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("layout")}
+                  onClick={() => setInspectorTab("layout")}
                   className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    activeTab === "layout"
+                    inspectorTab === "layout"
                       ? "border-teal-700 text-teal-800"
                       : "border-transparent text-slate-400 hover:text-slate-700"
                   }`}
@@ -380,9 +479,9 @@ export default function StudioEditorPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab("config")}
+                  onClick={() => setInspectorTab("config")}
                   className={`px-3 py-1.5 text-xs font-bold border-b-2 transition-all ${
-                    activeTab === "config"
+                    inspectorTab === "config"
                       ? "border-teal-700 text-teal-800"
                       : "border-transparent text-slate-400 hover:text-slate-700"
                   }`}
@@ -391,7 +490,7 @@ export default function StudioEditorPage() {
                 </button>
               </div>
 
-              {activeTab === "content" && (
+              {inspectorTab === "content" && (
                 <div className="bg-slate-100 p-0.5 rounded-lg flex items-center border border-slate-200">
                   <button
                     type="button"
@@ -416,13 +515,13 @@ export default function StudioEditorPage() {
             </div>
 
             {/* TAB 1: CONTENT FORM EDITING */}
-            {activeTab === "content" && (
+            {inspectorTab === "content" && (
               <>
                 {selectedSection && (
                   <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
                     <div>
                       <span className="font-bold text-slate-800 block">{selectedSection.title || selectedSection.type}</span>
-                      <span className="text-[10px] font-mono text-slate-400">Section ID: {selectedSection.id}</span>
+                      <span className="text-[10px] font-mono text-slate-400">ID: {selectedSection.id}</span>
                     </div>
                   </div>
                 )}
@@ -446,7 +545,7 @@ export default function StudioEditorPage() {
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-slate-600 mb-1">Supporting text</label>
+                      <label className="block font-semibold text-slate-600 mb-1">Supporting Subtitle</label>
                       <textarea
                         rows={3}
                         value={inspectorForm.subtitle}
@@ -486,7 +585,7 @@ export default function StudioEditorPage() {
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-slate-600 mb-1">CTA Text</label>
+                      <label className="block font-semibold text-slate-600 mb-1">Primary Button Text</label>
                       <input
                         type="text"
                         value={inspectorForm.ctaText}
@@ -520,9 +619,9 @@ export default function StudioEditorPage() {
             )}
 
             {/* TAB 2: LAYOUT VARIANTS */}
-            {activeTab === "layout" && (
+            {inspectorTab === "layout" && (
               <div className="space-y-3">
-                <span className="text-xs font-bold text-slate-700 block">Wireframe Variant Options</span>
+                <span className="text-xs font-bold text-slate-700 block">Wireframe Layout Options</span>
                 <div className="grid grid-cols-2 gap-2 max-h-[380px] overflow-y-auto pr-1">
                   {LAYOUT_VARIANTS.map((variant) => {
                     const isSelected = (inspectorForm.layoutVariant || "01") === variant.id;
@@ -549,10 +648,10 @@ export default function StudioEditorPage() {
             )}
 
             {/* TAB 3: CONFIGURATION */}
-            {activeTab === "config" && (
+            {inspectorTab === "config" && (
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="block font-semibold text-slate-600 mb-1">Section Identifier</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Section ID</label>
                   <input
                     type="text"
                     readOnly
@@ -562,12 +661,19 @@ export default function StudioEditorPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-600 mb-1">Anchor Link ID</label>
+                  <label className="block font-semibold text-slate-600 mb-1">Anchor ID</label>
                   <input
                     type="text"
                     placeholder="e.g. open-positions"
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs"
                   />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-600 mb-1">Visibility Status</label>
+                  <span className="inline-block px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 font-bold text-[10px] border border-teal-200 uppercase">
+                    Visible
+                  </span>
                 </div>
               </div>
             )}
