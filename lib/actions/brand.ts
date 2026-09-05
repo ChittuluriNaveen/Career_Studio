@@ -19,6 +19,8 @@ export interface CompanyDetailsInput {
   tagline?: string | null;
   aboutText?: string | null;
   fontFamily?: string | null;
+  cornerRadius?: number | null;
+  sectionSpacing?: string | null;
 }
 
 export async function getCompanyDetailsAction() {
@@ -59,11 +61,13 @@ export async function updateCompanyDetailsAction(input: CompanyDetailsInput) {
         logoUrl: input.logoUrl || null,
         bannerUrl: input.bannerUrl || null,
         cultureVideoUrl: input.cultureVideoUrl || null,
-        primaryColor: input.primaryColor || "#4F46E5",
-        secondaryColor: input.secondaryColor || "#10B981",
+        primaryColor: input.primaryColor || "#005d52",
+        secondaryColor: input.secondaryColor || "emerald-dark",
         ...(input.tagline !== undefined ? { tagline: input.tagline } : {}),
         ...(input.aboutText !== undefined ? { aboutText: input.aboutText } : {}),
         ...(input.fontFamily ? { fontFamily: input.fontFamily } : {}),
+        ...(input.cornerRadius !== undefined && input.cornerRadius !== null ? { cornerRadius: Number(input.cornerRadius) } : {}),
+        ...(input.sectionSpacing ? { sectionSpacing: input.sectionSpacing } : {}),
       },
     });
 

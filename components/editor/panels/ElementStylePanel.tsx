@@ -470,6 +470,68 @@ export default function ElementStylePanel({
         </div>
       </div>
 
+      {/* 7. ENTRANCE ANIMATIONS */}
+      <div className="space-y-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 font-extrabold text-slate-900 text-xs">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>Entrance Animations</span>
+          </div>
+          <span className="text-[10px] font-mono text-amber-600 font-bold">
+            {currentStyles.animation?.type || "none"}
+          </span>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-500 mb-1">Animation Preset</label>
+          <select
+            value={currentStyles.animation?.type || "none"}
+            onChange={(e) => updateTargetStyle("animation", "type", e.target.value)}
+            className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-amber-500 focus:outline-none"
+          >
+            <option value="none">None (Static)</option>
+            <option value="fade-in">Fade In</option>
+            <option value="fade-out">Fade Out</option>
+            <option value="slide-up">Slide Up</option>
+            <option value="slide-down">Slide Down</option>
+            <option value="slide-left">Slide Left</option>
+            <option value="slide-right">Slide Right</option>
+            <option value="zoom-in">Zoom In</option>
+            <option value="bounce-in">Bounce In</option>
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1">Duration</label>
+            <select
+              value={currentStyles.animation?.duration || "0.6s"}
+              onChange={(e) => updateTargetStyle("animation", "duration", e.target.value)}
+              className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
+            >
+              <option value="0.3s">Fast (0.3s)</option>
+              <option value="0.6s">Normal (0.6s)</option>
+              <option value="0.9s">Slow (0.9s)</option>
+              <option value="1.2s">Extra Slow (1.2s)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1">Delay</label>
+            <select
+              value={currentStyles.animation?.delay || "0s"}
+              onChange={(e) => updateTargetStyle("animation", "delay", e.target.value)}
+              className="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
+            >
+              <option value="0s">No Delay (0s)</option>
+              <option value="0.2s">0.2s Delay</option>
+              <option value="0.4s">0.4s Delay</option>
+              <option value="0.6s">0.6s Delay</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Reset Style Button */}
       <button
         type="button"

@@ -65,6 +65,11 @@ export interface ElementStyles {
     backdropBlur?: string;
     glass?: "none" | "light" | "medium" | "strong";
   };
+  animation?: {
+    type?: "none" | "fade-in" | "fade-out" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "zoom-in" | "bounce-in";
+    duration?: string;
+    delay?: string;
+  };
   responsive?: {
     tablet?: Partial<Omit<ElementStyles, "responsive">>;
     mobile?: Partial<Omit<ElementStyles, "responsive">>;

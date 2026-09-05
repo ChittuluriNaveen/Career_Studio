@@ -221,6 +221,7 @@ interface SectionListProps {
   onDuplicateSection?: (id: string) => void;
   onToggleHideSection?: (id: string, currentEnabled: boolean) => void;
   onSectionsUpdated?: () => void;
+  onReorderSections?: (sections: Section[]) => void;
 }
 
 export default function SectionList({
@@ -233,6 +234,7 @@ export default function SectionList({
   onDuplicateSection,
   onToggleHideSection,
   onSectionsUpdated,
+  onReorderSections,
 }: SectionListProps) {
   const activeList = propSections || initialSections || [];
   const [sections, setSections] = useState(activeList);
@@ -271,9 +273,13 @@ export default function SectionList({
       setSections(reordered);
       setReordering(true);
 
-      await updateSectionOrderAction({
-        sections: reordered.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
-      });
+      if (onReorderSections) {
+        onReorderSections(reordered);
+      } else {
+        await updateSectionOrderAction({
+          sections: reordered.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
+        });
+      }
 
       setReordering(false);
       if (onSectionsUpdated) onSectionsUpdated();

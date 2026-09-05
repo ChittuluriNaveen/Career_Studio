@@ -41,15 +41,23 @@ export default function TemplateRenderer({
 
   // Determine container width class
   const containerWidthClass =
-    layoutConfig.container === "narrow"
-      ? "max-w-3xl"
+    deviceMode === "mobile"
+      ? "w-full max-w-full px-3"
+      : deviceMode === "tablet"
+      ? "max-w-3xl px-4"
+      : layoutConfig.container === "narrow"
+      ? "max-w-3xl px-6"
       : layoutConfig.container === "full"
       ? "w-full max-w-none px-0"
-      : "max-w-6xl";
+      : "max-w-6xl px-8";
 
   // Padding Y
   const pyClass =
-    layoutConfig.paddingY === "sm"
+    deviceMode === "mobile"
+      ? "py-6"
+      : deviceMode === "tablet"
+      ? "py-10"
+      : layoutConfig.paddingY === "sm"
       ? "py-8"
       : layoutConfig.paddingY === "lg"
       ? "py-16 sm:py-24"
@@ -69,10 +77,17 @@ export default function TemplateRenderer({
     ? activeElements.filter((e) => !leftElements.includes(e))
     : [];
 
+  const splitGridClass =
+    deviceMode === "mobile"
+      ? "grid-cols-1 gap-4"
+      : deviceMode === "tablet"
+      ? "grid-cols-1 md:grid-cols-2 gap-6"
+      : "grid-cols-1 md:grid-cols-2 gap-8 md:gap-12";
+
   if (isSplitLayout && leftElements.length > 0 && rightElements.length > 0) {
     return (
-      <div className={`w-full mx-auto px-4 sm:px-6 md:px-8 ${containerWidthClass} ${pyClass}`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center min-w-0">
+      <div className={`w-full mx-auto ${containerWidthClass} ${pyClass}`}>
+        <div className={`grid ${splitGridClass} items-center min-w-0`}>
           {/* Left Column */}
           <div className="space-y-4 min-w-0">
             {leftElements.map((element) => (

@@ -158,6 +158,7 @@ export default function CareersPreviewClient({
             departments={departments}
             locations={locations}
             isPreviewMode={false}
+            deviceMode={deviceMode}
           />
         </div>
       </main>

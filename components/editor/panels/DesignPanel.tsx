@@ -40,6 +40,17 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
   const [saving, setSaving] = useState(false);
   const [activeMediaTarget, setActiveMediaTarget] = useState<"logo" | "banner" | null>(null);
 
+  const updateField = (key: string, value: any) => {
+    const updated = { ...formData, [key]: value };
+    setFormData(updated);
+    if (onCompanyUpdated) {
+      onCompanyUpdated({
+        ...company,
+        ...updated,
+      });
+    }
+  };
+
   const handleSelectTheme = (themeId: string) => {
     const theme = THEME_REGISTRY[themeId];
     if (!theme) return;
@@ -51,6 +62,12 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
       fontFamily: theme.fontFamily as any,
     };
     setFormData(updated);
+    if (onCompanyUpdated) {
+      onCompanyUpdated({
+        ...company,
+        ...updated,
+      });
+    }
     handleSave(updated);
   };
 
@@ -135,13 +152,13 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
               <input
                 type="color"
                 value={formData.primaryColor}
-                onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                onChange={(e) => updateField("primaryColor", e.target.value)}
                 className="w-9 h-9 rounded-xl border border-slate-200 cursor-pointer p-0"
               />
               <input
                 type="text"
                 value={formData.primaryColor}
-                onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                onChange={(e) => updateField("primaryColor", e.target.value)}
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-xs font-mono"
               />
             </div>
@@ -153,7 +170,7 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
               <input
                 type="text"
                 value={formData.secondaryColor}
-                onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                onChange={(e) => updateField("secondaryColor", e.target.value)}
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-xs font-mono"
                 placeholder="theme-id or hex"
               />
@@ -169,7 +186,7 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
         </label>
         <select
           value={formData.fontFamily}
-          onChange={(e) => setFormData({ ...formData, fontFamily: e.target.value as any })}
+          onChange={(e) => updateField("fontFamily", e.target.value)}
           className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-semibold cursor-pointer"
         >
           <option value="Inter">Inter (Clean Modern Sans)</option>
@@ -195,7 +212,7 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
             min={0}
             max={32}
             value={formData.cornerRadius}
-            onChange={(e) => setFormData({ ...formData, cornerRadius: parseInt(e.target.value) })}
+            onChange={(e) => updateField("cornerRadius", parseInt(e.target.value))}
             className="w-full accent-indigo-600 cursor-pointer"
           />
         </div>
@@ -204,7 +221,7 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
           <label className="block text-[11px] font-semibold text-slate-600 mb-1">Section Padding Spacing</label>
           <select
             value={formData.sectionSpacing}
-            onChange={(e) => setFormData({ ...formData, sectionSpacing: e.target.value })}
+            onChange={(e) => updateField("sectionSpacing", e.target.value)}
             className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs cursor-pointer"
           >
             <option value="2rem">Compact (32px)</option>

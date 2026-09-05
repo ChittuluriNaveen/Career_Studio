@@ -60,6 +60,7 @@ export function mergeStyles(base: ElementStyles = {}, override: ElementStyles = 
     border: { ...base.border, ...override.border },
     shadow: { ...base.shadow, ...override.shadow },
     effects: { ...base.effects, ...override.effects },
+    animation: { ...base.animation, ...override.animation },
     responsive: {
       tablet: { ...base.responsive?.tablet, ...override.responsive?.tablet },
       mobile: { ...base.responsive?.mobile, ...override.responsive?.mobile },
@@ -291,6 +292,14 @@ export function convertStylesToCSS(styles: ElementStyles): ResolvedStyleObject {
     }
   }
 
+  // 8. Animation & Keyframe Transitions
+  if (styles.animation?.type && styles.animation.type !== "none") {
+    const animType = styles.animation.type;
+    const dur = formatCssValue(styles.animation.duration) || "0.6s";
+    const del = formatCssValue(styles.animation.delay) || "0s";
+    css.animation = `${animType} ${dur} ease-out ${del} both`;
+  }
+
   return css;
 }
 
@@ -308,5 +317,11 @@ export function getElementStyles(
   const mergedBase = mergeStyles(defaults, elementCustomStyles);
   const responsiveResolved = getResponsiveStyles(mergedBase, deviceMode);
 
-  return convertStylesToCSS(responsiveResolved);
+  const css = convertStylesToCSS(responsiveResolved);
+
+  if (!css.textAlign && element.alignment) {
+    css.textAlign = element.alignment;
+  }
+
+  return css;
 }

@@ -67,6 +67,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   // Selected section and selected element for right Inspector editing
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [draggedElementId, setDraggedElementId] = useState<string | null>(null);
   const [savingInspector, setSavingInspector] = useState(false);
 
   const pushHistory = (newSections: any[]) => {
@@ -300,6 +301,27 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     pushHistory(updatedSections);
   };
 
+  const handleElementDrop = (e: React.DragEvent, targetElemId: string) => {
+    e.preventDefault();
+    if (!selectedSection || !draggedElementId || draggedElementId === targetElemId) return;
+
+    const oldIdx = currentElements.findIndex((elem) => elem.id === draggedElementId);
+    const newIdx = currentElements.findIndex((elem) => elem.id === targetElemId);
+    if (oldIdx < 0 || newIdx < 0) return;
+
+    const newElements = [...currentElements];
+    const [moved] = newElements.splice(oldIdx, 1);
+    newElements.splice(newIdx, 0, moved);
+
+    const reordered = newElements.map((elem, index) => ({ ...elem, position: index }));
+    const newContent = { ...(selectedSection.content || {}), elements: reordered };
+
+    const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
+    setSections(updatedSections);
+    pushHistory(updatedSections);
+    setDraggedElementId(null);
+  };
+
   const handleUpdateElement = async (updatedElem: SectionElement) => {
     if (!selectedSection) return;
 
@@ -345,6 +367,18 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     }
   };
 
+  const handleReorderSections = async (newSections: any[]) => {
+    setSections(newSections);
+    pushHistory(newSections);
+    setSaveStatus("saving");
+
+    await updateSectionOrderAction({
+      sections: newSections.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
+    });
+
+    setSaveStatus("saved");
+  };
+
   const handleMoveUp = async (id: string) => {
     const idx = sections.findIndex((s) => s.id === id);
     if (idx <= 0) return;
@@ -354,12 +388,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     reordered[idx - 1] = temp;
 
     const updated = reordered.map((s, index) => ({ ...s, orderIndex: index }));
-    setSections(updated);
-    pushHistory(updated);
-
-    await updateSectionOrderAction({
-      sections: updated.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
-    });
+    handleReorderSections(updated);
   };
 
   const handleMoveDown = async (id: string) => {
@@ -371,12 +400,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     reordered[idx + 1] = temp;
 
     const updated = reordered.map((s, index) => ({ ...s, orderIndex: index }));
-    setSections(updated);
-    pushHistory(updated);
-
-    await updateSectionOrderAction({
-      sections: updated.map((s) => ({ id: s.id, orderIndex: s.orderIndex })),
-    });
+    handleReorderSections(updated);
   };
 
   const handleDuplicateSection = async (id: string) => {
@@ -450,12 +474,19 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                   onMoveDown={handleMoveDown}
                   onDuplicateSection={handleDuplicateSection}
                   onToggleHideSection={handleToggleHideSection}
+                  onReorderSections={handleReorderSections}
                 />
               </div>
             </div>
           )}
 
-          {activeNavTab === "design" && company && <DesignPanel company={company} onUpdate={fetchStudioData} />}
+          {activeNavTab === "design" && company && (
+            <DesignPanel
+              company={company}
+              onCompanyUpdated={(updated) => setCompany(updated)}
+              onUpdate={fetchStudioData}
+            />
+          )}
           {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
           {activeNavTab === "seo" && company && <SEOPanel company={company} />}
         </div>
@@ -540,7 +571,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             {/* TAB 1: SECTION CONTENT & ELEMENTS TREE */}
             {inspectorTab === "content" && selectedSection && (
               <div className="space-y-4">
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2">
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase tracking-wider font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                       {selectedSection.type}
@@ -564,6 +595,128 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         setSections(updated);
                       }}
                       className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900"
+                    />
+                  </div>
+
+                  {/* Show link in Navbar Toggle */}
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-800 block">Show Link in Header Navbar</label>
+                      <span className="text-[10px] text-slate-500 block">Toggle navigation link appearance</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={selectedSection.content?.showInNav !== false}
+                      onChange={(e) => {
+                        const showInNav = e.target.checked;
+                        const updatedContent = { ...(selectedSection.content || {}), showInNav };
+                        const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s));
+                        setSections(updated);
+                      }}
+                      className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* Section Card Container Aesthetics Controls */}
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between pb-1 border-b border-slate-200">
+                    <span className="text-xs font-bold text-slate-900">Card Container Appearance</span>
+                    <span className="text-[10px] text-slate-500">Custom Frame & Shadow</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Card Background Mode</label>
+                    <select
+                      value={selectedSection.content?.cardStyles?.background || "default"}
+                      onChange={(e) => {
+                        const bg = e.target.value;
+                        const currentStyles = selectedSection.content?.cardStyles || {};
+                        const updatedContent = {
+                          ...(selectedSection.content || {}),
+                          cardStyles: { ...currentStyles, background: bg },
+                        };
+                        setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
+                      }}
+                      className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900 cursor-pointer"
+                    >
+                      <option value="default">Default Theme Card</option>
+                      <option value="solid-white">Solid White Card</option>
+                      <option value="dark-glass">Dark Glassmorphism</option>
+                      <option value="transparent">Transparent (Seamless)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Card Shadow Preset</label>
+                    <select
+                      value={selectedSection.content?.cardStyles?.shadow || "lg"}
+                      onChange={(e) => {
+                        const shadow = e.target.value;
+                        const currentStyles = selectedSection.content?.cardStyles || {};
+                        const updatedContent = {
+                          ...(selectedSection.content || {}),
+                          cardStyles: { ...currentStyles, shadow },
+                        };
+                        setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
+                      }}
+                      className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900 cursor-pointer"
+                    >
+                      <option value="none">No Shadow (Flat)</option>
+                      <option value="sm">Small Soft Shadow</option>
+                      <option value="md">Medium Shadow</option>
+                      <option value="lg">Large Elevated Shadow (Default)</option>
+                      <option value="xl">Extra Large Floating Shadow</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[11px] font-bold text-slate-700">Card Corner Radius</label>
+                      <span className="text-[10px] font-mono font-semibold text-slate-500">
+                        {selectedSection.content?.cardStyles?.borderRadius ?? 16}px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={40}
+                      value={selectedSection.content?.cardStyles?.borderRadius ?? 16}
+                      onChange={(e) => {
+                        const borderRadius = Number(e.target.value);
+                        const currentStyles = selectedSection.content?.cardStyles || {};
+                        const updatedContent = {
+                          ...(selectedSection.content || {}),
+                          cardStyles: { ...currentStyles, borderRadius },
+                        };
+                        setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
+                      }}
+                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[11px] font-bold text-slate-700">Card Border Width</label>
+                      <span className="text-[10px] font-mono font-semibold text-slate-500">
+                        {selectedSection.content?.cardStyles?.borderWidth ?? 1}px
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={6}
+                      value={selectedSection.content?.cardStyles?.borderWidth ?? 1}
+                      onChange={(e) => {
+                        const borderWidth = Number(e.target.value);
+                        const currentStyles = selectedSection.content?.cardStyles || {};
+                        const updatedContent = {
+                          ...(selectedSection.content || {}),
+                          cardStyles: { ...currentStyles, borderWidth },
+                        };
+                        setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
+                      }}
+                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                     />
                   </div>
                 </div>
@@ -599,17 +752,27 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                     </select>
                   </div>
 
-                  {/* List of Section Elements */}
+                  {/* List of Section Elements with Drag & Drop */}
                   <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
                     {currentElements.map((elem, idx) => {
                       const isSelected = selectedElementId === elem.id;
+                      const isDragging = draggedElementId === elem.id;
                       return (
                         <div
                           key={elem.id}
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData("text/plain", elem.id);
+                            setDraggedElementId(elem.id);
+                          }}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleElementDrop(e, elem.id)}
                           onClick={() => handleSelectElement(elem, selectedSection.id)}
-                          className={`p-2 rounded-lg border text-xs flex items-center justify-between cursor-pointer transition-all ${
+                          className={`p-2 rounded-lg border text-xs flex items-center justify-between cursor-grab active:cursor-grabbing transition-all ${
                             isSelected
-                              ? "bg-indigo-50 border-indigo-500 text-indigo-900 font-bold"
+                              ? "bg-indigo-50 border-indigo-500 text-indigo-900 font-bold shadow-xs"
+                              : isDragging
+                              ? "opacity-50 border-indigo-400 bg-indigo-50/50"
                               : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
                           }`}
                         >
@@ -627,7 +790,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                                 handleMoveElement(elem.id, "up");
                               }}
                               disabled={idx === 0}
-                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
                               title="Move Up"
                             >
                               ↑
@@ -639,7 +802,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                                 handleMoveElement(elem.id, "down");
                               }}
                               disabled={idx === currentElements.length - 1}
-                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
                               title="Move Down"
                             >
                               ↓
@@ -650,7 +813,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                                 e.stopPropagation();
                                 handleDeleteElementFromSection(elem.id);
                               }}
-                              className="p-1 text-slate-400 hover:text-red-600 font-bold"
+                              className="p-1 text-slate-400 hover:text-red-600 font-bold cursor-pointer"
                               title="Delete Element"
                             >
                               ×

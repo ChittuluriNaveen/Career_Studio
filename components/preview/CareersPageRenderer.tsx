@@ -126,7 +126,7 @@ export default function CareersPageRenderer({
 
   // Build dynamic navigation items
   const navItems = activeSections
-    .filter((sec) => sec.enabled !== false)
+    .filter((sec) => sec.enabled !== false && sec.content?.showInNav !== false)
     .map((sec) => ({
       id: getSectionAnchorId(sec.type, sec.title),
       label: sec.title || sec.type.replace("_", " "),
@@ -320,37 +320,71 @@ export default function CareersPageRenderer({
                     primaryColor={primaryColor}
                     theme={theme}
                     companySlug={company.slug}
+                    deviceMode={deviceMode}
                   />
                 </div>
               ) : null;
 
-            const renderSectionBody = () => (
-              <div
-                className="transition-all overflow-hidden shadow-lg border backdrop-blur-md"
-                style={{
-                  borderRadius: `${cornerRadius * 1.2}px`,
-                  backgroundColor: theme.cardBg,
-                  borderColor: theme.cardBorder,
-                }}
-              >
-                <TemplateRenderer
-                  templateId={templateId}
-                  elements={elements}
-                  layout={section.content?.layout}
-                  company={company}
-                  jobsCount={jobs?.length || 0}
-                  companyPrimaryColor={primaryColor}
-                  isPreviewMode={isPreviewMode}
-                  selectedElementId={selectedElementId}
-                  onSelectElement={(elem) => {
-                    if (onSelectSection) onSelectSection(section);
-                    if (onSelectElement) onSelectElement(elem, section.id);
+            const renderSectionBody = () => {
+              const cardStyles = section.content?.cardStyles || {};
+              const shadowPreset = cardStyles.shadow || "lg";
+              const shadowClass =
+                shadowPreset === "none"
+                  ? "shadow-none"
+                  : shadowPreset === "sm"
+                  ? "shadow-sm"
+                  : shadowPreset === "md"
+                  ? "shadow-md"
+                  : shadowPreset === "xl"
+                  ? "shadow-2xl"
+                  : "shadow-lg";
+
+              const bgMode = cardStyles.background || "default";
+              const isTransparent = bgMode === "transparent";
+
+              const cardBgColor =
+                bgMode === "solid-white"
+                  ? "#ffffff"
+                  : bgMode === "dark-glass"
+                  ? "rgba(15, 23, 42, 0.85)"
+                  : bgMode === "transparent"
+                  ? "transparent"
+                  : cardStyles.backgroundColor || theme.cardBg;
+
+              const cardBorderColor = isTransparent ? "transparent" : cardStyles.borderColor || theme.cardBorder;
+              const cardRadius = cardStyles.borderRadius !== undefined ? `${cardStyles.borderRadius}px` : `${cornerRadius * 1.2}px`;
+              const cardBorderWidth = isTransparent ? "0px" : cardStyles.borderWidth !== undefined ? `${cardStyles.borderWidth}px` : "1px";
+
+              return (
+                <div
+                  className={`transition-all overflow-hidden ${shadowClass} ${isTransparent ? "bg-transparent border-0" : "backdrop-blur-md"}`}
+                  style={{
+                    borderRadius: cardRadius,
+                    backgroundColor: cardBgColor,
+                    borderColor: cardBorderColor,
+                    borderWidth: cardBorderWidth,
+                    borderStyle: isTransparent ? "none" : "solid",
                   }}
-                  jobsComponent={renderJobsGrid}
-                  deviceMode={deviceMode}
-                />
-              </div>
-            );
+                >
+                  <TemplateRenderer
+                    templateId={templateId}
+                    elements={elements}
+                    layout={section.content?.layout}
+                    company={company}
+                    jobsCount={jobs?.length || 0}
+                    companyPrimaryColor={primaryColor}
+                    isPreviewMode={isPreviewMode}
+                    selectedElementId={selectedElementId}
+                    onSelectElement={(elem) => {
+                      if (onSelectSection) onSelectSection(section);
+                      if (onSelectElement) onSelectElement(elem, section.id);
+                    }}
+                    jobsComponent={renderJobsGrid}
+                    deviceMode={deviceMode}
+                  />
+                </div>
+              );
+            };
 
             // Candidate Public Mode: Clean section rendering
             if (!isPreviewMode) {
