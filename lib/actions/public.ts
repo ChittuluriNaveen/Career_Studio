@@ -11,11 +11,11 @@ export async function getPublicCareersData(companySlug: string, isPreviewMode: b
     return null;
   }
 
-  // Fetch sections (in preview mode return draft sections, in candidate mode return published sections)
+  // Fetch sections (in preview mode return draft sections, in candidate mode return published & enabled sections)
   const sections = await db.pageSection.findMany({
     where: {
       companyId: company.id, // Strict tenant isolation guard
-      ...(isPreviewMode ? {} : { isPublished: true }),
+      ...(isPreviewMode ? {} : { isPublished: true, enabled: true }),
     },
     orderBy: { orderIndex: "asc" },
   });

@@ -33,11 +33,14 @@ interface SectionCardProps {
 const SECTION_TYPE_CONFIG: Record<SectionType, { label: string; icon: any; color: string }> = {
   HERO: { label: "Hero Banner", icon: Sparkles, color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
   ABOUT_US: { label: "About Us Story", icon: Info, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
+  IMAGE_TEXT: { label: "Image + Text", icon: Type, color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20" },
   CULTURE_VIDEO: { label: "Culture & Video", icon: Tv, color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },
   VALUES: { label: "Core Values", icon: Heart, color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
   PERKS_BENEFITS: { label: "Perks & Benefits", icon: Sparkles, color: "text-pink-400 bg-pink-500/10 border-pink-500/20" },
+  GALLERY: { label: "Image Gallery", icon: Sparkles, color: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20" },
   OPEN_ROLES: { label: "Open Jobs Grid", icon: Briefcase, color: "text-teal-400 bg-teal-500/10 border-teal-500/20" },
-  CUSTOM_TEXT: { label: "Custom Text Block", icon: Type, color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20" },
+  CUSTOM_TEXT: { label: "Custom Text Block", icon: Type, color: "text-slate-400 bg-slate-500/10 border-slate-500/20" },
+  CTA: { label: "Call to Action", icon: Sparkles, color: "text-orange-400 bg-orange-500/10 border-orange-500/20" },
 };
 
 export default function SectionCard({ section, onEdit, onDelete }: SectionCardProps) {

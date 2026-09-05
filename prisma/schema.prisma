@@ -23,11 +23,14 @@ enum JobType {
 enum SectionType {
   HERO
   ABOUT_US
+  IMAGE_TEXT
   CULTURE_VIDEO
   VALUES
   PERKS_BENEFITS
-  OPEN_ROLES
+  GALLERY
   CUSTOM_TEXT
+  OPEN_ROLES
+  CTA
 }
 
 model Company {
@@ -41,6 +44,8 @@ model Company {
   fontFamily     String        @default("Inter")
   tagline        String?
   aboutText      String?
+  cornerRadius    Int           @default(12)
+  sectionSpacing  String        @default("3.5rem")
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -50,6 +55,7 @@ model Company {
   jobs           Job[]
   departments    Department[]
   locations      Location[]
+  mediaAssets    Media[]
 
   @@index([slug])
 }
@@ -93,7 +99,9 @@ model PageSection {
   type          SectionType
   title         String?
   content       Json
+  layoutVariant String      @default("01")
   orderIndex    Int
+  enabled       Boolean     @default(true)
   isDraft       Boolean     @default(true)
   isPublished   Boolean     @default(false)
   createdAt     DateTime    @default(now())
@@ -101,6 +109,18 @@ model PageSection {
 
   @@index([companyId])
   @@index([careersPageId, orderIndex])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  url       String
+  type      String   // "image" | "video" | "logo" | "banner"
+  altText   String?
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
 }
 
 model Department {
