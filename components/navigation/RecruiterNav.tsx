@@ -109,7 +109,7 @@ export function RecruiterNav({ companySlug, companyName, userName }: RecruiterNa
             <div className="h-4 w-[1px] bg-slate-200 hidden sm:block"></div>
 
             <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: "/" })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
               title="Sign Out"
             >

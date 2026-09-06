@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import JobCard from "./JobCard";
 import MobileFilterDrawer from "./MobileFilterDrawer";
+import CandidateFooter from "./CandidateFooter";
 import { getThemeByCompany } from "@/lib/themes/registry";
 
 interface PublicJobsFeedClientProps {
@@ -638,6 +639,16 @@ export default function PublicJobsFeedClient({
           </div>
         </div>
       </main>
+
+      {/* FOOTER WITH CONTACT INFORMATION & SOCIAL LOGOS */}
+      <CandidateFooter
+        company={company}
+        theme={theme}
+        jobsCount={totalCount}
+        locations={filterDimensions.locations}
+        isPreviewMode={isPreviewMode}
+        onNavigatePage={onNavigatePage}
+      />
 
       {/* 6. MOBILE FILTER DRAWER */}
       <MobileFilterDrawer

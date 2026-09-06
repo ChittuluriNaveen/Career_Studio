@@ -10,6 +10,7 @@ import { SectionElement, getDefaultElementsForSectionType } from "@/lib/template
 import { getThemeByCompany } from "@/lib/themes/registry";
 import { resolveSectionContainerStyles } from "@/lib/templates/stylesResolver";
 import LazySectionReveal from "@/components/ui/LazySectionReveal";
+import CandidateFooter from "@/components/candidate/CandidateFooter";
 
 interface CareersPageRendererProps {
   company: {
@@ -560,97 +561,17 @@ export default function CareersPageRenderer({
       )}
     </main>
 
-      {/* 4. BRANDED FOOTER */}
-      <footer
-        className={`border-t py-12 px-6 mt-16 transition-colors ${
-          isDarkMode ? "bg-slate-950 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-700"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div className="md:col-span-2 space-y-3">
-            <div className="flex items-center gap-3">
-              {company.logoUrl ? (
-                <img
-                  src={company.logoUrl}
-                  alt={`${company.name} Logo`}
-                  className="w-8 h-8 object-cover border border-slate-700 shadow-sm"
-                  style={{ borderRadius: `${cornerRadius}px` }}
-                />
-              ) : (
-                <div
-                  className="w-8 h-8 flex items-center justify-center font-bold text-white text-sm"
-                  style={{ backgroundColor: primaryColor, borderRadius: `${cornerRadius}px` }}
-                >
-                  {company.name.charAt(0)}
-                </div>
-              )}
-              <span className="font-black text-base">{company.name}</span>
-            </div>
-            <p className={`text-xs leading-relaxed max-w-sm ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
-              {company.tagline || company.description || `Join ${company.name} and help build the future of our industry.`}
-            </p>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-extrabold uppercase tracking-wider mb-3">Careers Navigation</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              {navItems.slice(0, 4).map((item) => (
-                <li key={item.id}>
-                  <button
-                    onClick={() => scrollToAnchor(item.id)}
-                    className="hover:text-cyan-400 transition-colors capitalize cursor-pointer"
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-extrabold uppercase tracking-wider mb-3">Company</h4>
-            <ul className="space-y-2 text-xs font-semibold">
-              {company.website && (
-                <li>
-                  <a
-                    href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-cyan-400 transition-colors flex items-center gap-1"
-                  >
-                    <span>Main Website</span>
-                    <ExternalLink className="w-3 h-3 opacity-70" />
-                  </a>
-                </li>
-              )}
-              <li>
-                {isPreviewMode ? (
-                  <button
-                    type="button"
-                    onClick={() => onNavigatePage && onNavigatePage("jobs")}
-                    className="hover:text-cyan-400 transition-colors cursor-pointer text-left font-semibold"
-                  >
-                    All Job Vacancies ({jobs.length})
-                  </button>
-                ) : (
-                  <Link href={`/${company.slug}/careers/jobs`} className="hover:text-cyan-400 transition-colors cursor-pointer">
-                    All Job Vacancies ({jobs.length})
-                  </Link>
-                )}
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div
-          className={`max-w-6xl mx-auto pt-6 border-t flex flex-col sm:flex-row items-center justify-between text-xs gap-2 ${
-            isDarkMode ? "border-slate-800/80 text-slate-500" : "border-slate-200 text-slate-400"
-          }`}
-        >
-          <p>© {new Date().getFullYear()} {company.name}. All rights reserved.</p>
-          <p className="text-[11px]">Powered by WhiteCarrot Careers Studio</p>
-        </div>
-      </footer>
+      {/* 4. BRANDED FOOTER WITH CONTACT INFO AND SOCIAL LOGOS */}
+      <CandidateFooter
+        company={company}
+        theme={theme}
+        jobsCount={jobs.length}
+        locations={locations}
+        isPreviewMode={isPreviewMode}
+        onNavigatePage={onNavigatePage}
+        navItems={navItems}
+        onScrollToAnchor={scrollToAnchor}
+      />
     </div>
   );
 }

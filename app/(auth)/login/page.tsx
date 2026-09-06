@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Building2, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { Building2, Sparkles, ArrowRight, ShieldCheck, UserPlus } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -112,6 +113,19 @@ export default function LoginPage() {
                 </>
               )}
             </button>
+
+            <div className="pt-2 text-center">
+              <p className="text-xs font-semibold text-slate-600">
+                Don't have a company account yet?{" "}
+                <Link
+                  href="/register"
+                  className="text-[#005d52] font-extrabold hover:underline transition-colors inline-flex items-center gap-1"
+                >
+                  <span>Create Account</span>
+                  <UserPlus className="w-3.5 h-3.5" />
+                </Link>
+              </p>
+            </div>
           </form>
 
           {/* Quick Demo Credentials Autofill Cards */}

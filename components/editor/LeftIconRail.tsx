@@ -58,7 +58,7 @@ export default function LeftIconRail({ activeTab, setActiveTab }: LeftIconRailPr
       <div className="flex flex-col items-center gap-2 w-full px-2">
         <button
           type="button"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/" })}
           title="Sign out of Studio"
           className="p-3 rounded-2xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors group relative cursor-pointer"
         >

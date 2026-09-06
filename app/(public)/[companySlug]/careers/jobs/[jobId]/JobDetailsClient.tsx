@@ -15,6 +15,7 @@ import { formatDate } from "@/lib/utils";
 import { submitApplicationAction } from "@/lib/actions/applications";
 import { getThemeByCompany } from "@/lib/themes/registry";
 import OperationLoader from "@/components/ui/OperationLoader";
+import CandidateFooter from "@/components/candidate/CandidateFooter";
 
 interface JobDetailsClientProps {
   companySlug: string;
@@ -640,14 +641,15 @@ export default function JobDetailsClient({
         )}
       </main>
 
-      {/* Footer */}
-      <footer
-        className={`border-t py-8 px-6 text-center text-xs ${
-          isDarkMode ? "border-slate-800/80 text-slate-500" : "border-slate-200 text-slate-400"
-        }`}
-      >
-        <p>© {new Date().getFullYear()} {company.name || "Company"}. All rights reserved.</p>
-      </footer>
+      {/* BRANDED FOOTER WITH CONTACT INFORMATION & SOCIAL LOGOS */}
+      <CandidateFooter
+        company={company}
+        theme={theme}
+        jobsCount={1}
+        locations={job.locationCity ? [{ name: job.locationCity }] : []}
+        isPreviewMode={isPreviewMode}
+        onNavigatePage={onNavigatePage}
+      />
     </div>
   );
 }
