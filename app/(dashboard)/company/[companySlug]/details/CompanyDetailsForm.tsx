@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Save, Upload, CheckCircle2 } from "lucide-react";
 import { updateCompanyDetailsAction } from "@/lib/actions/brand";
+import OperationLoader from "@/components/ui/OperationLoader";
 
 interface CompanyDetailsFormProps {
   company: any;
@@ -123,6 +124,13 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
 
   return (
     <div className="space-y-6 font-sans">
+      <OperationLoader
+        isVisible={loading || !!uploadingField}
+        title={uploadingField ? "Uploading Image Asset..." : "Saving Company Profile & Branding..."}
+        subtitle={uploadingField ? "Optimizing image file and storing..." : "Updating company settings, primary brand colors, and theme background..."}
+        primaryColor={primaryColor}
+      />
+
       {/* Header Bar */}
       <div className="flex items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs">
         <Building2 className="w-8 h-8 text-[#005d52]" />

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, Sparkles, Palette, Briefcase, Layout, ShieldCheck } from "lucide-react";
 import { THEME_REGISTRY, getThemeByCompany } from "@/lib/themes/registry";
 import { updateBrandThemeAction } from "@/lib/actions/brand";
+import OperationLoader from "@/components/ui/OperationLoader";
 
 interface JobPageEditorPanelProps {
   company: any;
@@ -94,7 +95,13 @@ export default function JobPageEditorPanel({
   };
 
   return (
-    <div className="p-4 space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto font-sans text-xs">
+    <div className="p-4 space-y-6 font-sans text-xs relative">
+      <OperationLoader
+        isVisible={saving}
+        title="Saving Job View Template..."
+        subtitle="Updating theme configurations & template layout..."
+        primaryColor={formData.primaryColor || "#0f766e"}
+      />
       <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider flex items-center gap-1.5">

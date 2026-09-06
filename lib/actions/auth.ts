@@ -165,6 +165,8 @@ export async function registerRecruiterAction(input: RegisterInput) {
 
       // 6. Seed initial default sections using full registry template elements
       const heroTmpl = TEMPLATE_REGISTRY["hero-centered"];
+      const peopleTmpl = TEMPLATE_REGISTRY["people-pillars"];
+      const deptTmpl = TEMPLATE_REGISTRY["departments-grid"];
       const aboutTmpl = TEMPLATE_REGISTRY["about-image-left"];
       const cultureTmpl = TEMPLATE_REGISTRY["culture-video-embed"];
       const benefitsTmpl = TEMPLATE_REGISTRY["benefits-grid-cards"];
@@ -193,9 +195,43 @@ export async function registerRecruiterAction(input: RegisterInput) {
           {
             careersPageId: careersPage.id,
             companyId: company.id,
+            type: "PEOPLE",
+            title: peopleTmpl.name,
+            orderIndex: 1,
+            enabled: true,
+            isDraft: false,
+            isPublished: true,
+            layoutVariant: "01",
+            content: {
+              templateId: peopleTmpl.templateId,
+              showInNav: true,
+              layout: peopleTmpl.layout,
+              elements: peopleTmpl.defaultElements,
+            } as any,
+          },
+          {
+            careersPageId: careersPage.id,
+            companyId: company.id,
+            type: "DEPARTMENTS",
+            title: deptTmpl.name,
+            orderIndex: 2,
+            enabled: true,
+            isDraft: false,
+            isPublished: true,
+            layoutVariant: "01",
+            content: {
+              templateId: deptTmpl.templateId,
+              showInNav: true,
+              layout: deptTmpl.layout,
+              elements: deptTmpl.defaultElements,
+            } as any,
+          },
+          {
+            careersPageId: careersPage.id,
+            companyId: company.id,
             type: "ABOUT_US",
             title: aboutTmpl.name,
-            orderIndex: 1,
+            orderIndex: 3,
             enabled: true,
             isDraft: false,
             isPublished: true,
@@ -212,7 +248,7 @@ export async function registerRecruiterAction(input: RegisterInput) {
             companyId: company.id,
             type: "CULTURE_VIDEO",
             title: cultureTmpl.name,
-            orderIndex: 2,
+            orderIndex: 4,
             enabled: true,
             isDraft: false,
             isPublished: true,
@@ -229,7 +265,7 @@ export async function registerRecruiterAction(input: RegisterInput) {
             companyId: company.id,
             type: "PERKS_BENEFITS",
             title: benefitsTmpl.name,
-            orderIndex: 3,
+            orderIndex: 5,
             enabled: true,
             isDraft: false,
             isPublished: true,
@@ -246,7 +282,7 @@ export async function registerRecruiterAction(input: RegisterInput) {
             companyId: company.id,
             type: "OPEN_ROLES",
             title: jobsTmpl.name,
-            orderIndex: 4,
+            orderIndex: 6,
             enabled: true,
             isDraft: false,
             isPublished: true,
@@ -263,7 +299,7 @@ export async function registerRecruiterAction(input: RegisterInput) {
             companyId: company.id,
             type: "CTA",
             title: ctaTmpl.name,
-            orderIndex: 5,
+            orderIndex: 7,
             enabled: true,
             isDraft: false,
             isPublished: true,

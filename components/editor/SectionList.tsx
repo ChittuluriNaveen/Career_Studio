@@ -35,11 +35,18 @@ import {
   Type,
   Briefcase,
   Megaphone,
+  Users,
+  Building,
 } from "lucide-react";
 import { updateSectionOrderAction, toggleSectionVisibilityAction, duplicateSectionAction } from "@/lib/actions/sections";
 
 const SECTION_TYPE_BADGES: Record<SectionType, { label: string; icon: any; color: string }> = {
   HERO: { label: "Hero Banner", icon: Sparkles, color: "text-blue-600 bg-blue-50 border-blue-200" },
+  PEOPLE: { label: "Team & Leadership", icon: Users, color: "text-indigo-600 bg-indigo-50 border-indigo-200" },
+  DEPARTMENTS: { label: "Company Departments", icon: Building, color: "text-teal-600 bg-teal-50 border-teal-200" },
+  TECH_STACK: { label: "Tech Stack Showcase", icon: Sparkles, color: "text-violet-600 bg-violet-50 border-violet-200" },
+  PROCESS: { label: "Hiring Journey", icon: Info, color: "text-amber-600 bg-amber-50 border-amber-200" },
+  TESTIMONIALS: { label: "Employee Stories", icon: Heart, color: "text-rose-600 bg-rose-50 border-rose-200" },
   ABOUT_US: { label: "About Us", icon: Info, color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
   IMAGE_TEXT: { label: "Image + Text", icon: ImageIcon, color: "text-indigo-600 bg-indigo-50 border-indigo-200" },
   CULTURE_VIDEO: { label: "Culture Video", icon: Tv, color: "text-purple-600 bg-purple-50 border-purple-200" },

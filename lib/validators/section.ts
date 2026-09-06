@@ -2,7 +2,7 @@ import { z } from "zod";
 import { SectionType } from "@prisma/client";
 
 export const createSectionSchema = z.object({
-  type: z.nativeEnum(SectionType),
+  type: z.nativeEnum(SectionType).or(z.string()) as z.ZodType<SectionType>,
   title: z.string().min(1, "Section title is required."),
   content: z.record(z.string(), z.any()),
   layoutVariant: z.string().optional().default("01"),

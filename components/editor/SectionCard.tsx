@@ -13,7 +13,8 @@ import {
   Info,
   Briefcase,
   Type,
-  ShieldAlert,
+  Users,
+  Building,
 } from "lucide-react";
 
 interface SectionCardProps {
@@ -32,6 +33,11 @@ interface SectionCardProps {
 
 const SECTION_TYPE_CONFIG: Record<SectionType, { label: string; icon: any; color: string }> = {
   HERO: { label: "Hero Banner", icon: Sparkles, color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
+  PEOPLE: { label: "Team & Leadership", icon: Users, color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20" },
+  DEPARTMENTS: { label: "Company Departments", icon: Building, color: "text-teal-400 bg-teal-500/10 border-teal-500/20" },
+  TECH_STACK: { label: "Tech Stack & Tools", icon: Sparkles, color: "text-violet-400 bg-violet-500/10 border-violet-500/20" },
+  PROCESS: { label: "Hiring Process", icon: Info, color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
+  TESTIMONIALS: { label: "Employee Testimonials", icon: Heart, color: "text-rose-400 bg-rose-500/10 border-rose-500/20" },
   ABOUT_US: { label: "About Us Story", icon: Info, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" },
   IMAGE_TEXT: { label: "Image + Text", icon: Type, color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20" },
   CULTURE_VIDEO: { label: "Culture & Video", icon: Tv, color: "text-purple-400 bg-purple-500/10 border-purple-500/20" },

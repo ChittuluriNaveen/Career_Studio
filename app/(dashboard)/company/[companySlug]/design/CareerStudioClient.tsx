@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import DashboardHeader from "@/components/editor/DashboardHeader";
+import OperationLoader from "@/components/ui/OperationLoader";
 import LeftIconRail, { LeftNavTab } from "@/components/editor/LeftIconRail";
 import PagesPanel from "@/components/editor/panels/PagesPanel";
 import SectionList from "@/components/editor/SectionList";
@@ -438,7 +439,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         content: newContent,
       });
 
-      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("saved"), 400);
     }
   };
 
@@ -452,6 +453,8 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
       elements: templateConfig.defaultElements,
     };
 
+    setSaveStatus("saving");
+
     if (activePage === "job-details") {
       const newJobSec = {
         id: `job-sec-${Date.now()}`,
@@ -464,8 +467,27 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
       setJobSections((prev) => [...prev, newJobSec]);
       setSelectedSectionId(newJobSec.id);
       setInspectorTab("content");
+      setTimeout(() => setSaveStatus("saved"), 400);
     } else {
-      setSaveStatus("saving");
+      const tempId = `sec-temp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      const optimisticSec = {
+        id: tempId,
+        careersPageId: "temp",
+        companyId: company?.id || "temp",
+        type: templateConfig.sectionType,
+        title: templateConfig.name,
+        content: contentPayload,
+        layoutVariant: "01",
+        orderIndex: sections.length,
+        enabled: true,
+        isDraft: true,
+        isPublished: false,
+      };
+
+      setSections((prev) => [...prev, optimisticSec]);
+      setSelectedSectionId(tempId);
+      setInspectorTab("content");
+
       const res = await addSectionAction({
         type: templateConfig.sectionType,
         title: templateConfig.name,
@@ -473,10 +495,13 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
       });
 
       if (res.success && res.section) {
-        setSaveStatus("saved");
-        await fetchStudioData();
-        setSelectedSectionId(res.section.id);
-        setInspectorTab("content");
+        const persistedSec = res.section;
+        setSections((prev) => prev.map((s) => (s.id === tempId ? persistedSec : s)));
+        setSelectedSectionId(persistedSec.id);
+        setTimeout(() => setSaveStatus("saved"), 400);
+      } else {
+        console.error("Failed to persist new section:", res.error);
+        setTimeout(() => setSaveStatus("saved"), 400);
       }
     }
   };
@@ -730,7 +755,14 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900 relative">
+      <OperationLoader
+        isVisible={saveStatus === "saving" || savingInspector}
+        title={savingInspector ? "Updating Element Styles..." : "Applying Section Template & Changes..."}
+        subtitle="Storing changes in draft database state..."
+        primaryColor={company?.primaryColor || "#0f766e"}
+      />
+
       {/* Top Bar */}
       {company && (
         <DashboardHeader

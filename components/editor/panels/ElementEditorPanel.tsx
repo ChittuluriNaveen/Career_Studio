@@ -22,6 +22,29 @@ import { ElementStyles } from "@/lib/templates/registry";
 import MediaPickerModal from "@/components/editor/MediaPickerModal";
 import CompanyVariableChips from "@/components/editor/CompanyVariableChips";
 
+export const TECH_STACK_PRESETS = [
+  { name: "React 19", icon: "⚛️", category: "Frontend & SSR", description: "Server components, reactive hooks, and component architecture." },
+  { name: "Next.js", icon: "▲", category: "Fullstack Framework", description: "App Router, Turbopack, and server-side rendering." },
+  { name: "TypeScript", icon: "🔷", category: "Core Architecture", description: "Strict static typing and robust end-to-end API contracts." },
+  { name: "Python", icon: "🐍", category: "AI & ML Engine", description: "Data engineering, machine learning pipelines, and LLM services." },
+  { name: "PostgreSQL", icon: "🐘", category: "Database Layer", description: "Relational data persistence, schema indexing, and pooler connections." },
+  { name: "Node.js", icon: "🟢", category: "Backend Microservices", description: "Event-driven runtime for high-performance API services." },
+  { name: "AWS Cloud", icon: "☁️", category: "Infrastructure & CDN", description: "Cloud compute, S3 object storage, and global edge distribution." },
+  { name: "Docker", icon: "🐳", category: "Containers", description: "Containerized deployment environments and orchestration." },
+  { name: "Figma", icon: "🎨", category: "Product Design", description: "Design tokens, UI prototyping, and collaborative design specs." },
+  { name: "PyTorch AI", icon: "🔥", category: "Deep Learning", description: "Neural network training, GPU acceleration, and model inference." },
+  { name: "Redis", icon: "🔴", category: "In-Memory Cache", description: "High-speed caching, session store, and pub/sub messaging." },
+  { name: "GraphQL", icon: "📐", category: "API Gateway", description: "Declarative data fetching and schema federation." },
+  { name: "Go / Golang", icon: "🦫", category: "High-Concurrency", description: "Low-latency backend microservices and networking." },
+  { name: "Rust", icon: "🦀", category: "Systems Engine", description: "Memory-safe systems programming and high-speed WASM modules." },
+  { name: "Java", icon: "☕", category: "Enterprise Services", description: "Mission-critical enterprise backend architecture." },
+  { name: "Kubernetes", icon: "☸️", category: "Container Orchestration", description: "Cluster management, auto-scaling, and resilience." },
+  { name: "Tailwind CSS", icon: "💨", category: "Styling System", description: "Utility-first design tokens and modern responsive UI." },
+  { name: "GitHub", icon: "🐙", category: "DevOps & CI/CD", description: "Version control, GitHub Actions, and code review workflows." },
+  { name: "Slack", icon: "💬", category: "Team Operations", description: "Automated alert webhooks and real-time team communication." },
+  { name: "MongoDB", icon: "🍃", category: "NoSQL Database", description: "Document-oriented database for rapid data model iteration." },
+];
+
 interface ElementEditorPanelProps {
   element: SectionElement;
   company?: any;
@@ -42,6 +65,8 @@ export default function ElementEditorPanel({
   const [editorTab, setEditorTab] = useState<"content" | "style">("content");
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
   const [mediaTargetField, setMediaTargetField] = useState<"url" | "posterUrl">("url");
+  const [activeItemMediaIndex, setActiveItemMediaIndex] = useState<number | null>(null);
+  const [activeItemMediaProp, setActiveItemMediaProp] = useState<string>("url");
 
   const updateContentField = (key: string, value: any) => {
     onUpdateElement({
@@ -423,34 +448,109 @@ export default function ElementEditorPanel({
         </div>
       )}
 
-      {/* 6. List / Stats / Gallery Item Managers */}
-      {(element.type === "stats" || element.type === "list" || element.type === "gallery") && (
+      {/* 6. List / Stats / Gallery / People / Departments / TechStack / Process / Testimonials Item Managers */}
+      {(element.type === "stats" ||
+        element.type === "list" ||
+        element.type === "gallery" ||
+        element.type === "people" ||
+        element.type === "departments" ||
+        element.type === "techstack" ||
+        element.type === "process" ||
+        element.type === "testimonials") && (
         <div className="space-y-3">
+          <CompanyVariableChips
+            company={company}
+            onInsertVariable={(tag) => {
+              // Appends variable to top element title or description if needed
+              handleInsertTagToField("title", tag);
+            }}
+            label="Insert Company Variable Chips (@)"
+          />
+
           <div className="flex items-center justify-between">
-            <label className="block font-bold text-slate-700">List Items ({element.content.items?.length || 0})</label>
+            <label className="block font-bold text-slate-700">
+              {element.type === "people"
+                ? `Team Pillars (${element.content.items?.length || 0})`
+                : element.type === "departments"
+                ? `Departments (${element.content.items?.length || 0})`
+                : element.type === "techstack"
+                ? `Tech Tools (${element.content.items?.length || 0})`
+                : element.type === "process"
+                ? `Process Steps (${element.content.items?.length || 0})`
+                : element.type === "testimonials"
+                ? `Testimonials (${element.content.items?.length || 0})`
+                : `Items (${element.content.items?.length || 0})`}
+            </label>
             <button
               type="button"
               onClick={() => {
                 const currentItems = element.content.items || [];
                 const newItem =
-                  element.type === "stats"
+                  element.type === "people"
+                    ? {
+                        id: Date.now().toString(),
+                        title: "New Team Member",
+                        subtitle: "Role & Position",
+                        description: "Bio story at @company_name...",
+                        url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80",
+                        linkUrl: "https://linkedin.com",
+                      }
+                    : element.type === "departments"
+                    ? {
+                        id: Date.now().toString(),
+                        title: "New Department",
+                        icon: "⚡",
+                        value: "1 Role",
+                        description: "Team description summary...",
+                        linkUrl: "#open-positions",
+                      }
+                    : element.type === "techstack"
+                    ? {
+                        id: Date.now().toString(),
+                        title: "New Technology",
+                        icon: "🚀",
+                        value: "Tool Category",
+                        description: "How we use this tool at @company_name...",
+                      }
+                    : element.type === "process"
+                    ? {
+                        id: Date.now().toString(),
+                        title: "Step: Interview Stage",
+                        value: "30 Mins",
+                        description: "Step details and interview expectations...",
+                      }
+                    : element.type === "testimonials"
+                    ? {
+                        id: Date.now().toString(),
+                        title: "Teammate Name",
+                        subtitle: "Role · Tenure at @company_name",
+                        description: "“Working at @company_name has been transformational...”",
+                        url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80",
+                      }
+                    : element.type === "stats"
                     ? { id: Date.now().toString(), title: "New Metric", value: "100+" }
                     : element.type === "gallery"
                     ? { id: Date.now().toString(), title: "New Photo", url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80" }
                     : { id: Date.now().toString(), title: "New Benefit", description: "Details..." };
                 updateContentField("items", [...currentItems, newItem]);
               }}
-              className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-md text-[11px]"
+              className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg text-[11px] shadow-2xs cursor-pointer"
             >
-              + Add Item
+              + Add {element.type === "people" ? "Teammate" : element.type === "departments" ? "Department" : element.type === "techstack" ? "Tool" : element.type === "process" ? "Step" : element.type === "testimonials" ? "Quote" : "Item"}
             </button>
           </div>
 
-          <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
             {(element.content.items || []).map((item: any, idx: number) => (
-              <div key={item.id || idx} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-[10px] text-slate-500">Item #{idx + 1}</span>
+              <div key={item.id || idx} className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-200/60">
+                  <span className="font-black text-[10px] text-teal-800 uppercase tracking-wider">
+                    {element.type === "people"
+                      ? `Pillar #${idx + 1}`
+                      : element.type === "departments"
+                      ? `Department #${idx + 1}`
+                      : `Item #${idx + 1}`}
+                  </span>
                   <button
                     type="button"
                     onClick={() => {
@@ -458,23 +558,364 @@ export default function ElementEditorPanel({
                       const updatedItems = currentItems.filter((_: any, i: number) => i !== idx);
                       updateContentField("items", updatedItems);
                     }}
-                    className="text-red-500 hover:text-red-700 font-bold text-xs"
+                    className="text-red-500 hover:text-red-700 font-bold text-xs cursor-pointer"
                   >
                     × Remove
                   </button>
                 </div>
 
-                <input
-                  type="text"
-                  value={item.title || ""}
-                  onChange={(e) => {
-                    const updatedItems = [...(element.content.items || [])];
-                    updatedItems[idx] = { ...updatedItems[idx], title: e.target.value };
-                    updateContentField("items", updatedItems);
-                  }}
-                  placeholder="Item Title"
-                  className="w-full p-2 bg-white border border-slate-200 rounded-lg font-semibold text-xs"
-                />
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Name / Title</label>
+                  <input
+                    type="text"
+                    value={item.title || ""}
+                    onChange={(e) => {
+                      const updatedItems = [...(element.content.items || [])];
+                      updatedItems[idx] = { ...updatedItems[idx], title: e.target.value };
+                      updateContentField("items", updatedItems);
+                    }}
+                    placeholder="Name or Title"
+                    className="w-full p-2 bg-white border border-slate-200 rounded-lg font-bold text-xs"
+                  />
+                </div>
+
+                {element.type === "people" && (
+                  <>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Role / Position Title</label>
+                      <input
+                        type="text"
+                        value={item.subtitle || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], subtitle: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="e.g. Co-Founder & CEO"
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Bio / Teammate Story</label>
+                      <textarea
+                        rows={2}
+                        value={item.description || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], description: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="Teammate story or focus area at @company_name..."
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Avatar Photo URL</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={item.url || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...(element.content.items || [])];
+                            updatedItems[idx] = { ...updatedItems[idx], url: e.target.value };
+                            updateContentField("items", updatedItems);
+                          }}
+                          placeholder="https://..."
+                          className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveItemMediaIndex(idx);
+                            setActiveItemMediaProp("url");
+                            setIsMediaPickerOpen(true);
+                          }}
+                          className="px-2.5 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-800 font-bold text-[10px] cursor-pointer"
+                        >
+                          Browse
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Social Profile Link (LinkedIn)</label>
+                      <input
+                        type="text"
+                        value={item.linkUrl || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], linkUrl: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="https://linkedin.com/in/..."
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {element.type === "departments" && (
+                  <>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Department Icon/Emoji</label>
+                        <input
+                          type="text"
+                          value={item.icon || "🏢"}
+                          onChange={(e) => {
+                            const updatedItems = [...(element.content.items || [])];
+                            updatedItems[idx] = { ...updatedItems[idx], icon: e.target.value };
+                            updateContentField("items", updatedItems);
+                          }}
+                          placeholder="💻, 🎨, 🚀"
+                          className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs text-center font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Roles Count Badge</label>
+                        <input
+                          type="text"
+                          value={item.value || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...(element.content.items || [])];
+                            updatedItems[idx] = { ...updatedItems[idx], value: e.target.value };
+                            updateContentField("items", updatedItems);
+                          }}
+                          placeholder="e.g. 3 Roles"
+                          className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Department Description</label>
+                      <textarea
+                        rows={2}
+                        value={item.description || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], description: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="Core mission and tech stack of this department..."
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Target Section Anchor</label>
+                      <input
+                        type="text"
+                        value={item.linkUrl || "#open-positions"}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], linkUrl: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="#open-positions"
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {element.type === "techstack" && (
+                  <>
+                    {/* Quick Select Tech Preset Dropdown */}
+                    <div className="bg-teal-50/80 p-2.5 rounded-xl border border-teal-200/80 space-y-1">
+                      <label className="block text-[10px] font-black uppercase text-teal-800 tracking-wider">
+                        ⚡ Quick Select Preset Tool
+                      </label>
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          const selected = TECH_STACK_PRESETS.find((p) => p.name === e.target.value);
+                          if (selected) {
+                            const updatedItems = [...(element.content.items || [])];
+                            updatedItems[idx] = {
+                              ...updatedItems[idx],
+                              title: selected.name,
+                              icon: selected.icon,
+                              value: selected.category,
+                              description: selected.description,
+                            };
+                            updateContentField("items", updatedItems);
+                          }
+                        }}
+                        className="w-full p-2 bg-white border border-teal-300 rounded-lg text-xs font-bold text-teal-950 focus:ring-2 focus:ring-teal-600 cursor-pointer"
+                      >
+                        <option value="" disabled>
+                          -- Choose Popular Tool (1-Click Fill) --
+                        </option>
+                        {TECH_STACK_PRESETS.map((preset) => (
+                          <option key={preset.name} value={preset.name}>
+                            {preset.icon} {preset.name} ({preset.category})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-0.5">
+                          Icon / Emoji / Custom Logo
+                        </label>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={item.icon || item.url || "⚙️"}
+                            onChange={(e) => {
+                              const updatedItems = [...(element.content.items || [])];
+                              updatedItems[idx] = { ...updatedItems[idx], icon: e.target.value };
+                              updateContentField("items", updatedItems);
+                            }}
+                            placeholder="⚛️ or https://... logo"
+                            className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono font-bold"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveItemMediaIndex(idx);
+                              setActiveItemMediaProp("icon");
+                              setIsMediaPickerOpen(true);
+                            }}
+                            className="px-2 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-800 font-bold text-[10px] whitespace-nowrap cursor-pointer"
+                            title="Browse or upload custom logo image to DB"
+                          >
+                            Logo
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Category Badge</label>
+                        <input
+                          type="text"
+                          value={item.value || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...(element.content.items || [])];
+                            updatedItems[idx] = { ...updatedItems[idx], value: e.target.value };
+                            updateContentField("items", updatedItems);
+                          }}
+                          placeholder="e.g. Frontend & SSR"
+                          className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Tool Description & Usage</label>
+                      <textarea
+                        rows={2}
+                        value={item.description || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], description: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="How we use this technology at @company_name..."
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {element.type === "process" && (
+                  <>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Duration Badge</label>
+                      <input
+                        type="text"
+                        value={item.value || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], value: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="e.g. 30 Mins or 1-2 Days"
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-bold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Step Details & Description</label>
+                      <textarea
+                        rows={2}
+                        value={item.description || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], description: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="What candidates should expect at this stage..."
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {element.type === "testimonials" && (
+                  <>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Role & Team Subtitle</label>
+                      <input
+                        type="text"
+                        value={item.subtitle || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], subtitle: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="e.g. Staff Engineer · 3 Yrs at @company_name"
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Quote Narrative</label>
+                      <textarea
+                        rows={3}
+                        value={item.description || ""}
+                        onChange={(e) => {
+                          const updatedItems = [...(element.content.items || [])];
+                          updatedItems[idx] = { ...updatedItems[idx], description: e.target.value };
+                          updateContentField("items", updatedItems);
+                        }}
+                        placeholder="“Joining @company_name was the best career decision...”"
+                        className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-medium italic"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 mb-0.5">Avatar Image URL</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={item.url || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...(element.content.items || [])];
+                            updatedItems[idx] = { ...updatedItems[idx], url: e.target.value };
+                            updateContentField("items", updatedItems);
+                          }}
+                          placeholder="https://..."
+                          className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveItemMediaIndex(idx);
+                            setActiveItemMediaProp("url");
+                            setIsMediaPickerOpen(true);
+                          }}
+                          className="px-2.5 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-800 font-bold text-[10px] cursor-pointer"
+                        >
+                          Browse
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {element.type === "stats" && (
                   <input
@@ -517,6 +958,17 @@ export default function ElementEditorPanel({
                       placeholder="Image URL"
                       className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
                     />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveItemMediaIndex(idx);
+                        setActiveItemMediaProp("url");
+                        setIsMediaPickerOpen(true);
+                      }}
+                      className="px-2.5 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-slate-800 font-bold text-[10px] cursor-pointer"
+                    >
+                      Browse
+                    </button>
                   </div>
                 )}
               </div>
@@ -525,12 +977,130 @@ export default function ElementEditorPanel({
         </div>
       )}
 
+      {/* 7. Divider Element Controls */}
+      {element.type === "divider" && (
+        <div className="space-y-3">
+          <div>
+            <label className="block font-semibold text-slate-600 mb-1">Line Thickness</label>
+            <div className="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              {["1px", "2px", "4px", "6px"].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => updateContentField("thickness", t)}
+                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    (element.content.thickness || "1px") === t
+                      ? "bg-white text-teal-800 shadow-xs border border-slate-200"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-600 mb-1">Line Width</label>
+            <div className="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              {["25%", "50%", "75%", "100%"].map((w) => (
+                <button
+                  key={w}
+                  type="button"
+                  onClick={() => updateContentField("width", w)}
+                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    (element.content.width || "100%") === w
+                      ? "bg-white text-teal-800 shadow-xs border border-slate-200"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {w}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-600 mb-1">Line Style</label>
+            <select
+              value={element.content.style || "solid"}
+              onChange={(e) => updateContentField("style", e.target.value)}
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium"
+            >
+              <option value="solid">Solid Line (────)</option>
+              <option value="dashed">Dashed Line (- - - -)</option>
+              <option value="dotted">Dotted Line (• • • •)</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Spacer Element Controls */}
+      {element.type === "spacer" && (
+        <div className="space-y-3">
+          <div>
+            <label className="block font-semibold text-slate-600 mb-1">Desktop Vertical Height</label>
+            <div className="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              {["16px", "32px", "48px", "64px"].map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => updateContentField("height", h)}
+                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    (element.content.height || "32px") === h
+                      ? "bg-white text-teal-800 shadow-xs border border-slate-200"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-600 mb-1">Mobile Vertical Height</label>
+            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              {["8px", "16px", "24px"].map((mh) => (
+                <button
+                  key={mh}
+                  type="button"
+                  onClick={() => updateContentField("mobileHeight", mh)}
+                  className={`py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    (element.content.mobileHeight || "16px") === mh
+                      ? "bg-white text-teal-800 shadow-xs border border-slate-200"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  {mh}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Media Picker Modal */}
       <MediaPickerModal
         isOpen={isMediaPickerOpen}
-        onClose={() => setIsMediaPickerOpen(false)}
+        onClose={() => {
+          setIsMediaPickerOpen(false);
+          setActiveItemMediaIndex(null);
+        }}
         onSelectMedia={(url) => {
-          updateContentField(mediaTargetField, url);
+          if (activeItemMediaIndex !== null) {
+            const currentItems = [...(element.content.items || [])];
+            if (currentItems[activeItemMediaIndex]) {
+              currentItems[activeItemMediaIndex] = {
+                ...currentItems[activeItemMediaIndex],
+                [activeItemMediaProp]: url,
+              };
+              updateContentField("items", currentItems);
+            }
+            setActiveItemMediaIndex(null);
+          } else {
+            updateContentField(mediaTargetField, url);
+          }
           setIsMediaPickerOpen(false);
         }}
       />

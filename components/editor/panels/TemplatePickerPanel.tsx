@@ -32,6 +32,11 @@ export default function TemplatePickerPanel({
   const categories = [
     { id: "ALL", label: "All" },
     { id: "HERO", label: "Hero" },
+    { id: "PEOPLE", label: "People" },
+    { id: "DEPARTMENTS", label: "Departments" },
+    { id: "TECH_STACK", label: "Tech" },
+    { id: "PROCESS", label: "Process" },
+    { id: "TESTIMONIALS", label: "Stories" },
     { id: "ABOUT_US", label: "About" },
     { id: "CULTURE_VIDEO", label: "Culture" },
     { id: "PERKS_BENEFITS", label: "Perks" },

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Check, Globe, Sparkles, ExternalLink } from "lucide-react";
 import { publishCareersPageAction } from "@/lib/actions/publish";
+import OperationLoader from "@/components/ui/OperationLoader";
 
 interface PublishModalProps {
   isOpen: boolean;
@@ -38,6 +39,11 @@ export default function PublishModal({ isOpen, onClose, companySlug, onPublishSu
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+      <OperationLoader
+        isVisible={publishing}
+        title="Publishing Careers Page..."
+        subtitle="Promoting draft sections & revalidating candidate portal cache..."
+      />
       <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl relative">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">

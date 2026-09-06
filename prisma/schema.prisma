@@ -50,6 +50,11 @@ enum SectionType {
   CUSTOM_TEXT
   OPEN_ROLES
   CTA
+  PEOPLE
+  DEPARTMENTS
+  TECH_STACK
+  PROCESS
+  TESTIMONIALS
 }
 
 model Company {

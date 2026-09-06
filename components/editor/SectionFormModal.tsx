@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { SectionType } from "@prisma/client";
 import {
   X,
@@ -18,11 +19,9 @@ import {
   Check,
 } from "lucide-react";
 import { addSectionAction, updateSectionContentAction } from "@/lib/actions/sections";
-import MediaPickerModal from "@/components/editor/MediaPickerModal";
 import {
   TEMPLATE_REGISTRY,
   SectionTemplate,
-  getDefaultElementsForSectionType,
   preserveElementsOnTemplateSwitch,
 } from "@/lib/templates/registry";
 
@@ -38,6 +37,11 @@ export default function SectionFormModal({
   sectionToEdit,
 }: SectionFormModalProps) {
   const isEditing = !!sectionToEdit;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [type, setType] = useState<SectionType>(sectionToEdit?.type || SectionType.HERO);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("hero-centered");
@@ -58,7 +62,7 @@ export default function SectionFormModal({
     }
   }, [sectionToEdit, isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSelectTemplate = (template: SectionTemplate) => {
     setType(template.sectionType);
@@ -69,6 +73,11 @@ export default function SectionFormModal({
   const categories = [
     { id: "ALL", label: "All Templates" },
     { id: "HERO", label: "Hero Banner" },
+    { id: "PEOPLE", label: "Team & Leadership Pillars" },
+    { id: "DEPARTMENTS", label: "Company Departments" },
+    { id: "TECH_STACK", label: "Tech Stack & Tools" },
+    { id: "PROCESS", label: "Hiring Process Journey" },
+    { id: "TESTIMONIALS", label: "Employee Testimonials" },
     { id: "ABOUT_US", label: "About Us" },
     { id: "CULTURE_VIDEO", label: "Culture & Video" },
     { id: "PERKS_BENEFITS", label: "Perks & Benefits" },
@@ -105,13 +114,13 @@ export default function SectionFormModal({
     if (isEditing) {
       res = await updateSectionContentAction({
         id: sectionToEdit.id,
-        title,
+        title: title || templateConfig.name,
         content: contentPayload,
       });
     } else {
       res = await addSectionAction({
         type,
-        title,
+        title: title || templateConfig.name,
         content: contentPayload,
       });
     }
@@ -124,8 +133,8 @@ export default function SectionFormModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9998] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-white border border-slate-200 rounded-3xl max-w-4xl w-full p-6 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
@@ -243,6 +252,7 @@ export default function SectionFormModal({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

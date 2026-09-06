@@ -14,6 +14,7 @@ import {
 import { formatDate } from "@/lib/utils";
 import { submitApplicationAction } from "@/lib/actions/applications";
 import { getThemeByCompany } from "@/lib/themes/registry";
+import OperationLoader from "@/components/ui/OperationLoader";
 
 interface JobDetailsClientProps {
   companySlug: string;
@@ -113,13 +114,20 @@ export default function JobDetailsClient({
 
   return (
     <div
-      className="min-h-screen flex flex-col transition-colors"
+      className="min-h-screen flex flex-col transition-colors relative"
       style={{
         backgroundColor: theme.bgColor,
         color: theme.textColor,
         fontFamily: fontFamily.includes(",") ? fontFamily : `${fontFamily}, sans-serif`,
       }}
     >
+      <OperationLoader
+        isVisible={submitting}
+        title="Submitting Application..."
+        subtitle={`Sending your application to ${company.name || "recruiting team"}...`}
+        primaryColor={primaryColor}
+      />
+
       {/* Header */}
       <header
         className={`sticky top-0 z-40 px-4 sm:px-8 py-3.5 backdrop-blur-xl border-b transition-all ${

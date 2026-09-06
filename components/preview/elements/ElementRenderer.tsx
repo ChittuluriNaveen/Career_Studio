@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { SectionElement } from "@/lib/templates/registry";
-import { Sparkles, CheckCircle2, Play, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Sparkles, CheckCircle2, Play, ChevronLeft, ChevronRight, X, ExternalLink, Building, Users } from "lucide-react";
 import { interpolateCompanyVariables } from "@/lib/templates/variables";
 import { getThemeByCompany } from "@/lib/themes/registry";
 import { getElementStyles } from "@/lib/templates/stylesResolver";
@@ -539,9 +539,357 @@ export default function ElementRenderer({
         </>
       )}
 
-      {/* 10. DIVIDER / SPACER ELEMENTS */}
-      {element.type === "divider" && <hr className={`my-6 w-full ${isDarkMode ? "border-slate-800" : "border-slate-200"}`} />}
-      {element.type === "spacer" && <div className="h-8 w-full" />}
+      {/* 10. PEOPLE / LEADERSHIP PILLARS ELEMENT */}
+      {element.type === "people" && (
+        <div
+          className={`w-full grid gap-5 my-3 ${
+            deviceMode === "mobile"
+              ? "grid-cols-1"
+              : deviceMode === "tablet"
+              ? "grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
+          {(element.content.items || []).map((person: any) => (
+            <div
+              key={person.id || person.title}
+              className="p-6 rounded-3xl border shadow-md hover:shadow-xl transition-all flex flex-col justify-between space-y-4 text-left group hover:-translate-y-1"
+              style={{
+                backgroundColor: theme.cardBg,
+                borderColor: theme.cardBorder,
+                color: theme.textColor,
+                ...activeStyles,
+              }}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center gap-3.5">
+                  {person.url ? (
+                    <img
+                      src={resolveImageUrl(person.url)}
+                      alt={renderText(person.title, "Team Member")}
+                      className="w-14 h-14 rounded-2xl object-cover border-2 shadow-sm flex-shrink-0"
+                      style={{ borderColor: primaryColor }}
+                    />
+                  ) : (
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center font-black text-lg text-white flex-shrink-0 shadow-sm"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {person.title ? person.title.charAt(0) : "P"}
+                    </div>
+                  )}
+
+                  <div>
+                    <h4 className="text-base font-extrabold tracking-tight leading-snug group-hover:opacity-90">
+                      {renderText(person.title, "Teammate Name")}
+                    </h4>
+                    <p className="text-xs font-bold mt-0.5" style={{ color: primaryColor }}>
+                      {renderText(person.subtitle, "Role & Position")}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs leading-relaxed" style={{ color: theme.subtextColor }}>
+                  {renderText(person.description, "Team pillar story and bio details...")}
+                </p>
+              </div>
+
+              {person.linkUrl && (
+                <div className="pt-2 border-t" style={{ borderColor: theme.cardBorder }}>
+                  <a
+                    href={person.linkUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-extrabold hover:underline"
+                    style={{ color: primaryColor }}
+                  >
+                    <span>Connect Profile</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 11. DEPARTMENTS / FUNCTIONAL UNITS GRID ELEMENT */}
+      {element.type === "departments" && (
+        <div
+          className={`w-full grid gap-5 my-3 ${
+            deviceMode === "mobile"
+              ? "grid-cols-1"
+              : deviceMode === "tablet"
+              ? "grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          }`}
+        >
+          {(element.content.items || []).map((dept: any) => (
+            <div
+              key={dept.id || dept.title}
+              className="p-5 rounded-3xl border shadow-sm hover:shadow-lg transition-all flex flex-col justify-between space-y-4 text-left group hover:-translate-y-1"
+              style={{
+                backgroundColor: theme.cardBg,
+                borderColor: theme.cardBorder,
+                color: theme.textColor,
+                ...activeStyles,
+              }}
+            >
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-xs"
+                    style={{ backgroundColor: `${primaryColor}20` }}
+                  >
+                    {dept.icon || "🏢"}
+                  </div>
+                  {dept.value && (
+                    <span
+                      className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white shadow-2xs"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {renderText(dept.value, "Open Roles")}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-extrabold tracking-tight group-hover:opacity-90">
+                    {renderText(dept.title, "Department Name")}
+                  </h4>
+                  <p className="text-xs leading-relaxed mt-1" style={{ color: theme.subtextColor }}>
+                    {renderText(dept.description, "Department overview and function...")}
+                  </p>
+                </div>
+              </div>
+
+              <a
+                href={dept.linkUrl || "#open-positions"}
+                className="inline-flex items-center gap-1 text-xs font-extrabold group-hover:translate-x-1 transition-transform"
+                style={{ color: primaryColor }}
+              >
+                <span>View Roles</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 12. TECH STACK GRID ELEMENT */}
+      {element.type === "techstack" && (
+        <div
+          className={`w-full grid gap-4 my-3 ${
+            deviceMode === "mobile"
+              ? "grid-cols-1"
+              : deviceMode === "tablet"
+              ? "grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
+          {(element.content.items || []).map((tech: any) => {
+            const rawIcon = tech.icon || "";
+            const isImageLogo =
+              Boolean(tech.url) ||
+              rawIcon.startsWith("http") ||
+              rawIcon.startsWith("/") ||
+              rawIcon.startsWith("data:");
+            const logoSrc = tech.url || (isImageLogo ? rawIcon : null);
+
+            return (
+              <div
+                key={tech.id || tech.title}
+                className="p-5 rounded-3xl border shadow-sm hover:shadow-md transition-all space-y-3 text-left group hover:-translate-y-0.5"
+                style={{
+                  backgroundColor: theme.cardBg,
+                  borderColor: theme.cardBorder,
+                  color: theme.textColor,
+                  ...activeStyles,
+                }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-2xs overflow-hidden p-1.5 flex-shrink-0"
+                    style={{ backgroundColor: `${primaryColor}15` }}
+                  >
+                    {logoSrc ? (
+                      <img
+                        src={resolveImageUrl(logoSrc)}
+                        alt={renderText(tech.title, "Tool logo")}
+                        className="w-full h-full object-contain rounded-md"
+                      />
+                    ) : (
+                      <span>{rawIcon || "⚙️"}</span>
+                    )}
+                  </div>
+                  {tech.value && (
+                    <span
+                      className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border shadow-2xs"
+                      style={{
+                        backgroundColor: `${primaryColor}10`,
+                        color: primaryColor,
+                        borderColor: `${primaryColor}30`,
+                      }}
+                    >
+                      {renderText(tech.value, "Category")}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-extrabold tracking-tight group-hover:opacity-90">
+                    {renderText(tech.title, "Technology / Tool")}
+                  </h4>
+                  <p className="text-xs leading-relaxed mt-1" style={{ color: theme.subtextColor }}>
+                    {renderText(tech.description, "Tool details and role in ecosystem...")}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 13. HIRING PROCESS TIMELINE ELEMENT */}
+      {element.type === "process" && (
+        <div
+          className={`w-full grid gap-5 my-3 ${
+            deviceMode === "mobile"
+              ? "grid-cols-1"
+              : deviceMode === "tablet"
+              ? "grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          }`}
+        >
+          {(element.content.items || []).map((proc: any, index: number) => (
+            <div
+              key={proc.id || proc.title}
+              className="relative p-6 rounded-3xl border shadow-md transition-all space-y-3 text-left group hover:-translate-y-1"
+              style={{
+                backgroundColor: theme.cardBg,
+                borderColor: theme.cardBorder,
+                color: theme.textColor,
+                ...activeStyles,
+              }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  className="w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black text-white shadow-sm"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  0{index + 1}
+                </span>
+                {proc.value && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    style={{
+                      backgroundColor: `${primaryColor}10`,
+                      color: primaryColor,
+                      borderColor: `${primaryColor}30`,
+                    }}
+                  >
+                    {renderText(proc.value, "Duration")}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-extrabold tracking-tight">
+                  {renderText(proc.title, "Process Step")}
+                </h4>
+                <p className="text-xs leading-relaxed mt-1.5" style={{ color: theme.subtextColor }}>
+                  {renderText(proc.description, "Step details & expectations...")}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 14. EMPLOYEE TESTIMONIALS / QUOTES ELEMENT */}
+      {element.type === "testimonials" && (
+        <div
+          className={`w-full grid gap-5 my-3 ${
+            deviceMode === "mobile"
+              ? "grid-cols-1"
+              : deviceMode === "tablet"
+              ? "grid-cols-2"
+              : "grid-cols-1 sm:grid-cols-2"
+          }`}
+        >
+          {(element.content.items || []).map((quote: any) => (
+            <div
+              key={quote.id || quote.title}
+              className="p-6 rounded-3xl border shadow-md hover:shadow-xl transition-all space-y-4 text-left group flex flex-col justify-between"
+              style={{
+                backgroundColor: theme.cardBg,
+                borderColor: theme.cardBorder,
+                color: theme.textColor,
+                ...activeStyles,
+              }}
+            >
+              <div className="space-y-2">
+                <span className="text-3xl leading-none font-serif opacity-30 select-none block" style={{ color: primaryColor }}>
+                  “
+                </span>
+                <p className="text-xs sm:text-sm font-medium italic leading-relaxed" style={{ color: theme.textColor }}>
+                  {renderText(quote.description, "Quote story details...")}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 pt-3 border-t" style={{ borderColor: theme.cardBorder }}>
+                {quote.url ? (
+                  <img
+                    src={resolveImageUrl(quote.url)}
+                    alt={renderText(quote.title, "Employee")}
+                    className="w-11 h-11 rounded-2xl object-cover border-2 shadow-xs flex-shrink-0"
+                    style={{ borderColor: primaryColor }}
+                  />
+                ) : (
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm text-white flex-shrink-0 shadow-xs"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {quote.title ? quote.title.charAt(0) : "E"}
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-xs font-extrabold">{renderText(quote.title, "Teammate Name")}</h4>
+                  <p className="text-[11px] font-bold" style={{ color: primaryColor }}>
+                    {renderText(quote.subtitle, "Role & Team")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 12. DIVIDER / SPACER ELEMENTS */}
+      {element.type === "divider" && (
+        <div className={`w-full flex ${alignClass} my-4`}>
+          <hr
+            className="transition-all"
+            style={{
+              width: element.content.width || "100%",
+              borderTopWidth: element.content.thickness || "2px",
+              borderTopStyle: (element.content.style as any) || "solid",
+              borderColor: element.content.color || theme.cardBorder,
+            }}
+          />
+        </div>
+      )}
+
+      {element.type === "spacer" && (
+        <div
+          className="w-full transition-all"
+          style={{
+            height: deviceMode === "mobile"
+              ? element.content.mobileHeight || "16px"
+              : element.content.height || "32px",
+          }}
+        />
+      )}
     </div>
   );
 }
