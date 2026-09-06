@@ -85,3 +85,141 @@ export async function getPublicCareersData(companySlug: string, isPreviewMode: b
     jobs,
   };
 }
+
+export async function getPublicJobsFeedAction(
+  companySlug: string,
+  searchParams?: {
+    search?: string;
+    location?: string;
+    department?: string;
+    employmentType?: string;
+    workMode?: string;
+    sort?: string;
+  },
+  isPreviewMode: boolean = false
+) {
+  let company = await db.company.findFirst({
+    where: { slug: { equals: companySlug, mode: "insensitive" } },
+  });
+
+  if (!company) {
+    company = await db.company.findUnique({
+      where: { slug: companySlug },
+    });
+  }
+
+  if (!company) {
+    return null;
+  }
+
+  const now = new Date();
+
+  // Baseline job query: Company tenant isolated, status = ACTIVE, expiryDate is null OR > now
+  const baseWhere: any = {
+    companyId: company.id,
+    ...(isPreviewMode
+      ? {}
+      : {
+          status: JobStatus.ACTIVE,
+          OR: [{ expiryDate: null }, { expiryDate: { gt: now } }],
+        }),
+  };
+
+  // Fetch all active jobs for dynamic filter generation and counts
+  const allActiveJobs = await db.job.findMany({
+    where: baseWhere,
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Build dynamic filter dimensions with counts from actual database records
+  const locationCounts: Record<string, number> = {};
+  const departmentCounts: Record<string, number> = {};
+  const employmentTypeCounts: Record<string, number> = {};
+  const workModeCounts: Record<string, number> = {};
+
+  allActiveJobs.forEach((job) => {
+    const loc =
+      job.locationCity && job.locationCountry && job.locationCity !== "Remote"
+        ? `${job.locationCity}, ${job.locationCountry}`
+        : job.locationCity || "Remote";
+    locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+
+    const dept = job.departmentName || "General";
+    departmentCounts[dept] = (departmentCounts[dept] || 0) + 1;
+
+    const emp = job.employmentType;
+    employmentTypeCounts[emp] = (employmentTypeCounts[emp] || 0) + 1;
+
+    const wm = job.workMode;
+    workModeCounts[wm] = (workModeCounts[wm] || 0) + 1;
+  });
+
+  const searchFilter = searchParams?.search?.trim()?.toLowerCase();
+  const locationFilter = searchParams?.location?.trim();
+  const departmentFilter = searchParams?.department?.trim();
+  const employmentTypeFilter = searchParams?.employmentType?.trim();
+  const workModeFilter = searchParams?.workMode?.trim();
+  const sortBy = searchParams?.sort || "newest";
+
+  const filteredJobs = allActiveJobs.filter((job) => {
+    if (searchFilter) {
+      const matchTitle = job.title.toLowerCase().includes(searchFilter);
+      const matchDept = job.departmentName.toLowerCase().includes(searchFilter);
+      const matchSummary = job.summary?.toLowerCase().includes(searchFilter);
+      const matchCity = job.locationCity.toLowerCase().includes(searchFilter);
+      if (!matchTitle && !matchDept && !matchSummary && !matchCity) return false;
+    }
+
+    if (locationFilter && locationFilter !== "ALL") {
+      const loc =
+        job.locationCity && job.locationCountry && job.locationCity !== "Remote"
+          ? `${job.locationCity}, ${job.locationCountry}`
+          : job.locationCity || "Remote";
+      if (loc !== locationFilter && !job.locationCity.toLowerCase().includes(locationFilter.toLowerCase())) {
+        return false;
+      }
+    }
+
+    if (departmentFilter && departmentFilter !== "ALL") {
+      if (job.departmentName !== departmentFilter) return false;
+    }
+
+    if (employmentTypeFilter && employmentTypeFilter !== "ALL") {
+      if (job.employmentType !== employmentTypeFilter) return false;
+    }
+
+    if (workModeFilter && workModeFilter !== "ALL") {
+      if (job.workMode !== workModeFilter) return false;
+    }
+
+    return true;
+  });
+
+  if (sortBy === "oldest") {
+    filteredJobs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  } else if (sortBy === "alphabetical") {
+    filteredJobs.sort((a, b) => a.title.localeCompare(b.title));
+  } else {
+    filteredJobs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  const careersPage = await db.careersPage.findUnique({
+    where: { companyId: company.id },
+  });
+
+  const jobsExperienceConfig = (careersPage?.jobsExperienceConfig as any) || {};
+
+  return {
+    company,
+    jobs: filteredJobs,
+    totalCount: allActiveJobs.length,
+    filteredCount: filteredJobs.length,
+    filterDimensions: {
+      locations: Object.entries(locationCounts).map(([name, count]) => ({ name, count })),
+      departments: Object.entries(departmentCounts).map(([name, count]) => ({ name, count })),
+      employmentTypes: Object.entries(employmentTypeCounts).map(([name, count]) => ({ name, count })),
+      workModes: Object.entries(workModeCounts).map(([name, count]) => ({ name, count })),
+    },
+    jobsExperienceConfig,
+  };
+}

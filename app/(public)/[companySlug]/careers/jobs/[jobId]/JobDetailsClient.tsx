@@ -25,6 +25,7 @@ interface JobDetailsClientProps {
   isPreviewMode?: boolean;
   onBackToCareers?: () => void;
   deviceMode?: "desktop" | "tablet" | "mobile";
+  onNavigatePage?: (page: "careers" | "jobs" | "job-details") => void;
 }
 
 export default function JobDetailsClient({
@@ -36,6 +37,7 @@ export default function JobDetailsClient({
   isPreviewMode = false,
   onBackToCareers,
   deviceMode = "desktop",
+  onNavigatePage,
 }: JobDetailsClientProps) {
   const company = job.company || job.companyOverride || {};
   const theme = getThemeByCompany(company);
@@ -128,77 +130,158 @@ export default function JobDetailsClient({
         primaryColor={primaryColor}
       />
 
-      {/* Header */}
+      {/* 1. PROFESSIONAL JOB PORTAL HEADER */}
       <header
         className={`sticky top-0 z-40 px-4 sm:px-8 py-3.5 backdrop-blur-xl border-b transition-all ${
-          isDarkMode ? "bg-slate-950/80 border-slate-800/80 text-white" : "bg-white/85 border-slate-200 text-slate-900"
-        }`}
+          isDarkMode ? "bg-slate-950/85 border-slate-800/80 text-white" : "bg-white/90 border-slate-200/90 text-slate-900"
+        } shadow-xs`}
       >
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          {isPreviewMode && onBackToCareers ? (
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            {isPreviewMode && onBackToCareers ? (
+              <button
+                type="button"
+                onClick={onBackToCareers}
+                className={`flex items-center gap-1.5 text-xs font-extrabold transition-colors cursor-pointer ${
+                  isDarkMode ? "text-slate-300 hover:text-cyan-400" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Back to All Roles</span>
+              </button>
+            ) : (
+              <Link
+                href={`/${companySlug}/careers/jobs`}
+                className={`flex items-center gap-1.5 text-xs font-extrabold transition-colors cursor-pointer ${
+                  isDarkMode ? "text-slate-300 hover:text-cyan-400" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Back to All Roles</span>
+              </Link>
+            )}
+
+            <span className="text-slate-300 hidden sm:inline">|</span>
+
+            {isPreviewMode ? (
+              <button
+                type="button"
+                onClick={() => onNavigatePage && onNavigatePage("careers")}
+                className="flex items-center gap-2.5 group text-left cursor-pointer"
+              >
+                {company.logoUrl ? (
+                  <img
+                    src={company.logoUrl}
+                    alt={`${company.name || "Company"} Logo`}
+                    className="w-8 h-8 object-contain rounded-lg border border-slate-200/50 shadow-2xs group-hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <div
+                    className="w-8 h-8 flex items-center justify-center font-bold text-white text-xs rounded-lg shadow-2xs group-hover:scale-105 transition-transform"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {(company.name || "C").charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <span className="font-black text-sm tracking-tight block leading-tight group-hover:text-cyan-400 transition-colors">
+                    {company.name || "Company Portal"}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400 block leading-tight">
+                    Official Career Portal
+                  </span>
+                </div>
+              </button>
+            ) : (
+              <Link href={`/${companySlug}/careers`} className="flex items-center gap-2.5 group">
+                {company.logoUrl ? (
+                  <img
+                    src={company.logoUrl}
+                    alt={`${company.name || "Company"} Logo`}
+                    className="w-8 h-8 object-contain rounded-lg border border-slate-200/50 shadow-2xs group-hover:scale-105 transition-transform"
+                  />
+                ) : (
+                  <div
+                    className="w-8 h-8 flex items-center justify-center font-bold text-white text-xs rounded-lg shadow-2xs group-hover:scale-105 transition-transform"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {(company.name || "C").charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <span className="font-black text-sm tracking-tight block leading-tight group-hover:text-cyan-400 transition-colors">
+                    {company.name || "Company Portal"}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400 block leading-tight">
+                    Official Career Portal
+                  </span>
+                </div>
+              </Link>
+            )}
+          </div>
+
+          {/* Right Header Navigation & Fast Apply CTA */}
+          <div className="flex items-center gap-3">
+            {isPreviewMode ? (
+              <button
+                type="button"
+                onClick={() => onNavigatePage && onNavigatePage("careers")}
+                className={`text-xs font-extrabold hidden md:inline transition-colors cursor-pointer ${
+                  isDarkMode ? "text-slate-300 hover:text-cyan-400" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Careers Homepage
+              </button>
+            ) : (
+              <Link
+                href={`/${companySlug}/careers`}
+                className={`text-xs font-extrabold hidden md:inline transition-colors ${
+                  isDarkMode ? "text-slate-300 hover:text-cyan-400" : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Careers Homepage
+              </Link>
+            )}
+
+            {isPreviewMode ? (
+              <button
+                type="button"
+                onClick={() => onNavigatePage && onNavigatePage("jobs")}
+                className="text-xs font-black text-[#005d52] bg-teal-50 px-3 py-1.5 rounded-xl border border-teal-200 shadow-2xs hidden sm:inline cursor-pointer"
+              >
+                All Open Roles
+              </button>
+            ) : (
+              <Link
+                href={`/${companySlug}/careers/jobs`}
+                className="text-xs font-black text-[#005d52] bg-teal-50 px-3 py-1.5 rounded-xl border border-teal-200 shadow-2xs hidden sm:inline"
+              >
+                All Open Roles
+              </Link>
+            )}
+
             <button
               type="button"
-              onClick={onBackToCareers}
-              className={`flex items-center gap-1.5 text-xs font-extrabold transition-colors cursor-pointer ${
-                isDarkMode ? "text-slate-300 hover:text-cyan-400" : "text-slate-600 hover:text-slate-900"
-              }`}
+              onClick={scrollToApply}
+              className="px-4 py-2 rounded-xl text-xs font-extrabold text-white shadow-md transition-transform hover:scale-105 flex items-center gap-1.5 cursor-pointer"
+              style={{ backgroundColor: primaryColor }}
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to All Open Roles</span>
+              <Send className="w-3.5 h-3.5" />
+              <span>Apply Now</span>
             </button>
-          ) : (
-            <Link
-              href={`/${companySlug}/careers`}
-              className={`flex items-center gap-1.5 text-xs font-extrabold transition-colors cursor-pointer ${
-                isDarkMode ? "text-slate-300 hover:text-cyan-400" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to All Open Roles</span>
-            </Link>
-          )}
-
-          <div className="flex items-center gap-3">
-            {company.logoUrl ? (
-              <img
-                src={company.logoUrl}
-                alt={`${company.name || "Company"} Logo`}
-                className="w-8 h-8 object-cover border border-slate-200/50 rounded-lg shadow-2xs"
-              />
-            ) : (
-              <div
-                className="w-8 h-8 flex items-center justify-center font-bold text-white text-sm rounded-lg shadow-2xs"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {(company.name || "C").charAt(0)}
-              </div>
-            )}
-            <span className="font-extrabold text-sm">{company.name || "Company Portal"}</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main
-        className={`flex-1 w-full mx-auto transition-all ${
-          deviceMode === "mobile"
-            ? "max-w-[390px] px-3 py-4 space-y-6"
-            : deviceMode === "tablet"
-            ? "max-w-3xl px-4 py-8 space-y-8"
-            : "max-w-5xl px-4 sm:px-6 py-8 md:py-12 space-y-10"
-        }`}
-      >
-        {/* HERO JOB TITLE BANNER (Theme-based Hero Background) */}
-        {heroSec?.enabled !== false && (
-          <div
-            className="p-5 sm:p-8 md:p-10 border shadow-2xl relative overflow-hidden space-y-6 backdrop-blur-md transition-all"
-            style={{
-              background: theme.heroBg,
-              borderColor: theme.cardBorder,
-              borderRadius: `${cornerRadius + 4}px`,
-            }}
-          >
-            <div className="space-y-3 relative z-10">
+      {/* 2. FULL DEVICE WIDTH HERO JOB TITLE BANNER */}
+      {heroSec?.enabled !== false && (
+        <section
+          className="w-full py-12 sm:py-16 px-4 sm:px-8 border-b shadow-xl relative overflow-hidden transition-colors"
+          style={{ background: theme.heroBg, borderColor: theme.cardBorder, color: theme.textColor }}
+        >
+          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+          <div className="max-w-5xl mx-auto space-y-6 relative z-10">
+            <div className="space-y-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <span
                   className="text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full text-white shadow-2xs"
@@ -220,12 +303,12 @@ export default function JobDetailsClient({
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight" style={{ color: theme.textColor }}>
                 {job.title || "Senior Software Engineer"}
               </h1>
 
               <div
-                className="flex items-center gap-3 sm:gap-4 text-xs font-semibold flex-wrap pt-2"
+                className="flex items-center gap-4 text-xs sm:text-sm font-semibold flex-wrap pt-1"
                 style={{ color: theme.subtextColor }}
               >
                 <span className="flex items-center gap-1.5">
@@ -251,7 +334,7 @@ export default function JobDetailsClient({
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-700/30 flex items-center justify-between gap-4 flex-wrap relative z-10">
+            <div className="pt-5 border-t border-slate-700/40 flex items-center justify-between gap-4 flex-wrap">
               <button
                 type="button"
                 onClick={scrollToApply}
@@ -262,12 +345,24 @@ export default function JobDetailsClient({
                 <span>{heroSec?.content?.ctaText || "Apply Now for this Role"}</span>
               </button>
 
-              <span className="text-xs font-medium" style={{ color: theme.subtextColor }}>
-                Join {company.name || "Our Team"} in {job.locationCity || "Remote"}
+              <span className="text-xs font-semibold opacity-90" style={{ color: theme.subtextColor }}>
+                Joining {company.name || "Our Team"} • {job.locationCity || "Remote"}
               </span>
             </div>
           </div>
-        )}
+        </section>
+      )}
+
+      {/* 3. MAIN JOB DETAILS BODY */}
+      <main
+        className={`flex-1 w-full mx-auto transition-all ${
+          deviceMode === "mobile"
+            ? "max-w-[390px] px-3 py-6 space-y-6"
+            : deviceMode === "tablet"
+            ? "max-w-3xl px-4 py-8 space-y-8"
+            : "max-w-5xl px-4 sm:px-6 py-8 md:py-12 space-y-10"
+        }`}
+      >
 
         {/* JOB DETAILS CONTENT GRID */}
         <div

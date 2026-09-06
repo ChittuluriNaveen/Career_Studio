@@ -96,12 +96,6 @@ export default function JobPageEditorPanel({
 
   return (
     <div className="p-4 space-y-6 font-sans text-xs relative">
-      <OperationLoader
-        isVisible={saving}
-        title="Saving Job View Template..."
-        subtitle="Updating theme configurations & template layout..."
-        primaryColor={formData.primaryColor || "#0f766e"}
-      />
       <div className="pb-2 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider flex items-center gap-1.5">
@@ -110,6 +104,14 @@ export default function JobPageEditorPanel({
           </h2>
           <p className="text-[11px] text-slate-400">Customize elected theme & job detail layout</p>
         </div>
+        {saving ? (
+          <span className="text-[11px] font-bold text-teal-700 flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-spin" />
+            Saving...
+          </span>
+        ) : (
+          <span className="text-[11px] font-bold text-emerald-600">Saved ✓</span>
+        )}
       </div>
 
       {/* 1. THEME PRESETS SELECTOR */}

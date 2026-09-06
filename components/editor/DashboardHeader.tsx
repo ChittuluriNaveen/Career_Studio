@@ -33,8 +33,8 @@ interface DashboardHeaderProps {
   };
   deviceMode: "mobile" | "tablet" | "desktop";
   setDeviceMode: (mode: "mobile" | "tablet" | "desktop") => void;
-  activePage?: "careers" | "job-details";
-  setActivePage?: (page: "careers" | "job-details") => void;
+  activePage?: "careers" | "jobs" | "job-details";
+  setActivePage?: (page: "careers" | "jobs" | "job-details") => void;
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?: () => void;

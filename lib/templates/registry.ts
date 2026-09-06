@@ -115,11 +115,48 @@ export interface SectionElement {
   };
 }
 
-export interface SectionLayoutConfig {
-  container: "wide" | "narrow" | "full";
-  alignment: "left" | "center" | "right";
-  paddingY: "sm" | "md" | "lg";
+export interface SectionCardStyles {
+  background?: "default" | "solid-white" | "dark-glass" | "transparent" | "image" | "gradient" | string;
   backgroundColor?: string;
+  backgroundImageUrl?: string;
+  bgPosition?: "center" | "top" | "bottom" | "left" | "right" | string;
+  bgSize?: "cover" | "contain" | string;
+  bgRepeat?: "no-repeat" | "repeat" | string;
+  overlayEnabled?: boolean;
+  overlayColor?: string;
+  overlayOpacity?: number;
+  overlayGradient?: string;
+  horizontalAlignment?: "left" | "center" | "right";
+  verticalAlignment?: "top" | "center" | "bottom";
+  minHeight?: "auto" | "sm" | "md" | "lg" | "full" | string;
+  containerWidth?: "wide" | "narrow" | "full" | string;
+  contentMaxWidth?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
+  paddingRight?: string;
+  marginTop?: string;
+  marginBottom?: string;
+  borderWidth?: number | string;
+  borderColor?: string;
+  borderStyle?: "solid" | "dashed" | "dotted" | "none";
+  borderRadius?: number | string;
+  shadow?: "none" | "sm" | "md" | "lg" | "xl" | string;
+  glass?: "none" | "light" | "medium" | "strong";
+  backdropBlur?: string;
+  responsive?: {
+    tablet?: Partial<Omit<SectionCardStyles, "responsive">>;
+    mobile?: Partial<Omit<SectionCardStyles, "responsive">>;
+  };
+}
+
+export interface SectionLayoutConfig {
+  container: "wide" | "narrow" | "full" | string;
+  alignment: "left" | "center" | "right";
+  paddingY: "sm" | "md" | "lg" | string;
+  backgroundColor?: string;
+  verticalAlignment?: "top" | "center" | "bottom";
+  minHeight?: string;
 }
 
 export interface SectionTemplate {
@@ -129,6 +166,7 @@ export interface SectionTemplate {
   description: string;
   thumbnailIcon: string;
   layout: SectionLayoutConfig;
+  cardStyles?: SectionCardStyles;
   defaultElements: SectionElement[];
 }
 
@@ -236,9 +274,22 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
     templateId: "hero-image-bg",
     name: "Hero Full Banner Background",
     sectionType: "HERO",
-    description: "Immersive background image overlay with high-contrast text overlay",
+    description: "Immersive full-bleed hero banner background image with dark overlay & high-contrast text",
     thumbnailIcon: "Image",
     layout: { container: "full", alignment: "center", paddingY: "lg" },
+    cardStyles: {
+      background: "image",
+      backgroundImageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=80",
+      bgSize: "cover",
+      bgPosition: "center center",
+      overlayEnabled: true,
+      overlayColor: "#0f172a",
+      overlayOpacity: 0.65,
+      minHeight: "580px",
+      horizontalAlignment: "center",
+      verticalAlignment: "center",
+      shadow: "xl",
+    },
     defaultElements: [
       {
         id: "hero-bg-heading",
@@ -247,6 +298,10 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         enabled: true,
         alignment: "center",
         content: { text: "Pioneering Next-Generation AI Infrastructure", level: 1 },
+        styles: {
+          colors: { color: "#ffffff" },
+          typography: { fontSize: "44px", fontWeight: "800", textAlign: "center" },
+        },
       },
       {
         id: "hero-bg-text",
@@ -255,23 +310,15 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         enabled: true,
         alignment: "center",
         content: { text: "Work on cutting-edge machine learning systems alongside world-renowned research scientists." },
-      },
-      {
-        id: "hero-bg-image",
-        type: "image",
-        position: 2,
-        enabled: true,
-        alignment: "center",
-        content: {
-          url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1600&q=80",
-          alt: "Modern Office Space",
-          fit: "cover",
+        styles: {
+          colors: { color: "#e2e8f0" },
+          typography: { fontSize: "18px", textAlign: "center" },
         },
       },
       {
         id: "hero-bg-button",
         type: "button",
-        position: 3,
+        position: 2,
         enabled: true,
         alignment: "center",
         content: { label: "Join Our Mission", linkUrl: "#open-positions", variant: "primary" },

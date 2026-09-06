@@ -3,6 +3,7 @@
 import {
   FileText,
   Layers,
+  Briefcase,
   Palette,
   Share2,
   Search,
@@ -10,7 +11,7 @@ import {
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
-export type LeftNavTab = "pages" | "sections" | "design" | "share" | "seo" | "settings";
+export type LeftNavTab = "pages" | "sections" | "jobs-experience" | "design" | "share" | "seo" | "settings";
 
 interface LeftIconRailProps {
   activeTab: LeftNavTab;
@@ -21,6 +22,7 @@ export default function LeftIconRail({ activeTab, setActiveTab }: LeftIconRailPr
   const navItems = [
     { id: "pages" as LeftNavTab, label: "Pages Overview", icon: FileText },
     { id: "sections" as LeftNavTab, label: "Sections Outline", icon: Layers },
+    { id: "jobs-experience" as LeftNavTab, label: "Jobs Experience Settings", icon: Briefcase },
     { id: "design" as LeftNavTab, label: "Design & Theme Presets", icon: Palette },
     { id: "share" as LeftNavTab, label: "Share & Distribution", icon: Share2 },
     { id: "seo" as LeftNavTab, label: "SEO & Search Metadata", icon: Search },

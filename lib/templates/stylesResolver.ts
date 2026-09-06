@@ -1,4 +1,4 @@
-import { SectionElement, ElementStyles, ElementType } from "./registry";
+import { SectionElement, ElementStyles, ElementType, SectionCardStyles } from "./registry";
 
 export interface ResolvedStyleObject extends React.CSSProperties {
   [key: string]: any;
@@ -351,4 +351,211 @@ export function getElementStyles(
   }
 
   return css;
+}
+
+/**
+ * Resolves Section Container Styles with device mode inheritance
+ */
+export function resolveSectionContainerStyles(
+  cardStyles: SectionCardStyles = {},
+  deviceMode: "desktop" | "tablet" | "mobile" = "desktop",
+  themeFallback?: any
+): {
+  containerStyle: React.CSSProperties;
+  overlayStyle: React.CSSProperties | null;
+  contentStyle: React.CSSProperties;
+} {
+  const { responsive, ...baseStyles } = cardStyles;
+
+  let active: SectionCardStyles = { ...baseStyles };
+
+  if (deviceMode === "tablet") {
+    active = { ...active, ...(responsive?.tablet || {}) };
+  } else if (deviceMode === "mobile") {
+    const tabletMerged = { ...active, ...(responsive?.tablet || {}) };
+    active = { ...active, ...tabletMerged, ...(responsive?.mobile || {}) };
+  }
+
+  // 1. Container Outer Box (Dimensions, Borders, Radius, Box Shadows, Glass)
+  const containerStyle: React.CSSProperties = {
+    position: "relative",
+    overflow: "hidden",
+  };
+
+  // Min Height
+  if (active.minHeight) {
+    if (active.minHeight === "sm") containerStyle.minHeight = "360px";
+    else if (active.minHeight === "md") containerStyle.minHeight = "500px";
+    else if (active.minHeight === "lg") containerStyle.minHeight = "680px";
+    else if (active.minHeight === "full") containerStyle.minHeight = "100vh";
+    else containerStyle.minHeight = active.minHeight;
+  }
+
+  // Padding & Margin
+  if (active.paddingTop) containerStyle.paddingTop = formatCssValue(active.paddingTop);
+  if (active.paddingBottom) containerStyle.paddingBottom = formatCssValue(active.paddingBottom);
+  if (active.paddingLeft) containerStyle.paddingLeft = formatCssValue(active.paddingLeft);
+  if (active.paddingRight) containerStyle.paddingRight = formatCssValue(active.paddingRight);
+  if (active.marginTop) containerStyle.marginTop = formatCssValue(active.marginTop);
+  if (active.marginBottom) containerStyle.marginBottom = formatCssValue(active.marginBottom);
+
+  // Border & Radius
+  if (active.borderRadius !== undefined) {
+    containerStyle.borderRadius = formatCssValue(active.borderRadius);
+  } else if (themeFallback?.cornerRadius) {
+    containerStyle.borderRadius = `${themeFallback.cornerRadius * 1.2}px`;
+  }
+
+  if (active.borderWidth !== undefined) {
+    containerStyle.borderWidth = formatCssValue(active.borderWidth);
+    containerStyle.borderStyle = (active.borderStyle as any) || "solid";
+  }
+
+  if (active.borderColor) {
+    containerStyle.borderColor = active.borderColor;
+  }
+
+  // Background
+  const bgMode = active.background || "default";
+  if (bgMode === "transparent") {
+    containerStyle.backgroundColor = "transparent";
+    containerStyle.borderStyle = "none";
+  } else if (bgMode === "solid-white") {
+    containerStyle.backgroundColor = "#ffffff";
+  } else if (bgMode === "dark-glass") {
+    containerStyle.backgroundColor = "rgba(15, 23, 42, 0.85)";
+    containerStyle.backdropFilter = "blur(16px)";
+  } else if (active.backgroundColor) {
+    containerStyle.backgroundColor = active.backgroundColor;
+  } else if (themeFallback?.cardBg) {
+    containerStyle.backgroundColor = themeFallback.cardBg;
+  }
+
+  // Background Image
+  if (active.backgroundImageUrl) {
+    let resolvedBgUrl = active.backgroundImageUrl;
+    if (resolvedBgUrl === "@company_banner" || resolvedBgUrl === "@banner") {
+      resolvedBgUrl = themeFallback?.bannerUrl || "";
+    } else if (resolvedBgUrl === "@company_logo" || resolvedBgUrl === "@logo") {
+      resolvedBgUrl = themeFallback?.logoUrl || "";
+    }
+    if (resolvedBgUrl) {
+      containerStyle.backgroundImage = `url("${resolvedBgUrl}")`;
+      containerStyle.backgroundPosition = active.bgPosition || "center center";
+      containerStyle.backgroundSize = active.bgSize || "cover";
+      containerStyle.backgroundRepeat = active.bgRepeat || "no-repeat";
+    }
+  }
+
+  // Glassmorphism
+  if (active.glass && active.glass !== "none") {
+    switch (active.glass) {
+      case "light":
+        containerStyle.backgroundColor = containerStyle.backgroundColor || "rgba(255, 255, 255, 0.15)";
+        containerStyle.backdropFilter = "blur(12px)";
+        containerStyle.WebkitBackdropFilter = "blur(12px)";
+        break;
+      case "medium":
+        containerStyle.backgroundColor = containerStyle.backgroundColor || "rgba(255, 255, 255, 0.3)";
+        containerStyle.backdropFilter = "blur(18px)";
+        containerStyle.WebkitBackdropFilter = "blur(18px)";
+        break;
+      case "strong":
+        containerStyle.backgroundColor = containerStyle.backgroundColor || "rgba(255, 255, 255, 0.45)";
+        containerStyle.backdropFilter = "blur(24px)";
+        containerStyle.WebkitBackdropFilter = "blur(24px)";
+        break;
+    }
+  }
+
+  // Shadows
+  if (active.shadow) {
+    switch (active.shadow) {
+      case "sm":
+        containerStyle.boxShadow = "0 1px 3px 0 rgb(0 0 0 / 0.1)";
+        break;
+      case "md":
+        containerStyle.boxShadow = "0 4px 6px -1px rgb(0 0 0 / 0.1)";
+        break;
+      case "lg":
+        containerStyle.boxShadow = "0 10px 15px -3px rgb(0 0 0 / 0.1)";
+        break;
+      case "xl":
+        containerStyle.boxShadow = "0 20px 25px -5px rgb(0 0 0 / 0.1)";
+        break;
+      case "none":
+        containerStyle.boxShadow = "none";
+        break;
+    }
+  }
+
+  // 2. Layer 2: Overlay Layer (Absolute behind content, above background)
+  let overlayStyle: React.CSSProperties | null = null;
+  if (active.overlayEnabled) {
+    const opacity = active.overlayOpacity !== undefined ? active.overlayOpacity : 0.4;
+    const color = active.overlayColor || "#000000";
+    overlayStyle = {
+      position: "absolute",
+      inset: 0,
+      zIndex: 10,
+      pointerEvents: "none",
+      backgroundColor: color,
+      opacity,
+    };
+
+    if (active.overlayGradient) {
+      overlayStyle.background = active.overlayGradient;
+    }
+  }
+
+  // 3. Layer 3: Content Inner Container (Flex / Alignments, relative z-20)
+  const contentStyle: React.CSSProperties = {
+    position: "relative",
+    zIndex: 20,
+    width: "100%",
+    minHeight: "100%",
+    flex: "1 1 auto",
+    display: "flex",
+    flexDirection: "column",
+  };
+
+  // Horizontal Alignment
+  if (active.horizontalAlignment === "center") {
+    contentStyle.alignItems = "center";
+    contentStyle.textAlign = "center";
+  } else if (active.horizontalAlignment === "right") {
+    contentStyle.alignItems = "flex-end";
+    contentStyle.textAlign = "right";
+  } else {
+    contentStyle.alignItems = "flex-start";
+    contentStyle.textAlign = "left";
+  }
+
+  // Vertical Alignment
+  if (active.verticalAlignment === "center") {
+    contentStyle.justifyContent = "center";
+  } else if (active.verticalAlignment === "bottom") {
+    contentStyle.justifyContent = "flex-end";
+  } else {
+    contentStyle.justifyContent = "flex-start";
+  }
+
+  // Max Width
+  if (active.contentMaxWidth) {
+    contentStyle.maxWidth = formatCssValue(active.contentMaxWidth);
+    contentStyle.marginLeft =
+      active.horizontalAlignment === "center"
+        ? "auto"
+        : active.horizontalAlignment === "right"
+        ? "auto"
+        : "0";
+    contentStyle.marginRight =
+      active.horizontalAlignment === "center"
+        ? "auto"
+        : active.horizontalAlignment === "left"
+        ? "auto"
+        : "0";
+  }
+
+  return { containerStyle, overlayStyle, contentStyle };
 }

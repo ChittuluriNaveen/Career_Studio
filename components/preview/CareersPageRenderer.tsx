@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { SectionType } from "@prisma/client";
 import { Sparkles, ArrowUp, ArrowDown, Copy, Eye, EyeOff, Trash2, Menu, X, Briefcase, ExternalLink, Globe } from "lucide-react";
 import JobSearchFilter from "@/components/candidate/JobSearchFilter";
 import TemplateRenderer from "./TemplateRenderer";
 import { SectionElement, getDefaultElementsForSectionType } from "@/lib/templates/registry";
 import { getThemeByCompany } from "@/lib/themes/registry";
+import { resolveSectionContainerStyles } from "@/lib/templates/stylesResolver";
 import LazySectionReveal from "@/components/ui/LazySectionReveal";
 
 interface CareersPageRendererProps {
@@ -60,6 +62,7 @@ interface CareersPageRendererProps {
   onToggleHideSection?: (id: string, currentEnabled: boolean) => void;
   onDeleteSection?: (id: string) => void;
   deviceMode?: "desktop" | "tablet" | "mobile";
+  onNavigatePage?: (page: "careers" | "jobs" | "job-details") => void;
 }
 
 export default function CareersPageRenderer({
@@ -79,6 +82,7 @@ export default function CareersPageRenderer({
   onToggleHideSection,
   onDeleteSection,
   deviceMode = "desktop",
+  onNavigatePage,
 }: CareersPageRendererProps) {
   // Resolve Theme styling parameters dynamically
   const theme = getThemeByCompany(company);
@@ -90,12 +94,18 @@ export default function CareersPageRenderer({
   const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Auto-scroll center canvas to selected section when selected from Sections tab or inspector
+  // Auto-scroll center canvas container to selected section without scrolling browser window
   useEffect(() => {
     if (isPreviewMode && selectedSectionId) {
       const targetElement = document.getElementById(`section-${selectedSectionId}`);
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        const container = targetElement.closest(".overflow-y-auto");
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          const elementRect = targetElement.getBoundingClientRect();
+          const offset = elementRect.top - containerRect.top + container.scrollTop - 24;
+          container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+        }
       }
     }
   }, [selectedSectionId, isPreviewMode]);
@@ -139,13 +149,23 @@ export default function CareersPageRenderer({
     }
   };
 
+  const formatNavLabel = (sec: any) => {
+    if (sec.content?.navLabel) return sec.content.navLabel;
+    if (!sec.title) return sec.type.replace("_", " ");
+    const cleaned = sec.title
+      .replace(/Full Banner Background|Side-by-Side|Cards Grid|Grid 3-Column|Embed|Spotlight|Timeline|Showcase|Banner|Grid/gi, "")
+      .replace(/ - /g, " ")
+      .trim();
+    return cleaned || sec.title;
+  };
+
   // Build dynamic navigation items with unique keys
   const navItems = activeSections
     .filter((sec) => sec.enabled !== false && sec.content?.showInNav !== false)
     .map((sec, idx) => ({
       key: sec.id ? `nav-${sec.id}` : `nav-${sec.type}-${idx}`,
       id: getSectionAnchorId(sec.type, sec.title),
-      label: sec.title || sec.type.replace("_", " "),
+      label: formatNavLabel(sec),
       type: sec.type,
     }));
 
@@ -201,34 +221,64 @@ export default function CareersPageRenderer({
 
           {/* Desktop Navigation Links */}
           <nav className={deviceMode === "mobile" ? "hidden" : "hidden md:flex items-center gap-6"}>
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => scrollToAnchor(item.id)}
-                className={`text-xs font-bold transition-all cursor-pointer capitalize hover:scale-105 ${
-                  isDarkMode
-                    ? "text-slate-300 hover:text-cyan-400"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              const isJobsNav = item.type === SectionType.OPEN_ROLES || item.id === "jobs" || item.id === "open-positions";
+              return isJobsNav && !isPreviewMode ? (
+                <Link
+                  key={item.key}
+                  href={`/${company.slug}/careers/jobs`}
+                  className={`text-xs font-bold transition-all cursor-pointer capitalize hover:scale-105 ${
+                    isDarkMode
+                      ? "text-slate-300 hover:text-cyan-400"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={item.key}
+                  onClick={() => scrollToAnchor(item.id)}
+                  className={`text-xs font-bold transition-all cursor-pointer capitalize hover:scale-105 ${
+                    isDarkMode
+                      ? "text-slate-300 hover:text-cyan-400"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Right Header Action Button */}
           <div className={deviceMode === "mobile" ? "hidden" : "hidden sm:flex items-center gap-3"}>
-            <button
-              onClick={() => scrollToAnchor("jobs")}
-              className="px-4 py-2 text-xs font-extrabold shadow-md transition-transform hover:scale-105 text-white flex items-center gap-1.5 cursor-pointer"
-              style={{
-                backgroundColor: primaryColor,
-                borderRadius: `${cornerRadius}px`,
-              }}
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Open Roles ({jobs.length})</span>
-            </button>
+            {isPreviewMode ? (
+              <button
+                type="button"
+                onClick={() => (onNavigatePage ? onNavigatePage("jobs") : scrollToAnchor("jobs"))}
+                className="px-4 py-2 text-xs font-extrabold shadow-md transition-transform hover:scale-105 text-white flex items-center gap-1.5 cursor-pointer"
+                style={{
+                  backgroundColor: primaryColor,
+                  borderRadius: `${cornerRadius}px`,
+                }}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Explore Open Roles ({jobs.length})</span>
+              </button>
+            ) : (
+              <Link
+                href={`/${company.slug}/careers/jobs`}
+                className="px-4 py-2 text-xs font-extrabold shadow-md transition-transform hover:scale-105 text-white flex items-center gap-1.5 cursor-pointer"
+                style={{
+                  backgroundColor: primaryColor,
+                  borderRadius: `${cornerRadius}px`,
+                }}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Explore Open Roles ({jobs.length})</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Hamburger Menu Button */}
@@ -251,72 +301,89 @@ export default function CareersPageRenderer({
               isDarkMode ? "border-slate-800 text-white" : "border-slate-200 text-slate-900"
             }`}
           >
-            {navItems.map((item) => (
-              <button
-                key={`mobile-${item.key}`}
-                onClick={() => scrollToAnchor(item.id)}
-                className={`block w-full text-left px-3 py-2 text-sm font-bold rounded-lg capitalize ${
-                  isDarkMode ? "hover:bg-slate-800 text-slate-200" : "hover:bg-slate-100 text-slate-700"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navItems.map((item) => {
+              const isJobsNav = item.type === SectionType.OPEN_ROLES || item.id === "jobs" || item.id === "open-positions";
+              return isJobsNav && !isPreviewMode ? (
+                <Link
+                  key={`mobile-${item.key}`}
+                  href={`/${company.slug}/careers/jobs`}
+                  className={`block w-full text-left px-3 py-2 text-sm font-bold rounded-lg capitalize ${
+                    isDarkMode ? "hover:bg-slate-800 text-slate-200" : "hover:bg-slate-100 text-slate-700"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <button
+                  key={`mobile-${item.key}`}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (isJobsNav && onNavigatePage) {
+                      onNavigatePage("jobs");
+                    } else {
+                      scrollToAnchor(item.id);
+                    }
+                  }}
+                  className={`block w-full text-left px-3 py-2 text-sm font-bold rounded-lg capitalize ${
+                    isDarkMode ? "hover:bg-slate-800 text-slate-200" : "hover:bg-slate-100 text-slate-700"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
             <div className="pt-2 border-t border-slate-700/50">
-              <button
-                onClick={() => scrollToAnchor("jobs")}
-                className="w-full py-2.5 px-4 text-xs font-bold text-white shadow-sm text-center rounded-lg"
-                style={{ backgroundColor: primaryColor }}
-              >
-                View Open Positions ({jobs.length})
-              </button>
+              {isPreviewMode ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onNavigatePage) onNavigatePage("jobs");
+                  }}
+                  className="block w-full py-2.5 px-4 text-xs font-bold text-white shadow-sm text-center rounded-lg cursor-pointer"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  View Open Positions ({jobs.length})
+                </button>
+              ) : (
+                <Link
+                  href={`/${company.slug}/careers/jobs`}
+                  className="block w-full py-2.5 px-4 text-xs font-bold text-white shadow-sm text-center rounded-lg"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  View Open Positions ({jobs.length})
+                </Link>
+              )}
             </div>
           </div>
         )}
       </header>
 
-      {/* 2. HERO MESH / BANNER BACKGROUND DECORATION */}
-      {company.bannerUrl ? (
-        <div className="w-full h-48 sm:h-64 md:h-80 relative overflow-hidden">
-          <img src={company.bannerUrl} alt="Hero Banner" className="w-full h-full object-cover" />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: isDarkMode
-                ? "linear-gradient(180deg, rgba(3,7,18,0.2) 0%, rgba(3,7,18,0.95) 100%)"
-                : "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(248,250,252,0.95) 100%)",
-            }}
-          />
-        </div>
-      ) : (
-        <div
-          className="w-full h-24 sm:h-32 transition-all opacity-90"
-          style={{ background: theme.heroBg }}
-        />
-      )}
-
-      {/* 3. MAIN SCROLLABLE SECTIONS BODY */}
+      {/* 2. MAIN SCROLLABLE SECTIONS BODY */}
       <main
-        className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-12"
+        className="flex-1 w-full space-y-12"
         style={{ paddingTop: sectionSpacing, paddingBottom: sectionSpacing }}
       >
         {activeSections.length === 0 ? (
-          <div
-            className={`text-center py-20 border rounded-3xl p-8 space-y-3 shadow-xl ${
-              isDarkMode ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200"
-            }`}
-          >
-            <Sparkles className="w-10 h-10 text-cyan-400 mx-auto" />
-            <h2 className="text-xl font-extrabold">Your Careers Website is Empty</h2>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Add section templates from the Careers Studio editor to build your company careers page.
-            </p>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div
+              className={`text-center py-20 border rounded-3xl p-8 space-y-3 shadow-xl ${
+                isDarkMode ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200"
+              }`}
+            >
+              <Sparkles className="w-10 h-10 text-cyan-400 mx-auto" />
+              <h2 className="text-xl font-extrabold">Your Careers Website is Empty</h2>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                Add section templates from the Careers Studio editor to build your company careers page.
+              </p>
+            </div>
           </div>
         ) : (
           activeSections.map((section) => {
             const isSelected = selectedSectionId === section.id;
             const isHovered = hoveredSectionId === section.id;
             const isEnabled = section.enabled !== false;
+            const isHeroSection = section.type === SectionType.HERO;
             const anchorId = getSectionAnchorId(section.type, section.title);
 
             // Extract elements and templateId from section configuration
@@ -337,75 +404,54 @@ export default function CareersPageRenderer({
                     theme={theme}
                     companySlug={company.slug}
                     deviceMode={deviceMode}
+                    isPreviewMode={isPreviewMode}
+                    onNavigatePage={onNavigatePage}
                   />
                 </div>
               ) : null;
 
             const renderSectionBody = () => {
               const cardStyles = section.content?.cardStyles || {};
-              const shadowPreset = cardStyles.shadow || "lg";
-              const shadowClass =
-                shadowPreset === "none"
-                  ? "shadow-none"
-                  : shadowPreset === "sm"
-                  ? "shadow-sm"
-                  : shadowPreset === "md"
-                  ? "shadow-md"
-                  : shadowPreset === "xl"
-                  ? "shadow-2xl"
-                  : "shadow-lg";
-
-              const bgMode = cardStyles.background || "default";
-              const isTransparent = bgMode === "transparent";
-
-              const cardBgColor =
-                bgMode === "solid-white"
-                  ? "#ffffff"
-                  : bgMode === "dark-glass"
-                  ? "rgba(15, 23, 42, 0.85)"
-                  : bgMode === "transparent"
-                  ? "transparent"
-                  : cardStyles.backgroundColor || theme.cardBg;
-
-              const cardBorderColor = isTransparent ? "transparent" : cardStyles.borderColor || theme.cardBorder;
-              const cardRadius = cardStyles.borderRadius !== undefined ? `${cardStyles.borderRadius}px` : `${cornerRadius * 1.2}px`;
-              const cardBorderWidth = isTransparent ? "0px" : cardStyles.borderWidth !== undefined ? `${cardStyles.borderWidth}px` : "1px";
+              const { containerStyle, overlayStyle, contentStyle } = resolveSectionContainerStyles(
+                cardStyles,
+                deviceMode,
+                { ...theme, bannerUrl: company.bannerUrl, logoUrl: company.logoUrl }
+              );
 
               return (
-                <div
-                  className={`transition-all overflow-hidden ${shadowClass} ${isTransparent ? "bg-transparent border-0" : "backdrop-blur-md"}`}
-                  style={{
-                    borderRadius: cardRadius,
-                    backgroundColor: cardBgColor,
-                    borderColor: cardBorderColor,
-                    borderWidth: cardBorderWidth,
-                    borderStyle: isTransparent ? "none" : "solid",
-                  }}
-                >
-                  <TemplateRenderer
-                    templateId={templateId}
-                    elements={elements}
-                    layout={section.content?.layout}
-                    company={company}
-                    jobsCount={jobs?.length || 0}
-                    companyPrimaryColor={primaryColor}
-                    isPreviewMode={isPreviewMode}
-                    selectedElementId={selectedElementId}
-                    onSelectElement={(elem) => {
-                      if (onSelectSection) onSelectSection(section);
-                      if (onSelectElement) onSelectElement(elem, section.id);
-                    }}
-                    jobsComponent={renderJobsGrid}
-                    deviceMode={deviceMode}
-                  />
+                <div className="transition-all w-full relative overflow-hidden group" style={containerStyle}>
+                  {overlayStyle && <div style={overlayStyle} />}
+                  <div style={contentStyle}>
+                    <TemplateRenderer
+                      templateId={templateId}
+                      elements={elements}
+                      layout={section.content?.layout}
+                      company={company}
+                      jobsCount={jobs?.length || 0}
+                      companyPrimaryColor={primaryColor}
+                      isPreviewMode={isPreviewMode}
+                      selectedElementId={selectedElementId}
+                      onSelectElement={(elem) => {
+                        if (onSelectSection) onSelectSection(section);
+                        if (onSelectElement) onSelectElement(elem, section.id);
+                      }}
+                      jobsComponent={renderJobsGrid}
+                      deviceMode={deviceMode}
+                      onNavigatePage={onNavigatePage}
+                    />
+                  </div>
                 </div>
               );
             };
 
+            const sectionWrapperClass = isHeroSection
+              ? "w-full"
+              : "max-w-7xl mx-auto px-4 sm:px-6";
+
             // Candidate Public Mode: Clean section rendering with smooth lazy reveal
             if (!isPreviewMode) {
               return (
-                <section key={section.id} id={anchorId} className="scroll-mt-24">
+                <section key={section.id} id={anchorId} className={`scroll-mt-24 ${sectionWrapperClass}`}>
                   <LazySectionReveal direction="up" threshold={0.08}>
                     {renderSectionBody()}
                   </LazySectionReveal>
@@ -415,26 +461,26 @@ export default function CareersPageRenderer({
 
             // Recruiter Design Canvas Mode: Section with selection ring & toolbar
             return (
-              <section
-                key={section.id}
-                id={`section-${section.id}`}
-                data-anchor={anchorId}
-                onMouseEnter={() => setHoveredSectionId(section.id)}
-                onMouseLeave={() => setHoveredSectionId(null)}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onSelectSection) onSelectSection(section);
-                }}
-                className={`relative transition-all cursor-pointer rounded-2xl scroll-mt-24 ${
-                  isSelected
-                    ? "ring-2 ring-cyan-500 shadow-xl"
-                    : isHovered
-                    ? "ring-2 ring-cyan-400/70 shadow-2xs"
-                    : !isEnabled
-                    ? "opacity-50 grayscale"
-                    : ""
-                }`}
-              >
+              <div key={section.id} className={sectionWrapperClass}>
+                <section
+                  id={`section-${section.id}`}
+                  data-anchor={anchorId}
+                  onMouseEnter={() => setHoveredSectionId(section.id)}
+                  onMouseLeave={() => setHoveredSectionId(null)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelectSection) onSelectSection(section);
+                  }}
+                  className={`relative transition-all cursor-pointer rounded-2xl scroll-mt-24 ${
+                    isSelected
+                      ? "ring-2 ring-cyan-500 shadow-xl"
+                      : isHovered
+                      ? "ring-2 ring-cyan-400/70 shadow-2xs"
+                      : !isEnabled
+                      ? "opacity-50 grayscale"
+                      : ""
+                  }`}
+                >
                 {/* Floating Editor Section Toolbar */}
                 {(isHovered || isSelected) && (
                   <div className="absolute -top-4 left-4 z-50 bg-slate-900 text-white text-[11px] font-bold px-3 py-1 rounded-lg shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in zoom-in-95 duration-100">
@@ -508,10 +554,11 @@ export default function CareersPageRenderer({
 
                 {renderSectionBody()}
               </section>
-            );
-          })
-        )}
-      </main>
+            </div>
+          );
+        })
+      )}
+    </main>
 
       {/* 4. BRANDED FOOTER */}
       <footer
@@ -577,9 +624,19 @@ export default function CareersPageRenderer({
                 </li>
               )}
               <li>
-                <button onClick={() => scrollToAnchor("jobs")} className="hover:text-cyan-400 transition-colors cursor-pointer">
-                  All Job Vacancies
-                </button>
+                {isPreviewMode ? (
+                  <button
+                    type="button"
+                    onClick={() => onNavigatePage && onNavigatePage("jobs")}
+                    className="hover:text-cyan-400 transition-colors cursor-pointer text-left font-semibold"
+                  >
+                    All Job Vacancies ({jobs.length})
+                  </button>
+                ) : (
+                  <Link href={`/${company.slug}/careers/jobs`} className="hover:text-cyan-400 transition-colors cursor-pointer">
+                    All Job Vacancies ({jobs.length})
+                  </Link>
+                )}
               </li>
             </ul>
           </div>

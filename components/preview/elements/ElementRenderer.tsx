@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Link from "next/link";
 import { SectionElement } from "@/lib/templates/registry";
 import { Sparkles, CheckCircle2, Play, ChevronLeft, ChevronRight, X, ExternalLink, Building, Users } from "lucide-react";
 import { interpolateCompanyVariables } from "@/lib/templates/variables";
@@ -17,6 +18,7 @@ interface ElementRendererProps {
   onSelectElement?: (element: SectionElement) => void;
   jobsComponent?: React.ReactNode;
   deviceMode?: "desktop" | "tablet" | "mobile";
+  onNavigatePage?: (page: "careers" | "jobs" | "job-details", jobId?: string) => void;
 }
 
 export default function ElementRenderer({
@@ -29,6 +31,7 @@ export default function ElementRenderer({
   onSelectElement,
   jobsComponent,
   deviceMode = "desktop",
+  onNavigatePage,
 }: ElementRendererProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -277,28 +280,91 @@ export default function ElementRenderer({
       {/* 4. BUTTON ELEMENT */}
       {element.type === "button" && (
         <div className={`w-full flex ${alignClass}`}>
-          <a
-            href={renderText(element.content.linkUrl, "#jobs")}
-            onClick={(e) => {
-              if (isPreviewMode) return;
-              const href = renderText(element.content.linkUrl, "#jobs");
-              if (href.startsWith("#")) {
-                e.preventDefault();
-                const targetId = href.substring(1);
-                const targetElem =
-                  document.getElementById(targetId) ||
-                  document.querySelector(`[id*="${targetId}"]`) ||
-                  document.getElementById("open-positions");
-                if (targetElem) {
-                  targetElem.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-              }
-            }}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center break-words max-w-full cursor-pointer"
-            style={{ backgroundColor: primaryColor, ...activeStyles }}
-          >
-            <span>{renderText(element.content.label, "Click Here")}</span>
-          </a>
+          {(() => {
+            const rawHref = renderText(element.content.linkUrl, "#jobs");
+            const btnLabel = renderText(element.content.label, "Click Here");
+            const targetJobsPage = company?.slug ? `/${company.slug}/careers/jobs` : "/careers/jobs";
+            const isJobsTarget =
+              rawHref === "#jobs" ||
+              rawHref === "#open-positions" ||
+              rawHref === "/jobs" ||
+              rawHref === "jobs" ||
+              rawHref.includes("/careers/jobs") ||
+              btnLabel.toLowerCase().includes("open role") ||
+              btnLabel.toLowerCase().includes("explore") ||
+              btnLabel.toLowerCase().includes("view role") ||
+              btnLabel.toLowerCase().includes("job") ||
+              btnLabel.toLowerCase().includes("position");
+
+            if (isPreviewMode) {
+              return (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelectElement) onSelectElement(element);
+                    if (onNavigatePage) {
+                      onNavigatePage("jobs");
+                    } else if (rawHref.startsWith("#")) {
+                      const targetId = rawHref.substring(1);
+                      const targetElem =
+                        document.getElementById(targetId) ||
+                        document.querySelector(`[id*="${targetId}"]`) ||
+                        document.getElementById("open-positions");
+                      if (targetElem) {
+                        const container = targetElem.closest(".overflow-y-auto");
+                        if (container) {
+                          const containerRect = container.getBoundingClientRect();
+                          const elementRect = targetElem.getBoundingClientRect();
+                          const offset = elementRect.top - containerRect.top + container.scrollTop - 24;
+                          container.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+                        }
+                      }
+                    }
+                  }}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center break-words max-w-full cursor-pointer"
+                  style={{ backgroundColor: primaryColor, ...activeStyles }}
+                >
+                  <span>{btnLabel}</span>
+                </button>
+              );
+            }
+
+            if (isJobsTarget) {
+              return (
+                <Link
+                  href={targetJobsPage}
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center break-words max-w-full cursor-pointer"
+                  style={{ backgroundColor: primaryColor, ...activeStyles }}
+                >
+                  <span>{btnLabel}</span>
+                </Link>
+              );
+            }
+
+            return (
+              <a
+                href={rawHref}
+                onClick={(e) => {
+                  if (rawHref.startsWith("#")) {
+                    e.preventDefault();
+                    const targetId = rawHref.substring(1);
+                    const targetElem =
+                      document.getElementById(targetId) ||
+                      document.querySelector(`[id*="${targetId}"]`) ||
+                      document.getElementById("open-positions");
+                    if (targetElem) {
+                      targetElem.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }
+                }}
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold text-sm text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center break-words max-w-full cursor-pointer"
+                style={{ backgroundColor: primaryColor, ...activeStyles }}
+              >
+                <span>{btnLabel}</span>
+              </a>
+            );
+          })()}
         </div>
       )}
 

@@ -5,13 +5,14 @@ import { FileText, Plus, Edit2, Trash2, GripVertical, Check, Globe } from "lucid
 
 interface PagesPanelProps {
   companySlug: string;
-  activePage?: "careers" | "job-details";
-  onSelectPage?: (page: "careers" | "job-details") => void;
+  activePage?: "careers" | "jobs" | "job-details";
+  onSelectPage?: (page: "careers" | "jobs" | "job-details") => void;
 }
 
 export default function PagesPanel({ companySlug, activePage = "careers", onSelectPage }: PagesPanelProps) {
   const [pages, setPages] = useState([
-    { id: "careers", name: "Main Careers Page", path: "/careers", isDefault: true, isPublished: true },
+    { id: "careers", name: "Main Careers Story Page", path: "/careers", isDefault: true, isPublished: true },
+    { id: "jobs", name: "Dedicated Jobs Marketplace", path: "/careers/jobs", isDefault: true, isPublished: true },
     { id: "job-details", name: "Job Details Page (View Job)", path: "/careers/jobs/[jobId]", isDefault: true, isPublished: true },
   ]);
 
@@ -72,7 +73,7 @@ export default function PagesPanel({ companySlug, activePage = "careers", onSele
             <div
               key={page.id}
               onClick={() => {
-                if (onSelectPage && (page.id === "careers" || page.id === "job-details")) {
+                if (onSelectPage && (page.id === "careers" || page.id === "jobs" || page.id === "job-details")) {
                   onSelectPage(page.id as any);
                 }
               }}

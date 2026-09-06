@@ -34,6 +34,8 @@ interface JobSearchFilterProps {
   theme?: ThemeConfig;
   companySlug?: string;
   deviceMode?: "desktop" | "tablet" | "mobile";
+  isPreviewMode?: boolean;
+  onNavigatePage?: (page: "careers" | "jobs" | "job-details", jobId?: string) => void;
 }
 
 export default function JobSearchFilter({
@@ -44,6 +46,8 @@ export default function JobSearchFilter({
   theme,
   companySlug,
   deviceMode = "desktop",
+  isPreviewMode = false,
+  onNavigatePage,
 }: JobSearchFilterProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("ALL");
@@ -290,17 +294,17 @@ export default function JobSearchFilter({
             const targetCompanySlug = companySlug || job.companySlug || (job as any).company?.slug;
             const jobUrl = targetCompanySlug ? `/${targetCompanySlug}/careers/jobs/${job.id}` : "#";
 
-            return (
-              <Link
-                key={job.id}
-                href={jobUrl}
-                className="group border p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all cursor-pointer space-y-4 flex flex-col justify-between block hover:-translate-y-0.5"
-                style={{
-                  backgroundColor: theme?.cardBg || (isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff"),
-                  borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#e2e8f0"),
-                  color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
-                }}
-              >
+            const handleCardClick = (e: React.MouseEvent) => {
+              if (isPreviewMode) {
+                e.preventDefault();
+                if (onNavigatePage) {
+                  onNavigatePage("job-details", job.id);
+                }
+              }
+            };
+
+            const cardContent = (
+              <>
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -357,6 +361,38 @@ export default function JobSearchFilter({
                     View Role & Apply <ChevronRight className="w-4 h-4" />
                   </span>
                 </div>
+              </>
+            );
+
+            if (isPreviewMode) {
+              return (
+                <div
+                  key={job.id}
+                  onClick={handleCardClick}
+                  className="group border p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all cursor-pointer space-y-4 flex flex-col justify-between block hover:-translate-y-0.5 text-left"
+                  style={{
+                    backgroundColor: theme?.cardBg || (isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff"),
+                    borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#e2e8f0"),
+                    color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+                  }}
+                >
+                  {cardContent}
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={job.id}
+                href={jobUrl}
+                className="group border p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all cursor-pointer space-y-4 flex flex-col justify-between block hover:-translate-y-0.5"
+                style={{
+                  backgroundColor: theme?.cardBg || (isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff"),
+                  borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#e2e8f0"),
+                  color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+                }}
+              >
+                {cardContent}
               </Link>
             );
           })}

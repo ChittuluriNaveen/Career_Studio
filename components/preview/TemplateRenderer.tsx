@@ -16,6 +16,7 @@ interface TemplateRendererProps {
   onSelectElement?: (element: SectionElement) => void;
   jobsComponent?: React.ReactNode;
   deviceMode?: "desktop" | "tablet" | "mobile";
+  onNavigatePage?: (page: "careers" | "jobs" | "job-details", jobId?: string) => void;
 }
 
 export default function TemplateRenderer({
@@ -30,6 +31,7 @@ export default function TemplateRenderer({
   onSelectElement,
   jobsComponent,
   deviceMode = "desktop",
+  onNavigatePage,
 }: TemplateRendererProps) {
   const template = getTemplateById(templateId);
   const layoutConfig = layout || template.layout;
@@ -105,6 +107,7 @@ export default function TemplateRenderer({
                 isSelected={selectedElementId === element.id}
                 onSelectElement={onSelectElement}
                 deviceMode={deviceMode}
+                onNavigatePage={onNavigatePage}
               />
             ))}
           </div>
@@ -122,6 +125,7 @@ export default function TemplateRenderer({
                 isSelected={selectedElementId === element.id}
                 onSelectElement={onSelectElement}
                 deviceMode={deviceMode}
+                onNavigatePage={onNavigatePage}
               />
             ))}
           </div>
@@ -147,6 +151,7 @@ export default function TemplateRenderer({
           isSelected={selectedElementId === element.id}
           onSelectElement={onSelectElement}
           deviceMode={deviceMode}
+          onNavigatePage={onNavigatePage}
         />
       ))}
 

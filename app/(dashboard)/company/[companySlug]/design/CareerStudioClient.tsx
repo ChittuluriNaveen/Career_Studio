@@ -10,6 +10,8 @@ import {
   Save,
   Check,
   Sparkles,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 import DashboardHeader from "@/components/editor/DashboardHeader";
@@ -25,6 +27,8 @@ import ElementEditorPanel from "@/components/editor/panels/ElementEditorPanel";
 import PageRenderer from "@/components/preview/PageRenderer";
 import JobDetailsClient from "@/app/(public)/[companySlug]/careers/jobs/[jobId]/JobDetailsClient";
 import JobPageEditorPanel from "@/components/editor/panels/JobPageEditorPanel";
+import JobsExperiencePanel from "@/components/editor/panels/JobsExperiencePanel";
+import PublicJobsFeedClient from "@/components/candidate/PublicJobsFeedClient";
 
 import {
   getSectionsAction,
@@ -43,8 +47,10 @@ import {
   createDefaultElement,
   TEMPLATE_REGISTRY,
   preserveElementsOnTemplateSwitch,
+  SectionCardStyles,
 } from "@/lib/templates/registry";
 import TemplatePickerPanel from "@/components/editor/panels/TemplatePickerPanel";
+import SectionStylePanel from "@/components/editor/panels/SectionStylePanel";
 import { addSectionAction } from "@/lib/actions/sections";
 
 interface CareerStudioClientProps {
@@ -52,8 +58,8 @@ interface CareerStudioClientProps {
 }
 
 export default function CareerStudioClient({ companySlug }: CareerStudioClientProps) {
-  const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "desktop">("desktop");
-  const [activePage, setActivePage] = useState<"careers" | "job-details">("careers");
+  const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "mobile" | "desktop">("desktop");
+  const [activePage, setActivePage] = useState<"careers" | "jobs" | "job-details">("careers");
   const [activeNavTab, setActiveNavTab] = useState<LeftNavTab>("sections");
   const [inspectorTab, setInspectorTab] = useState<"content" | "templates" | "element">("content");
 
@@ -195,6 +201,13 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [draggedElementId, setDraggedElementId] = useState<string | null>(null);
   const [savingInspector, setSavingInspector] = useState(false);
+  const [isApplyingTemplate, setIsApplyingTemplate] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 2500);
+  };
 
   const pushHistory = (newSections: any[]) => {
     const cloned = JSON.parse(JSON.stringify(newSections));
@@ -401,6 +414,9 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     const templateConfig = TEMPLATE_REGISTRY[templateId];
     if (!templateConfig) return;
 
+    setIsApplyingTemplate(true);
+    setSaveStatus("saving");
+
     const elementsToSave =
       Array.isArray(selectedSection.content?.elements) && selectedSection.content.elements.length > 0
         ? preserveElementsOnTemplateSwitch(selectedSection.content.elements, templateId)
@@ -410,6 +426,9 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
       ...(selectedSection.content || {}),
       templateId,
       layout: templateConfig.layout,
+      cardStyles: templateConfig.cardStyles
+        ? { ...(selectedSection.content?.cardStyles || {}), ...templateConfig.cardStyles }
+        : selectedSection.content?.cardStyles,
       elements: elementsToSave,
     };
 
@@ -421,7 +440,9 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             : s
         )
       );
+      setIsApplyingTemplate(false);
       setSaveStatus("saved");
+      showToast(`Applied ${templateConfig.name} template`);
     } else {
       const updatedSections = sections.map((s) =>
         s.id === selectedSection.id
@@ -431,15 +452,21 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
 
       setSections(updatedSections);
       pushHistory(updatedSections);
-      setSaveStatus("saving");
 
-      await updateSectionContentAction({
+      const res = await updateSectionContentAction({
         id: selectedSection.id,
         title: templateConfig.name,
         content: newContent,
       });
 
-      setTimeout(() => setSaveStatus("saved"), 400);
+      setIsApplyingTemplate(false);
+      if (res.success) {
+        setSaveStatus("saved");
+        showToast(`Applied ${templateConfig.name} template`);
+      } else {
+        setSaveStatus("unsaved");
+        showToast("Failed to apply template", "error");
+      }
     }
   };
 
@@ -450,9 +477,11 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     const contentPayload = {
       templateId,
       layout: templateConfig.layout,
+      cardStyles: templateConfig.cardStyles || {},
       elements: templateConfig.defaultElements,
     };
 
+    setIsApplyingTemplate(true);
     setSaveStatus("saving");
 
     if (activePage === "job-details") {
@@ -467,7 +496,9 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
       setJobSections((prev) => [...prev, newJobSec]);
       setSelectedSectionId(newJobSec.id);
       setInspectorTab("content");
-      setTimeout(() => setSaveStatus("saved"), 400);
+      setIsApplyingTemplate(false);
+      setSaveStatus("saved");
+      showToast(`Added ${templateConfig.name} section`);
     } else {
       const tempId = `sec-temp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       const optimisticSec = {
@@ -494,15 +525,36 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         content: contentPayload,
       });
 
+      setIsApplyingTemplate(false);
       if (res.success && res.section) {
         const persistedSec = res.section;
         setSections((prev) => prev.map((s) => (s.id === tempId ? persistedSec : s)));
         setSelectedSectionId(persistedSec.id);
-        setTimeout(() => setSaveStatus("saved"), 400);
+        setSaveStatus("saved");
+        showToast(`Added ${templateConfig.name} section`);
       } else {
-        console.error("Failed to persist new section:", res.error);
-        setTimeout(() => setSaveStatus("saved"), 400);
+        setSaveStatus("unsaved");
+        showToast("Failed to add section", "error");
       }
+    }
+  };
+
+  const handleUpdateSectionCardStyles = (updatedCardStyles: SectionCardStyles) => {
+    if (!selectedSection) return;
+    const newContent = {
+      ...(selectedSection.content || {}),
+      cardStyles: updatedCardStyles,
+    };
+    if (activePage === "job-details") {
+      setJobSections((prev) =>
+        prev.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s))
+      );
+    } else {
+      const updatedSections = sections.map((s) =>
+        s.id === selectedSection.id ? { ...s, content: newContent } : s
+      );
+      setSections(updatedSections);
+      pushHistory(updatedSections);
     }
   };
 
@@ -737,9 +789,15 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
 
   const handleDuplicateSection = async (id: string) => {
     setSaveStatus("saving");
-    await duplicateSectionAction(id);
-    setSaveStatus("saved");
-    fetchStudioData();
+    const res = await duplicateSectionAction(id);
+    if (res.success) {
+      setSaveStatus("saved");
+      showToast("Section duplicated successfully");
+      fetchStudioData();
+    } else {
+      setSaveStatus("unsaved");
+      showToast("Failed to duplicate section", "error");
+    }
   };
 
   const handleToggleHideSection = async (id: string, currentEnabled: boolean) => {
@@ -750,16 +808,32 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     setSections(updated);
     pushHistory(updated);
 
-    await toggleSectionVisibilityAction({ id, enabled: !currentEnabled });
-    setSaveStatus("saved");
+    const res = await toggleSectionVisibilityAction({ id, enabled: !currentEnabled });
+    if (res.success) {
+      setSaveStatus("saved");
+      showToast(!currentEnabled ? "Section visible on page" : "Section hidden from page");
+    } else {
+      setSaveStatus("unsaved");
+      showToast("Failed to update visibility", "error");
+    }
+  };
+
+  const handleNavigatePageInStudio = (page: "careers" | "jobs" | "job-details", jobId?: string) => {
+    if (jobId && jobs.length > 0) {
+      const targetJob = jobs.find((j) => j.id === jobId);
+      if (targetJob) {
+        setJobs([targetJob, ...jobs.filter((j) => j.id !== jobId)]);
+      }
+    }
+    setActivePage(page);
   };
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900 relative">
       <OperationLoader
-        isVisible={saveStatus === "saving" || savingInspector}
-        title={savingInspector ? "Updating Element Styles..." : "Applying Section Template & Changes..."}
-        subtitle="Storing changes in draft database state..."
+        isVisible={isApplyingTemplate}
+        title="Applying Section Template..."
+        subtitle="Configuring template layout, styles, and elements..."
         primaryColor={company?.primaryColor || "#0f766e"}
       />
 
@@ -869,6 +943,20 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
               </div>
             )}
 
+            {activeNavTab === "jobs-experience" && company && (
+              <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+                <JobsExperiencePanel
+                  company={company}
+                  initialConfig={company?.jobsExperienceConfig}
+                  onConfigUpdated={(newConfig) => {
+                    setCompany((prev: any) => ({
+                      ...prev,
+                      jobsExperienceConfig: newConfig,
+                    }));
+                  }}
+                />
+              </div>
+            )}
             {activeNavTab === "design" && company && (
               <DesignPanel
                 company={company}
@@ -898,12 +986,37 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                 <p className="text-xs text-slate-500 font-bold">Loading Careers Studio...</p>
               </div>
             ) : company ? (
-              activePage === "job-details" ? (
+              activePage === "jobs" ? (
+                <PublicJobsFeedClient
+                  company={company}
+                  jobs={jobs}
+                  totalCount={jobs.length}
+                  filterDimensions={{
+                    locations: locations.map((l) => ({ name: l.name, count: jobs.filter((j) => j.locationCity === l.name || `${j.locationCity}, ${j.locationCountry}` === l.name).length || 1 })),
+                    departments: departments.map((d) => ({ name: d.name, count: jobs.filter((j) => j.departmentName === d.name).length || 1 })),
+                    employmentTypes: [
+                      { name: "FULL_TIME", count: jobs.filter((j) => j.employmentType === "FULL_TIME").length },
+                      { name: "PART_TIME", count: jobs.filter((j) => j.employmentType === "PART_TIME").length },
+                      { name: "CONTRACT", count: jobs.filter((j) => j.employmentType === "CONTRACT").length },
+                      { name: "INTERNSHIP", count: jobs.filter((j) => j.employmentType === "INTERNSHIP").length },
+                    ].filter((e) => e.count > 0),
+                    workModes: [
+                      { name: "REMOTE", count: jobs.filter((j) => j.workMode === "REMOTE").length },
+                      { name: "HYBRID", count: jobs.filter((j) => j.workMode === "HYBRID").length },
+                      { name: "ON_SITE", count: jobs.filter((j) => j.workMode === "ON_SITE").length },
+                    ].filter((w) => w.count > 0),
+                  }}
+                  jobsExperienceConfig={company.jobsExperienceConfig}
+                  isPreviewMode={true}
+                  onNavigatePage={handleNavigatePageInStudio}
+                />
+              ) : activePage === "job-details" ? (
                 <JobDetailsClient
                   companySlug={companySlug}
                   job={currentJob}
                   isPreviewMode={true}
                   onBackToCareers={() => setActivePage("careers")}
+                  onNavigatePage={handleNavigatePageInStudio}
                   deviceMode={deviceMode}
                 />
               ) : (
@@ -917,6 +1030,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                   selectedElementId={selectedElementId}
                   onSelectSection={handleSelectSection}
                   onSelectElement={handleSelectElement}
+                  onNavigatePage={handleNavigatePageInStudio}
                   isPreviewMode={true}
                   deviceMode={deviceMode}
                 />
@@ -1061,116 +1175,12 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         </div>
                       </div>
 
-                      {/* Section Card Container Aesthetics Controls */}
-                      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                          <span className="text-xs font-black text-slate-900">Card Container Appearance</span>
-                          <span className="text-[11px] text-slate-500 font-semibold">Frame & Shadow</span>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Card Background Mode</label>
-                          <select
-                            value={selectedSection.content?.cardStyles?.background || "default"}
-                            onChange={(e) => {
-                              const bg = e.target.value;
-                              const currentStyles = selectedSection.content?.cardStyles || {};
-                              const updatedContent = {
-                                ...(selectedSection.content || {}),
-                                cardStyles: { ...currentStyles, background: bg },
-                              };
-                              const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s));
-                              setSections(updated);
-                              pushHistory(updated);
-                            }}
-                            className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#005d52] text-slate-900 cursor-pointer"
-                          >
-                            <option value="default">Default Theme Card</option>
-                            <option value="solid-white">Solid White Card</option>
-                            <option value="dark-glass">Dark Glassmorphism</option>
-                            <option value="transparent">Transparent (Seamless)</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Card Shadow Preset</label>
-                          <select
-                            value={selectedSection.content?.cardStyles?.shadow || "lg"}
-                            onChange={(e) => {
-                              const shadow = e.target.value;
-                              const currentStyles = selectedSection.content?.cardStyles || {};
-                              const updatedContent = {
-                                ...(selectedSection.content || {}),
-                                cardStyles: { ...currentStyles, shadow: shadow },
-                              };
-                              const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s));
-                              setSections(updated);
-                              pushHistory(updated);
-                            }}
-                            className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#005d52] text-slate-900 cursor-pointer"
-                          >
-                            <option value="none">No Shadow (Flat)</option>
-                            <option value="sm">Small Soft Shadow</option>
-                            <option value="md">Medium Shadow</option>
-                            <option value="lg">Large Elevated Shadow (Default)</option>
-                            <option value="xl">Extra Large Floating Shadow</option>
-                          </select>
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between items-center mb-1.5">
-                            <label className="text-xs font-extrabold text-slate-800">Card Corner Radius</label>
-                            <span className="text-xs font-mono font-bold text-slate-600">
-                              {selectedSection.content?.cardStyles?.borderRadius ?? 16}px
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={0}
-                            max={40}
-                            value={selectedSection.content?.cardStyles?.borderRadius ?? 16}
-                            onChange={(e) => {
-                              const borderRadius = Number(e.target.value);
-                              const currentStyles = selectedSection.content?.cardStyles || {};
-                              const updatedContent = {
-                                ...(selectedSection.content || {}),
-                                cardStyles: { ...currentStyles, borderRadius },
-                              };
-                              const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s));
-                              setSections(updated);
-                              pushHistory(updated);
-                            }}
-                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005d52]"
-                          />
-                        </div>
-
-                        <div>
-                          <div className="flex justify-between items-center mb-1.5">
-                            <label className="text-xs font-extrabold text-slate-800">Card Border Width</label>
-                            <span className="text-xs font-mono font-bold text-slate-600">
-                              {selectedSection.content?.cardStyles?.borderWidth ?? 1}px
-                            </span>
-                          </div>
-                          <input
-                            type="range"
-                            min={0}
-                            max={6}
-                            value={selectedSection.content?.cardStyles?.borderWidth ?? 1}
-                            onChange={(e) => {
-                              const borderWidth = Number(e.target.value);
-                              const currentStyles = selectedSection.content?.cardStyles || {};
-                              const updatedContent = {
-                                ...(selectedSection.content || {}),
-                                cardStyles: { ...currentStyles, borderWidth },
-                              };
-                              const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s));
-                              setSections(updated);
-                              pushHistory(updated);
-                            }}
-                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005d52]"
-                          />
-                        </div>
-                      </div>
+                      {/* Universal Section Container Style & Aesthetics Panel */}
+                      <SectionStylePanel
+                        section={selectedSection}
+                        onUpdateSectionCardStyles={handleUpdateSectionCardStyles}
+                        activeDeviceMode={deviceMode}
+                      />
 
                       {/* Elements Tree Header */}
                       <div className="space-y-3">
@@ -1346,7 +1356,29 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             )}
           </div>
         )}
+      </div>
+
+      {/* Activity Toast Notification Banner */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-2xl shadow-xl border font-extrabold text-xs flex items-center gap-2 animate-in fade-in slide-in-from-bottom-3 duration-200 ${
+            toast.type === "success"
+              ? "bg-slate-900 text-white border-slate-700 shadow-slate-900/30"
+              : toast.type === "error"
+              ? "bg-rose-900 text-white border-rose-700 shadow-rose-900/30"
+              : "bg-teal-900 text-white border-teal-700 shadow-teal-900/30"
+          }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          ) : toast.type === "error" ? (
+            <XCircle className="w-4 h-4 text-rose-400" />
+          ) : (
+            <Sparkles className="w-4 h-4 text-teal-300" />
+          )}
+          <span>{toast.message}</span>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
 }

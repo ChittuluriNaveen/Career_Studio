@@ -313,3 +313,30 @@ export async function publishCareersPageAction() {
   }
 }
 
+export async function updateJobsExperienceConfigAction(config: any) {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    return { success: false, error: "Unauthorized: Recruiter session required" };
+  }
+
+  const companyId = session.user.companyId;
+
+  try {
+    const careersPage = await db.careersPage.upsert({
+      where: { companyId },
+      create: { companyId, jobsExperienceConfig: config },
+      update: { jobsExperienceConfig: config },
+    });
+
+    if (session.user.companySlug) {
+      revalidatePath(`/company/${session.user.companySlug}/design`);
+      revalidatePath(`/company/${session.user.companySlug}/preview`);
+      revalidatePath(`/${session.user.companySlug}/careers/jobs`);
+    }
+
+    return { success: true, config: careersPage.jobsExperienceConfig };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to update jobs experience configuration" };
+  }
+}
+
