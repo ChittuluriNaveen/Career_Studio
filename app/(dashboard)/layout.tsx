@@ -12,6 +12,8 @@ import {
   LogOut,
 } from "lucide-react";
 
+import { NavigationLoaderProvider } from "@/components/ui/NavigationLoader";
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -32,8 +34,10 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col page-transition">
-      {children}
-    </div>
+    <NavigationLoaderProvider>
+      <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col page-transition">
+        {children}
+      </div>
+    </NavigationLoaderProvider>
   );
 }
