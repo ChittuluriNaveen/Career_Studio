@@ -125,10 +125,11 @@ export default function CareersPageRenderer({
     }
   };
 
-  // Build dynamic navigation items
+  // Build dynamic navigation items with unique keys
   const navItems = activeSections
     .filter((sec) => sec.enabled !== false && sec.content?.showInNav !== false)
-    .map((sec) => ({
+    .map((sec, idx) => ({
+      key: sec.id ? `nav-${sec.id}` : `nav-${sec.type}-${idx}`,
       id: getSectionAnchorId(sec.type, sec.title),
       label: sec.title || sec.type.replace("_", " "),
       type: sec.type,
@@ -188,7 +189,7 @@ export default function CareersPageRenderer({
           <nav className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
               <button
-                key={item.id}
+                key={item.key}
                 onClick={() => scrollToAnchor(item.id)}
                 className={`text-xs font-bold transition-all cursor-pointer capitalize hover:scale-105 ${
                   isDarkMode
@@ -238,7 +239,7 @@ export default function CareersPageRenderer({
           >
             {navItems.map((item) => (
               <button
-                key={item.id}
+                key={`mobile-${item.key}`}
                 onClick={() => scrollToAnchor(item.id)}
                 className={`block w-full text-left px-3 py-2 text-sm font-bold rounded-lg capitalize ${
                   isDarkMode ? "hover:bg-slate-800 text-slate-200" : "hover:bg-slate-100 text-slate-700"
