@@ -9,6 +9,12 @@ import {
   Plus,
   Save,
   Check,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import DashboardHeader from "@/components/editor/DashboardHeader";
@@ -51,6 +57,10 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [activeNavTab, setActiveNavTab] = useState<LeftNavTab>("sections");
   const [inspectorTab, setInspectorTab] = useState<"content" | "templates" | "element">("content");
+
+  // Collapsible Sidebars State
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
 
   const [company, setCompany] = useState<any | null>(null);
   const [sections, setSections] = useState<any[]>([]);
@@ -435,64 +445,117 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
           onUndo={handleUndo}
           onRedo={handleRedo}
           saveStatus={saveStatus}
+          isLeftPanelOpen={isLeftPanelOpen}
+          onToggleLeftPanel={() => setIsLeftPanelOpen(!isLeftPanelOpen)}
+          isRightPanelOpen={isRightPanelOpen}
+          onToggleRightPanel={() => setIsRightPanelOpen(!isRightPanelOpen)}
         />
       )}
 
       {/* 4-Column Career Studio Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Column 1: Narrow Vertical Icon Rail */}
-        <LeftIconRail activeTab={activeNavTab} setActiveTab={setActiveNavTab} />
+        <LeftIconRail
+          activeTab={activeNavTab}
+          setActiveTab={(tab) => {
+            if (activeNavTab === tab && isLeftPanelOpen) {
+              setIsLeftPanelOpen(false);
+            } else {
+              setActiveNavTab(tab);
+              setIsLeftPanelOpen(true);
+            }
+          }}
+        />
 
         {/* Column 2: Switchable Secondary Panel */}
-        <div className="w-88 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs">
-          {activeNavTab === "pages" && company && <PagesPanel companySlug={company.slug} />}
-          
-          {activeNavTab === "sections" && (
-            <div className="p-4 space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div>
-                    <h2 className="font-black text-base text-slate-900 tracking-tight">Sections Architecture</h2>
-                    <p className="text-xs text-slate-500 font-medium">Reorder, select & customize sections</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setInspectorTab("templates")}
-                    className="flex items-center gap-1.5 text-xs bg-teal-50 text-[#005d52] hover:bg-teal-100 font-extrabold px-3 py-1.5 rounded-xl transition-all cursor-pointer border border-teal-200 shadow-2xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add</span>
-                  </button>
-                </div>
-
-                <SectionList
-                  sections={sections}
-                  selectedSectionId={selectedSectionId}
-                  onSelectSection={handleSelectSection}
-                  onDeleteSection={handleDeleteSection}
-                  onMoveUp={handleMoveUp}
-                  onMoveDown={handleMoveDown}
-                  onDuplicateSection={handleDuplicateSection}
-                  onToggleHideSection={handleToggleHideSection}
-                  onReorderSections={handleReorderSections}
-                />
-              </div>
+        {isLeftPanelOpen && (
+          <div className="w-88 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs relative">
+            {/* Header collapse button */}
+            <div className="absolute top-3 right-3 z-20">
+              <button
+                type="button"
+                onClick={() => setIsLeftPanelOpen(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                title="Collapse Left Panel"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
             </div>
-          )}
 
-          {activeNavTab === "design" && company && (
-            <DesignPanel
-              company={company}
-              onCompanyUpdated={(updated) => setCompany(updated)}
-              onUpdate={fetchStudioData}
-            />
-          )}
-          {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
-          {activeNavTab === "seo" && company && <SEOPanel company={company} />}
-        </div>
+            {activeNavTab === "pages" && company && <PagesPanel companySlug={company.slug} />}
+            
+            {activeNavTab === "sections" && (
+              <div className="p-4 space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 pr-6">
+                    <div>
+                      <h2 className="font-black text-base text-slate-900 tracking-tight">Sections Architecture</h2>
+                      <p className="text-xs text-slate-500 font-medium">Reorder, select & customize sections</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInspectorTab("templates")}
+                      className="flex items-center gap-1.5 text-xs bg-teal-50 text-[#005d52] hover:bg-teal-100 font-extrabold px-3 py-1.5 rounded-xl transition-all cursor-pointer border border-teal-200 shadow-2xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add</span>
+                    </button>
+                  </div>
+
+                  <SectionList
+                    sections={sections}
+                    selectedSectionId={selectedSectionId}
+                    onSelectSection={handleSelectSection}
+                    onDeleteSection={handleDeleteSection}
+                    onMoveUp={handleMoveUp}
+                    onMoveDown={handleMoveDown}
+                    onDuplicateSection={handleDuplicateSection}
+                    onToggleHideSection={handleToggleHideSection}
+                    onReorderSections={handleReorderSections}
+                  />
+                </div>
+              </div>
+            )}
+
+            {activeNavTab === "design" && company && (
+              <DesignPanel
+                company={company}
+                onCompanyUpdated={(updated) => setCompany(updated)}
+                onUpdate={fetchStudioData}
+              />
+            )}
+            {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
+            {activeNavTab === "seo" && company && <SEOPanel company={company} />}
+          </div>
+        )}
 
         {/* Column 3: Center Responsive Preview Canvas */}
-        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-6 flex justify-center items-start overflow-x-auto">
+        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-6 flex justify-center items-start overflow-x-auto relative">
+          {/* Quick Floating Re-expand controls */}
+          {!isLeftPanelOpen && (
+            <button
+              type="button"
+              onClick={() => setIsLeftPanelOpen(true)}
+              className="absolute top-4 left-4 z-40 bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700 hover:bg-[#005d52] transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Expand Left Panel"
+            >
+              <PanelLeftOpen className="w-4 h-4 text-teal-400" />
+              <span>Show Left Panel</span>
+            </button>
+          )}
+
+          {!isRightPanelOpen && (
+            <button
+              type="button"
+              onClick={() => setIsRightPanelOpen(true)}
+              className="absolute top-4 right-4 z-40 bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700 hover:bg-[#005d52] transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Expand Inspector Panel"
+            >
+              <PanelRightOpen className="w-4 h-4 text-teal-400" />
+              <span>Show Inspector</span>
+            </button>
+          )}
+
           <div
             className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
               deviceMode === "mobile"
@@ -526,47 +589,58 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         </div>
 
         {/* Column 4: Right Inspector Side Box */}
-        <div className="w-88 bg-white border-l border-slate-200 flex flex-col justify-between flex-shrink-0 p-4 z-10 overflow-y-auto shadow-2xs">
-          <div className="space-y-4">
-            {/* Inspector Navigation Tabs */}
-            <div className="flex border-b border-slate-200 pb-2 gap-1.5 text-xs font-black">
-              <button
-                type="button"
-                onClick={() => setInspectorTab("content")}
-                className={`flex-1 py-2 px-3 rounded-xl text-center transition-all cursor-pointer ${
-                  inspectorTab === "content"
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                Section
-              </button>
-              <button
-                type="button"
-                onClick={() => setInspectorTab("templates")}
-                className={`flex-1 py-2 px-3 rounded-xl text-center transition-all cursor-pointer ${
-                  inspectorTab === "templates"
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                Templates
-              </button>
-              <button
-                type="button"
-                onClick={() => setInspectorTab("element")}
-                className={`flex-1 py-2 px-3 rounded-xl text-center transition-all cursor-pointer relative ${
-                  inspectorTab === "element"
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                }`}
-              >
-                Element
-                {selectedElement && (
-                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#005d52] ring-2 ring-white"></span>
-                )}
-              </button>
-            </div>
+        {isRightPanelOpen && (
+          <div className="w-88 bg-white border-l border-slate-200 flex flex-col justify-between flex-shrink-0 p-4 z-10 overflow-y-auto shadow-2xs relative">
+            <div className="space-y-4">
+              {/* Inspector Navigation Tabs */}
+              <div className="flex border-b border-slate-200 pb-2 gap-1.5 text-xs font-black items-center">
+                <button
+                  type="button"
+                  onClick={() => setInspectorTab("content")}
+                  className={`flex-1 py-2 px-2.5 rounded-xl text-center transition-all cursor-pointer ${
+                    inspectorTab === "content"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Section
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInspectorTab("templates")}
+                  className={`flex-1 py-2 px-2.5 rounded-xl text-center transition-all cursor-pointer ${
+                    inspectorTab === "templates"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Templates
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInspectorTab("element")}
+                  className={`flex-1 py-2 px-2.5 rounded-xl text-center transition-all cursor-pointer relative ${
+                    inspectorTab === "element"
+                      ? "bg-slate-900 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  Element
+                  {selectedElement && (
+                    <span className="absolute top-1.5 right-1.5 w-2 rounded-full bg-[#005d52] ring-2 ring-white"></span>
+                  )}
+                </button>
+
+                {/* Right Collapse Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsRightPanelOpen(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors ml-1 cursor-pointer"
+                  title="Collapse Inspector Panel"
+                >
+                  <PanelRightClose className="w-4 h-4" />
+                </button>
+              </div>
 
             {/* TAB 1: SECTION CONTENT & ELEMENTS TREE */}
             {inspectorTab === "content" && selectedSection && (
@@ -892,7 +966,8 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             )}
           </button>
         </div>
-      </div>
+      )}
     </div>
-  );
+  </div>
+);
 }

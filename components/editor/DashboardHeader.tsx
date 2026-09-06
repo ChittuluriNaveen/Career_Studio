@@ -13,6 +13,10 @@ import {
   ChevronRight,
   Sparkles,
   Globe,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
 } from "lucide-react";
 import PublishModal from "./PublishModal";
 
@@ -30,6 +34,10 @@ interface DashboardHeaderProps {
   onUndo?: () => void;
   onRedo?: () => void;
   saveStatus?: "saved" | "saving" | "unsaved";
+  isLeftPanelOpen?: boolean;
+  onToggleLeftPanel?: () => void;
+  isRightPanelOpen?: boolean;
+  onToggleRightPanel?: () => void;
 }
 
 export default function DashboardHeader({
@@ -41,6 +49,10 @@ export default function DashboardHeader({
   onUndo,
   onRedo,
   saveStatus = "saved",
+  isLeftPanelOpen = true,
+  onToggleLeftPanel,
+  isRightPanelOpen = true,
+  onToggleRightPanel,
 }: DashboardHeaderProps) {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
 
@@ -71,47 +83,84 @@ export default function DashboardHeader({
           </div>
         </div>
 
-        {/* Center Device Viewport Switcher */}
-        <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
-          <button
-            type="button"
-            onClick={() => setDeviceMode("mobile")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-              deviceMode === "mobile"
-                ? "bg-white text-slate-900 shadow-xs border border-slate-200"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-            title="Mobile Viewport (375px)"
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Mobile</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeviceMode("tablet")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-              deviceMode === "tablet"
-                ? "bg-white text-slate-900 shadow-xs border border-slate-200"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-            title="Tablet Viewport (768px)"
-          >
-            <Tablet className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Tablet</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeviceMode("desktop")}
-            className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-              deviceMode === "desktop"
-                ? "bg-white text-slate-900 shadow-xs border border-slate-200"
-                : "text-slate-500 hover:text-slate-800"
-            }`}
-            title="Desktop Canvas (1440px)"
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Desktop</span>
-          </button>
+        {/* Center Device Viewport & Panel Viewport Controls */}
+        <div className="flex items-center gap-2">
+          {/* Left Panel Toggle Button */}
+          {onToggleLeftPanel && (
+            <button
+              type="button"
+              onClick={onToggleLeftPanel}
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer text-xs font-bold flex items-center gap-1 ${
+                isLeftPanelOpen
+                  ? "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+                  : "bg-teal-50 border-teal-300 text-[#005d52] font-extrabold shadow-xs"
+              }`}
+              title={isLeftPanelOpen ? "Collapse Left Panel" : "Expand Left Panel"}
+            >
+              {isLeftPanelOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4 text-[#005d52]" />}
+              <span className="hidden lg:inline text-[11px]">{isLeftPanelOpen ? "Hide Left Panel" : "Show Left Panel"}</span>
+            </button>
+          )}
+
+          {/* Device Viewport Switcher */}
+          <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+            <button
+              type="button"
+              onClick={() => setDeviceMode("mobile")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                deviceMode === "mobile"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+              title="Mobile Viewport (375px)"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Mobile</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeviceMode("tablet")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                deviceMode === "tablet"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+              title="Tablet Viewport (768px)"
+            >
+              <Tablet className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Tablet</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeviceMode("desktop")}
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                deviceMode === "desktop"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  : "text-slate-500 hover:text-slate-800"
+              }`}
+              title="Desktop Canvas (1440px Widescreen)"
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Desktop</span>
+            </button>
+          </div>
+
+          {/* Right Inspector Toggle Button */}
+          {onToggleRightPanel && (
+            <button
+              type="button"
+              onClick={onToggleRightPanel}
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer text-xs font-bold flex items-center gap-1 ${
+                isRightPanelOpen
+                  ? "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+                  : "bg-teal-50 border-teal-300 text-[#005d52] font-extrabold shadow-xs"
+              }`}
+              title={isRightPanelOpen ? "Collapse Inspector Panel" : "Expand Inspector Panel"}
+            >
+              {isRightPanelOpen ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4 text-[#005d52]" />}
+              <span className="hidden lg:inline text-[11px]">{isRightPanelOpen ? "Hide Inspector" : "Show Inspector"}</span>
+            </button>
+          )}
         </div>
 
         {/* Right Actions: Undo/Redo, Save status, Preview, Publish */}
