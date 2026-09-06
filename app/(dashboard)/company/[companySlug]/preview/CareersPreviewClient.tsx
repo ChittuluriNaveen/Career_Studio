@@ -148,7 +148,7 @@ export default function CareersPreviewClient({
               ? "w-[375px] ring-8 ring-slate-400/40 my-4"
               : deviceMode === "tablet"
               ? "w-[768px] ring-8 ring-slate-400/40 my-4"
-              : "w-full max-w-6xl my-2"
+              : "w-full max-w-7xl my-2"
           }`}
         >
           <CareersPageRenderer

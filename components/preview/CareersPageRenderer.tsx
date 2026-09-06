@@ -154,7 +154,7 @@ export default function CareersPageRenderer({
             : "bg-white/85 border-slate-200/80 text-slate-900"
         } shadow-sm`}
       >
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo & Company Name */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => scrollToAnchor("hero")}>
             {company.logoUrl ? (
@@ -283,7 +283,7 @@ export default function CareersPageRenderer({
 
       {/* 3. MAIN SCROLLABLE SECTIONS BODY */}
       <main
-        className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 space-y-12"
+        className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 space-y-12"
         style={{ paddingTop: sectionSpacing, paddingBottom: sectionSpacing }}
       >
         {activeSections.length === 0 ? (
@@ -504,7 +504,7 @@ export default function CareersPageRenderer({
           isDarkMode ? "bg-slate-950 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-700"
         }`}
       >
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="md:col-span-2 space-y-3">
             <div className="flex items-center gap-3">
               {company.logoUrl ? (

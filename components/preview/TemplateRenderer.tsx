@@ -49,7 +49,7 @@ export default function TemplateRenderer({
       ? "max-w-3xl px-6"
       : layoutConfig.container === "full"
       ? "w-full max-w-none px-0"
-      : "max-w-6xl px-8";
+      : "max-w-7xl px-4 sm:px-6 lg:px-8";
 
   // Padding Y
   const pyClass =

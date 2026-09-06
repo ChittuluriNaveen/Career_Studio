@@ -492,14 +492,14 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         </div>
 
         {/* Column 3: Center Responsive Preview Canvas */}
-        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-8 flex justify-center items-start">
+        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-6 flex justify-center items-start overflow-x-auto">
           <div
             className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
               deviceMode === "mobile"
-                ? "w-[375px] ring-8 ring-slate-400/40 my-4"
+                ? "w-[375px] shrink-0 ring-8 ring-slate-400/40 my-4"
                 : deviceMode === "tablet"
-                ? "w-[768px] ring-8 ring-slate-400/40 my-4"
-                : "w-full max-w-5xl my-2"
+                ? "w-[768px] shrink-0 ring-8 ring-slate-400/40 my-4"
+                : "w-full max-w-none my-2"
             }`}
           >
             {loading ? (
