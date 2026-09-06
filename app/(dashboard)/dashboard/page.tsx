@@ -72,7 +72,7 @@ export default async function DashboardOverviewPage() {
       href: `/company/${company.slug}/design`,
       icon: Palette,
       badge: isPagePublished ? "Published" : "Draft Mode",
-      badgeColor: isPagePublished ? "bg-emerald-950 text-emerald-300 border-emerald-700" : "bg-amber-950 text-amber-300 border-amber-700",
+      badgeColor: isPagePublished ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200",
       cta: "Open Designer",
     },
     {
@@ -81,7 +81,7 @@ export default async function DashboardOverviewPage() {
       href: `/company/${company.slug}/jobs`,
       icon: Briefcase,
       badge: `${totalJobsCount} Requisitions`,
-      badgeColor: "bg-indigo-950 text-indigo-300 border-indigo-700",
+      badgeColor: "bg-teal-50 text-[#005d52] border-teal-200",
       cta: "Manage Jobs",
     },
     {
@@ -90,7 +90,7 @@ export default async function DashboardOverviewPage() {
       href: `/company/${company.slug}/details`,
       icon: Building2,
       badge: `${profileCompletionPercent}% Complete`,
-      badgeColor: "bg-blue-950 text-blue-300 border-blue-700",
+      badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
       cta: "Edit Details",
     },
     {
@@ -99,13 +99,13 @@ export default async function DashboardOverviewPage() {
       href: `/company/${company.slug}/preview`,
       icon: Eye,
       badge: "Recruiter Preview",
-      badgeColor: "bg-purple-950 text-purple-300 border-purple-700",
+      badgeColor: "bg-purple-50 text-purple-700 border-purple-200",
       cta: "Launch Preview",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <RecruiterNav
         companySlug={company.slug}
         companyName={company.name}
@@ -114,24 +114,24 @@ export default async function DashboardOverviewPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-indigo-900/60 via-slate-800 to-slate-800 p-6 sm:p-8 rounded-2xl border border-indigo-700/40 shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-xs font-bold text-indigo-300">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-xs font-bold text-[#005d52]">
+              <Sparkles className="w-3.5 h-3.5 text-[#005d52]" />
               <span>Recruiter Portal Overview</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Welcome back, {session.user?.name || "Recruiter"} 👋
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-              Managing careers portal and talent acquisition for <strong className="text-white">{company.name}</strong>.
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
+              Managing careers portal and talent acquisition for <strong className="text-slate-900">{company.name}</strong>.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               href={`/company/${company.slug}/jobs/new`}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all cursor-pointer"
+              className="flex items-center gap-2 bg-[#005d52] hover:bg-[#004a41] text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Post New Job</span>
@@ -141,9 +141,9 @@ export default async function DashboardOverviewPage() {
               href={`/${company.slug}/careers`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition-all"
+              className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-4 py-2.5 rounded-xl border border-slate-300 transition-all"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 text-slate-500" />
               <span>View Public Page</span>
             </a>
           </div>
@@ -151,59 +151,59 @@ export default async function DashboardOverviewPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex items-center justify-between">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Jobs</p>
-              <p className="text-3xl font-black text-white">{activeJobsCount}</p>
-              <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Jobs</p>
+              <p className="text-3xl font-black text-slate-900">{activeJobsCount}</p>
+              <p className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" /> Live on Careers Portal
               </p>
             </div>
-            <div className="p-3 bg-emerald-950/60 rounded-xl border border-emerald-800/50 text-emerald-400">
+            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-700">
               <Briefcase className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex items-center justify-between">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Draft Positions</p>
-              <p className="text-3xl font-black text-white">{draftJobsCount}</p>
-              <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Draft Positions</p>
+              <p className="text-3xl font-black text-slate-900">{draftJobsCount}</p>
+              <p className="text-[11px] text-amber-700 font-semibold flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Pending Publication
               </p>
             </div>
-            <div className="p-3 bg-amber-950/60 rounded-xl border border-amber-800/50 text-amber-400">
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-700">
               <Clock className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex items-center justify-between">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Careers Page</p>
-              <p className="text-2xl font-black text-white">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Careers Page</p>
+              <p className="text-2xl font-black text-slate-900">
                 {isPagePublished ? "Published" : "Draft Mode"}
               </p>
-              <p className="text-[11px] text-indigo-400 font-semibold">
+              <p className="text-[11px] text-indigo-700 font-semibold">
                 {sections.length} Active Layout Sections
               </p>
             </div>
-            <div className="p-3 bg-indigo-950/60 rounded-xl border border-indigo-800/50 text-indigo-400">
+            <div className="p-3 bg-teal-50 rounded-xl border border-teal-200 text-[#005d52]">
               <Palette className="w-6 h-6" />
             </div>
           </div>
 
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex items-center justify-between">
+          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Profile Score</p>
-              <p className="text-3xl font-black text-white">{profileCompletionPercent}%</p>
-              <div className="w-24 bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-700">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Profile Score</p>
+              <p className="text-3xl font-black text-slate-900">{profileCompletionPercent}%</p>
+              <div className="w-24 bg-slate-100 h-2 rounded-full overflow-hidden border border-slate-200">
                 <div
-                  className="bg-emerald-500 h-full rounded-full transition-all"
+                  className="bg-[#005d52] h-full rounded-full transition-all"
                   style={{ width: `${profileCompletionPercent}%` }}
                 />
               </div>
             </div>
-            <div className="p-3 bg-blue-950/60 rounded-xl border border-blue-800/50 text-blue-400">
+            <div className="p-3 bg-blue-50 rounded-xl border border-blue-200 text-blue-700">
               <TrendingUp className="w-6 h-6" />
             </div>
           </div>
@@ -211,7 +211,7 @@ export default async function DashboardOverviewPage() {
 
         {/* Quick Links Action Cards */}
         <div className="space-y-4">
-          <h2 className="text-lg font-black text-white flex items-center gap-2">
+          <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
             <span>Functional Modules</span>
           </h2>
 
@@ -222,11 +222,11 @@ export default async function DashboardOverviewPage() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="group bg-slate-800 hover:bg-slate-750 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500/60 transition-all shadow-sm flex flex-col justify-between space-y-4"
+                  className="group bg-white hover:bg-slate-50/80 p-6 rounded-2xl border border-slate-200 hover:border-slate-400 transition-all shadow-2xs flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="p-2.5 bg-slate-900 rounded-xl text-indigo-400 border border-slate-700 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                      <div className="p-2.5 bg-slate-100 rounded-xl text-slate-900 border border-slate-200 group-hover:bg-[#005d52] group-hover:text-white transition-colors">
                         <Icon className="w-6 h-6" />
                       </div>
                       <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border ${link.badgeColor}`}>
@@ -235,16 +235,16 @@ export default async function DashboardOverviewPage() {
                     </div>
 
                     <div>
-                      <h3 className="text-base font-extrabold text-white group-hover:text-indigo-300 transition-colors">
+                      <h3 className="text-base font-extrabold text-slate-900 group-hover:text-[#005d52] transition-colors">
                         {link.title}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                         {link.description}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-400 group-hover:text-indigo-300 pt-2 border-t border-slate-700/60">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#005d52] pt-2 border-t border-slate-100">
                     <span>{link.cta}</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
@@ -255,36 +255,36 @@ export default async function DashboardOverviewPage() {
         </div>
 
         {/* Recent Jobs Preview Table */}
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 p-6 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-700">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 shadow-2xs">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
-              <h2 className="text-base font-black text-white">Recent Job Requisitions</h2>
-              <p className="text-xs text-slate-400">Latest jobs created for your company</p>
+              <h2 className="text-base font-black text-slate-900">Recent Job Requisitions</h2>
+              <p className="text-xs text-slate-500">Latest jobs created for your company</p>
             </div>
             <Link
               href={`/company/${company.slug}/jobs`}
-              className="text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:underline"
+              className="text-xs font-bold text-[#005d52] hover:underline"
             >
               View All Jobs →
             </Link>
           </div>
 
           {jobs.length === 0 ? (
-            <div className="text-center py-8 text-slate-500 text-xs">
+            <div className="text-center py-8 text-slate-400 text-xs">
               No job postings created yet. Click "Post New Job" to get started.
             </div>
           ) : (
-            <div className="divide-y divide-slate-700/60">
+            <div className="divide-y divide-slate-100">
               {jobs.slice(0, 5).map((job) => (
                 <div key={job.id} className="py-3 flex items-center justify-between text-xs">
                   <div className="space-y-0.5">
                     <Link
                       href={`/company/${company.slug}/jobs/${job.id}`}
-                      className="font-bold text-white hover:text-indigo-400 transition-colors text-sm"
+                      className="font-bold text-slate-900 hover:text-[#005d52] transition-colors text-sm"
                     >
                       {job.title}
                     </Link>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-500">
                       {job.department?.name || "General"} • {job.location?.name || "Remote"} • {job.jobType.replace("_", " ")}
                     </p>
                   </div>
@@ -292,15 +292,15 @@ export default async function DashboardOverviewPage() {
                     <span
                       className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
                         job.isPublished
-                          ? "bg-emerald-950 text-emerald-300 border-emerald-700"
-                          : "bg-amber-950 text-amber-300 border-amber-700"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
                       }`}
                     >
                       {job.isPublished ? "PUBLISHED" : "DRAFT"}
                     </span>
                     <Link
                       href={`/company/${company.slug}/jobs/${job.id}`}
-                      className="text-slate-400 hover:text-white font-semibold underline"
+                      className="text-slate-600 hover:text-slate-900 font-semibold underline"
                     >
                       View
                     </Link>

@@ -41,34 +41,34 @@ export default function CareersPreviewClient({
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* Recruiter Preview Top Toolbar */}
-      <header className="bg-slate-900 border-b border-slate-800 py-3 px-4 sm:px-6 sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 shadow-md">
+      <header className="bg-white border-b border-slate-200 py-3 px-4 sm:px-6 sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
         {/* Left: Back & Status Indicator */}
         <div className="flex items-center gap-3">
           <Link
             href={`/company/${company.slug}/design`}
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl border border-slate-300 transition-all cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-slate-400" />
+            <ArrowLeft className="w-4 h-4 text-slate-500" />
             <span>Back to Design Studio</span>
           </Link>
-          <span className="text-slate-700 hidden sm:inline">|</span>
-          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-teal-300 bg-teal-950/60 border border-teal-800/60 px-3 py-1.5 rounded-lg">
-            <Eye className="w-3.5 h-3.5 text-teal-400" />
+          <span className="text-slate-300 hidden sm:inline">|</span>
+          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-[#005d52] bg-teal-50 border border-teal-200 px-3 py-1.5 rounded-xl">
+            <Eye className="w-3.5 h-3.5 text-[#005d52]" />
             <span>Interactive Website Preview</span>
           </div>
         </div>
 
         {/* Center: Device Viewport Controls */}
-        <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button
             type="button"
             onClick={() => setDeviceMode("desktop")}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               deviceMode === "desktop"
-                ? "bg-teal-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/60"
+                ? "bg-[#005d52] text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
             }`}
           >
             <Monitor className="w-3.5 h-3.5" />
@@ -79,8 +79,8 @@ export default function CareersPreviewClient({
             onClick={() => setDeviceMode("tablet")}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               deviceMode === "tablet"
-                ? "bg-teal-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/60"
+                ? "bg-[#005d52] text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
             }`}
           >
             <Tablet className="w-3.5 h-3.5" />
@@ -91,8 +91,8 @@ export default function CareersPreviewClient({
             onClick={() => setDeviceMode("mobile")}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               deviceMode === "mobile"
-                ? "bg-teal-600 text-white shadow-xs"
-                : "text-slate-400 hover:text-white hover:bg-slate-700/60"
+                ? "bg-[#005d52] text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@ export default function CareersPreviewClient({
             type="button"
             onClick={handlePublish}
             disabled={publishing}
-            className="flex items-center gap-1.5 text-xs font-bold text-white bg-teal-600 hover:bg-teal-500 disabled:opacity-50 px-4 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer"
+            className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#005d52] hover:bg-[#004a41] disabled:opacity-50 px-4 py-1.5 rounded-xl shadow-xs transition-all cursor-pointer"
           >
             {publishing ? (
               <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
@@ -120,10 +120,10 @@ export default function CareersPreviewClient({
             href={`/${company.slug}/careers`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-1.5 rounded-lg border border-slate-700 transition-all"
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl border border-slate-300 transition-all"
           >
             <span>Live Candidate Page</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
           </a>
         </div>
       </header>
@@ -141,14 +141,14 @@ export default function CareersPreviewClient({
       )}
 
       {/* Real Full-Length Scrollable Website Canvas */}
-      <main className="flex-1 bg-slate-950 py-8 px-4 sm:px-6 flex justify-center items-start overflow-y-auto">
+      <main className="flex-1 bg-slate-200/80 py-8 px-4 sm:px-6 flex justify-center items-start overflow-y-auto">
         <div
-          className={`transition-all duration-300 bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-700 relative ${
+          className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-300 relative ${
             deviceMode === "mobile"
-              ? "w-[375px] ring-12 ring-slate-800 my-4"
+              ? "w-[375px] ring-8 ring-slate-400/40 my-4"
               : deviceMode === "tablet"
-              ? "w-[768px] ring-8 ring-slate-800 my-4"
-              : "w-full max-w-6xl"
+              ? "w-[768px] ring-8 ring-slate-400/40 my-4"
+              : "w-full max-w-6xl my-2"
           }`}
         >
           <CareersPageRenderer
@@ -157,7 +157,7 @@ export default function CareersPreviewClient({
             jobs={jobs}
             departments={departments}
             locations={locations}
-            isPreviewMode={false}
+            isPreviewMode={true}
             deviceMode={deviceMode}
           />
         </div>

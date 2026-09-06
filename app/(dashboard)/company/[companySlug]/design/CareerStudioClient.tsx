@@ -444,23 +444,23 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         <LeftIconRail activeTab={activeNavTab} setActiveTab={setActiveNavTab} />
 
         {/* Column 2: Switchable Secondary Panel */}
-        <div className="w-80 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs">
+        <div className="w-88 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs">
           {activeNavTab === "pages" && company && <PagesPanel companySlug={company.slug} />}
           
           {activeNavTab === "sections" && (
             <div className="p-4 space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
-                    <h2 className="font-bold text-sm text-slate-900">Sections Architecture</h2>
-                    <p className="text-[11px] text-slate-500">Reorder, select & manage sections</p>
+                    <h2 className="font-black text-base text-slate-900 tracking-tight">Sections Architecture</h2>
+                    <p className="text-xs text-slate-500 font-medium">Reorder, select & customize sections</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setInspectorTab("templates")}
-                    className="flex items-center gap-1 text-[11px] bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-bold px-2 py-1 rounded-md transition-all cursor-pointer border border-indigo-200"
+                    className="flex items-center gap-1.5 text-xs bg-teal-50 text-[#005d52] hover:bg-teal-100 font-extrabold px-3 py-1.5 rounded-xl transition-all cursor-pointer border border-teal-200 shadow-2xs"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>Add</span>
                   </button>
                 </div>
@@ -492,20 +492,20 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         </div>
 
         {/* Column 3: Center Responsive Preview Canvas */}
-        <div className="flex-1 bg-slate-200 overflow-y-auto p-4 md:p-8 flex justify-center items-start">
+        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-8 flex justify-center items-start">
           <div
-            className={`transition-all duration-300 bg-white rounded-xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
+            className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
               deviceMode === "mobile"
-                ? "w-[375px]"
+                ? "w-[375px] ring-8 ring-slate-400/40 my-4"
                 : deviceMode === "tablet"
-                ? "w-[768px]"
-                : "w-full max-w-5xl"
+                ? "w-[768px] ring-8 ring-slate-400/40 my-4"
+                : "w-full max-w-5xl my-2"
             }`}
           >
             {loading ? (
               <div className="flex flex-col items-center justify-center h-96 space-y-3">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
-                <p className="text-xs text-slate-500 font-medium">Loading Careers Studio...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#005d52]" />
+                <p className="text-xs text-slate-500 font-bold">Loading Careers Studio...</p>
               </div>
             ) : company ? (
               <PageRenderer
@@ -526,17 +526,17 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         </div>
 
         {/* Column 4: Right Inspector Side Box */}
-        <div className="w-80 bg-white border-l border-slate-200 flex flex-col justify-between flex-shrink-0 p-4 z-10 overflow-y-auto shadow-2xs">
+        <div className="w-88 bg-white border-l border-slate-200 flex flex-col justify-between flex-shrink-0 p-4 z-10 overflow-y-auto shadow-2xs">
           <div className="space-y-4">
             {/* Inspector Navigation Tabs */}
-            <div className="flex border-b border-slate-200 pb-2 gap-1 text-xs font-bold">
+            <div className="flex border-b border-slate-200 pb-2 gap-1.5 text-xs font-black">
               <button
                 type="button"
                 onClick={() => setInspectorTab("content")}
-                className={`flex-1 py-1.5 rounded-md text-center transition-all cursor-pointer ${
+                className={`flex-1 py-2 px-3 rounded-xl text-center transition-all cursor-pointer ${
                   inspectorTab === "content"
                     ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 Section
@@ -544,10 +544,10 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
               <button
                 type="button"
                 onClick={() => setInspectorTab("templates")}
-                className={`flex-1 py-1.5 rounded-md text-center transition-all cursor-pointer ${
+                className={`flex-1 py-2 px-3 rounded-xl text-center transition-all cursor-pointer ${
                   inspectorTab === "templates"
                     ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 Templates
@@ -555,15 +555,15 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
               <button
                 type="button"
                 onClick={() => setInspectorTab("element")}
-                className={`flex-1 py-1.5 rounded-md text-center transition-all cursor-pointer relative ${
+                className={`flex-1 py-2 px-3 rounded-xl text-center transition-all cursor-pointer relative ${
                   inspectorTab === "element"
                     ? "bg-slate-900 text-white shadow-xs"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
                 }`}
               >
                 Element
                 {selectedElement && (
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-indigo-500"></span>
+                  <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#005d52] ring-2 ring-white"></span>
                 )}
               </button>
             </div>
@@ -571,21 +571,21 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             {/* TAB 1: SECTION CONTENT & ELEMENTS TREE */}
             {inspectorTab === "content" && selectedSection && (
               <div className="space-y-4">
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase tracking-wider font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                    <span className="text-xs font-black uppercase tracking-wider text-[#005d52] bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
                       {selectedSection.type}
                     </span>
                     <button
                       type="button"
                       onClick={() => setInspectorTab("templates")}
-                      className="text-[11px] font-bold text-indigo-600 hover:underline"
+                      className="text-xs font-bold text-[#005d52] hover:underline"
                     >
                       Switch Template →
                     </button>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Section Title</label>
+                    <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Section Title</label>
                     <input
                       type="text"
                       value={selectedSection.title || ""}
@@ -594,15 +594,15 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, title: newTitle } : s));
                         setSections(updated);
                       }}
-                      className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900"
+                      className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#005d52] text-slate-900"
                     />
                   </div>
 
                   {/* Show link in Navbar Toggle */}
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                     <div>
-                      <label className="text-[11px] font-bold text-slate-800 block">Show Link in Header Navbar</label>
-                      <span className="text-[10px] text-slate-500 block">Toggle navigation link appearance</span>
+                      <label className="text-xs font-extrabold text-slate-900 block">Show Link in Header Navbar</label>
+                      <span className="text-[11px] text-slate-500 block font-medium">Toggle header link visibility</span>
                     </div>
                     <input
                       type="checkbox"
@@ -613,20 +613,20 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s));
                         setSections(updated);
                       }}
-                      className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                      className="w-4.5 h-4.5 text-[#005d52] rounded border-slate-300 focus:ring-[#005d52] cursor-pointer"
                     />
                   </div>
                 </div>
 
                 {/* Section Card Container Aesthetics Controls */}
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-3">
-                  <div className="flex items-center justify-between pb-1 border-b border-slate-200">
-                    <span className="text-xs font-bold text-slate-900">Card Container Appearance</span>
-                    <span className="text-[10px] text-slate-500">Custom Frame & Shadow</span>
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <span className="text-xs font-black text-slate-900">Card Container Appearance</span>
+                    <span className="text-[11px] text-slate-500 font-semibold">Frame & Shadow</span>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Card Background Mode</label>
+                    <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Card Background Mode</label>
                     <select
                       value={selectedSection.content?.cardStyles?.background || "default"}
                       onChange={(e) => {
@@ -638,7 +638,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         };
                         setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
                       }}
-                      className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900 cursor-pointer"
+                      className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#005d52] text-slate-900 cursor-pointer"
                     >
                       <option value="default">Default Theme Card</option>
                       <option value="solid-white">Solid White Card</option>
@@ -648,7 +648,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Card Shadow Preset</label>
+                    <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Card Shadow Preset</label>
                     <select
                       value={selectedSection.content?.cardStyles?.shadow || "lg"}
                       onChange={(e) => {
@@ -660,7 +660,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         };
                         setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
                       }}
-                      className="w-full text-xs font-semibold px-2.5 py-1.5 bg-white border border-slate-300 rounded-md focus:ring-1 focus:ring-slate-900 cursor-pointer"
+                      className="w-full text-xs font-bold px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#005d52] text-slate-900 cursor-pointer"
                     >
                       <option value="none">No Shadow (Flat)</option>
                       <option value="sm">Small Soft Shadow</option>
@@ -671,9 +671,9 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-[11px] font-bold text-slate-700">Card Corner Radius</label>
-                      <span className="text-[10px] font-mono font-semibold text-slate-500">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-extrabold text-slate-800">Card Corner Radius</label>
+                      <span className="text-xs font-mono font-bold text-slate-600">
                         {selectedSection.content?.cardStyles?.borderRadius ?? 16}px
                       </span>
                     </div>
@@ -691,14 +691,14 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         };
                         setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
                       }}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005d52]"
                     />
                   </div>
 
                   <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="text-[11px] font-bold text-slate-700">Card Border Width</label>
-                      <span className="text-[10px] font-mono font-semibold text-slate-500">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-extrabold text-slate-800">Card Border Width</label>
+                      <span className="text-xs font-mono font-bold text-slate-600">
                         {selectedSection.content?.cardStyles?.borderWidth ?? 1}px
                       </span>
                     </div>
@@ -716,15 +716,15 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                         };
                         setSections(sections.map((s) => (s.id === selectedSection.id ? { ...s, content: updatedContent } : s)));
                       }}
-                      className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005d52]"
                     />
                   </div>
                 </div>
 
                 {/* Elements Tree Header */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Elements Tree</span>
+                    <span className="text-xs font-black text-slate-900 uppercase tracking-wider">Elements Tree</span>
                     <select
                       onChange={(e) => {
                         if (e.target.value) {
@@ -732,7 +732,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                           e.target.value = "";
                         }
                       }}
-                      className="text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 rounded px-2 py-1 cursor-pointer"
+                      className="text-xs font-extrabold bg-teal-50 text-[#005d52] border border-teal-200 rounded-xl px-2.5 py-1.5 cursor-pointer shadow-2xs"
                       defaultValue=""
                     >
                       <option value="" disabled>+ Add Element</option>
@@ -753,10 +753,24 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                   </div>
 
                   {/* List of Section Elements with Drag & Drop */}
-                  <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
+                  <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
                     {currentElements.map((elem, idx) => {
                       const isSelected = selectedElementId === elem.id;
                       const isDragging = draggedElementId === elem.id;
+
+                      const typeColor =
+                        elem.type === "heading"
+                          ? "bg-indigo-100 text-indigo-800 border-indigo-200"
+                          : elem.type === "button"
+                          ? "bg-teal-100 text-[#005d52] border-teal-200"
+                          : elem.type === "image"
+                          ? "bg-blue-100 text-blue-800 border-blue-200"
+                          : elem.type === "video"
+                          ? "bg-purple-100 text-purple-800 border-purple-200"
+                          : elem.type === "stats"
+                          ? "bg-amber-100 text-amber-800 border-amber-200"
+                          : "bg-slate-100 text-slate-700 border-slate-200";
+
                       return (
                         <div
                           key={elem.id}
@@ -768,21 +782,24 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleElementDrop(e, elem.id)}
                           onClick={() => handleSelectElement(elem, selectedSection.id)}
-                          className={`p-2 rounded-lg border text-xs flex items-center justify-between cursor-grab active:cursor-grabbing transition-all ${
+                          className={`p-3 rounded-2xl border text-xs flex items-center justify-between cursor-grab active:cursor-grabbing transition-all ${
                             isSelected
-                              ? "bg-indigo-50 border-indigo-500 text-indigo-900 font-bold shadow-xs"
+                              ? "bg-teal-50 border-[#005d52] text-teal-950 font-bold shadow-xs ring-2 ring-[#005d52]/40"
                               : isDragging
-                              ? "opacity-50 border-indigo-400 bg-indigo-50/50"
-                              : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                              ? "opacity-50 border-teal-400 bg-teal-50/50"
+                              : "bg-white border-slate-200 text-slate-800 hover:border-slate-300 shadow-2xs"
                           }`}
                         >
-                          <div className="flex items-center gap-2 overflow-hidden">
-                            <span className="text-[10px] font-bold text-slate-400 w-4">{idx + 1}.</span>
-                            <span className="font-semibold capitalize text-slate-800 truncate">
-                              {elem.type}: {elem.content?.text || elem.content?.heading || elem.content?.url || elem.id}
+                          <div className="flex items-center gap-2.5 overflow-hidden">
+                            <span className="text-xs font-bold text-slate-400 w-4">{idx + 1}.</span>
+                            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border ${typeColor}`}>
+                              {elem.type}
+                            </span>
+                            <span className="font-bold text-slate-800 truncate text-xs">
+                              {elem.content?.text || elem.content?.heading || elem.content?.url || elem.id}
                             </span>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 flex-shrink-0">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -790,7 +807,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                                 handleMoveElement(elem.id, "up");
                               }}
                               disabled={idx === 0}
-                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                              className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 disabled:opacity-30 cursor-pointer font-bold"
                               title="Move Up"
                             >
                               ↑
@@ -802,7 +819,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                                 handleMoveElement(elem.id, "down");
                               }}
                               disabled={idx === currentElements.length - 1}
-                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 cursor-pointer"
+                              className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 disabled:opacity-30 cursor-pointer font-bold"
                               title="Move Down"
                             >
                               ↓
@@ -813,7 +830,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                                 e.stopPropagation();
                                 handleDeleteElementFromSection(elem.id);
                               }}
-                              className="p-1 text-slate-400 hover:text-red-600 font-bold cursor-pointer"
+                              className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 font-extrabold cursor-pointer"
                               title="Delete Element"
                             >
                               ×

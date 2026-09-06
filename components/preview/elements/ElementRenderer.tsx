@@ -316,9 +316,11 @@ export default function ElementRenderer({
                 <img
                   src={resolveImageUrl(element.content.url)}
                   alt={renderText(element.content.alt, "Careers visual")}
+                  loading="lazy"
+                  decoding="async"
                   className={`w-full h-full ${
                     element.content.fit === "contain" ? "object-contain bg-black/20" : "object-cover"
-                  } rounded-2xl`}
+                  } rounded-2xl transition-opacity duration-300`}
                   style={{ objectFit: activeStyles.objectFit as any }}
                 />
               </div>
@@ -342,12 +344,14 @@ export default function ElementRenderer({
                 <video
                   src={resolveVideoUrl(element.content.videoUrl)}
                   controls
+                  preload="metadata"
                   className="w-full h-full border-0 rounded-2xl object-cover"
                 />
               ) : (
                 <iframe
                   src={resolveVideoUrl(element.content.videoUrl)}
                   title="Culture Video Player"
+                  loading="lazy"
                   className="w-full h-full border-0 rounded-2xl"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -449,6 +453,8 @@ export default function ElementRenderer({
                 <img
                   src={resolveImageUrl(photo.url)}
                   alt={renderText(photo.title, "Gallery photo")}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-90 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
@@ -498,7 +504,9 @@ export default function ElementRenderer({
                 <img
                   src={resolveImageUrl(galleryItems[lightboxIndex].url)}
                   alt={renderText(galleryItems[lightboxIndex].title, "Gallery Photo")}
-                  className="max-h-[80vh] w-auto object-contain rounded-2xl shadow-2xl border border-white/10"
+                  loading="lazy"
+                  decoding="async"
+                  className="max-h-[80vh] w-auto max-w-full rounded-2xl shadow-2xl object-contain"
                 />
                 <div className="text-center space-y-1">
                   <p className="text-sm font-bold text-white">

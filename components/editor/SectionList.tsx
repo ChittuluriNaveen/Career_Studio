@@ -110,20 +110,20 @@ function SortableSectionCard({
     <div
       ref={setNodeRef}
       style={style}
-      className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+      className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
         isSelected
-          ? "bg-teal-50/90 border-teal-400 text-teal-950 font-bold shadow-2xs ring-1 ring-teal-400/50"
+          ? "bg-teal-50 border-teal-500 text-teal-950 font-bold shadow-xs ring-2 ring-teal-500/40"
           : !isEnabled
-          ? "bg-slate-100/70 border-slate-200 text-slate-400 italic"
-          : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
-      } ${isDragging ? "shadow-xl ring-2 ring-teal-400/30" : ""}`}
+          ? "bg-slate-100/80 border-slate-200 text-slate-400 opacity-60"
+          : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-800 shadow-2xs"
+      } ${isDragging ? "shadow-2xl ring-2 ring-teal-500/50" : ""}`}
       onClick={() => onSelect(section)}
     >
-      <div className="flex items-center gap-2 truncate min-w-0 flex-1">
+      <div className="flex items-center gap-2.5 truncate min-w-0 flex-1">
         {/* Drag handle */}
         <button
           type="button"
-          className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 transition-colors"
+          className="flex-shrink-0 touch-none cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-700 transition-colors p-1"
           aria-label="Drag to reorder"
           {...attributes}
           {...listeners}
@@ -132,41 +132,46 @@ function SortableSectionCard({
           <GripVertical className="w-4 h-4" />
         </button>
 
-        <div className={`p-1.5 rounded-lg border flex-shrink-0 ${badge.color}`}>
-          <Icon className="w-3.5 h-3.5" />
+        <div className={`p-2 rounded-xl border flex-shrink-0 ${badge.color}`}>
+          <Icon className="w-4 h-4" />
         </div>
 
-        <div className="truncate min-w-0">
-          <div className="flex items-center gap-1.5 truncate">
-            <span className={`text-xs block truncate font-bold ${!isEnabled ? "line-through text-slate-400" : "text-slate-900"}`}>
+        <div className="truncate min-w-0 flex-1">
+          <div className="flex items-center gap-2 truncate">
+            <span className={`text-xs block truncate font-black tracking-tight ${!isEnabled ? "line-through text-slate-400" : "text-slate-900"}`}>
               {section.title || badge.label}
             </span>
             {!isEnabled && (
-              <span className="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200">
+              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
                 Hidden
               </span>
             )}
           </div>
-          <span className="text-[9px] font-mono text-slate-400 uppercase">
-            {badge.label} · L{section.layoutVariant || "01"}
-          </span>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 font-mono">
+              {badge.label}
+            </span>
+            <span className="text-[10px] font-bold text-slate-500 font-mono">
+              Variant: L{section.layoutVariant || "01"}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Control buttons: Toggle Eye, Duplicate, Edit, Delete */}
-      <div className="flex items-center gap-0.5 flex-shrink-0">
+      <div className="flex items-center gap-1 flex-shrink-0">
         <button
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggleVisibility(section.id, isEnabled);
           }}
-          className={`p-1 rounded transition-colors ${
-            isEnabled ? "text-slate-400 hover:text-amber-600" : "text-amber-600 hover:text-slate-600"
+          className={`p-1.5 rounded-lg border transition-colors ${
+            isEnabled ? "bg-slate-50 border-slate-200 text-slate-500 hover:text-amber-600 hover:bg-amber-50" : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100"
           }`}
           title={isEnabled ? "Hide section from candidate page" : "Show section on candidate page"}
         >
-          {isEnabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+          {isEnabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
         </button>
 
         <button
@@ -175,22 +180,10 @@ function SortableSectionCard({
             e.stopPropagation();
             onDuplicate(section.id);
           }}
-          className="p-1 rounded text-slate-400 hover:text-blue-600 transition-colors"
+          className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
           title="Duplicate section"
         >
-          <Copy className="w-3.5 h-3.5" />
-        </button>
-
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(section);
-          }}
-          className="p-1 rounded text-slate-400 hover:text-teal-700 transition-colors"
-          title="Edit section content"
-        >
-          <Edit3 className="w-3.5 h-3.5" />
+          <Copy className="w-4 h-4" />
         </button>
 
         <button
@@ -199,10 +192,10 @@ function SortableSectionCard({
             e.stopPropagation();
             onDelete(section.id);
           }}
-          className="p-1 rounded text-slate-400 hover:text-red-600 transition-colors"
+          className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
           title="Delete section"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
     </div>

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { TEMPLATE_REGISTRY, SectionTemplate } from "@/lib/templates/registry";
 import { Sparkles, Check, Search, Plus, RefreshCw, Filter } from "lucide-react";
 
+import TemplateVisualPreview from "./TemplateVisualPreview";
+
 interface TemplatePickerPanelProps {
   selectedSection?: any | null;
   onApplyTemplateToSection: (templateId: string) => void;
@@ -182,22 +184,28 @@ export default function TemplatePickerPanel({
               <div
                 key={tmpl.templateId}
                 onClick={() => handleSelectTemplate(tmpl)}
-                className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-2 hover:border-teal-600 hover:shadow-xs ${
+                className={`group p-3.5 rounded-2xl border transition-all cursor-pointer space-y-3 hover:border-[#005d52] hover:shadow-md ${
                   isCurrent
-                    ? "bg-teal-50 border-teal-600 ring-2 ring-teal-600/30 shadow-2xs font-bold"
+                    ? "bg-teal-50/90 border-[#005d52] ring-2 ring-[#005d52]/40 shadow-xs font-bold"
                     : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-slate-900 text-xs">{tmpl.name}</span>
-                  {isCurrent && <Check className="w-4 h-4 text-teal-700" />}
+                {/* Visual Thumbnail Mockup */}
+                <TemplateVisualPreview templateId={tmpl.templateId} sectionType={tmpl.sectionType} />
+
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-slate-900 text-xs tracking-tight group-hover:text-[#005d52] transition-colors">{tmpl.name}</span>
+                    {isCurrent && <Check className="w-4 h-4 text-[#005d52] font-black" />}
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2">{tmpl.description}</p>
                 </div>
-                <p className="text-[11px] text-slate-500 leading-snug line-clamp-2">{tmpl.description}</p>
-                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 text-[10px] font-mono text-slate-400">
-                  <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 uppercase font-extrabold">
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-mono text-slate-500">
+                  <span className="px-2 py-0.5 rounded-md bg-teal-50 text-[#005d52] border border-teal-200 uppercase font-black">
                     {tmpl.sectionType}
                   </span>
-                  <span className="capitalize">{tmpl.layout.container} width</span>
+                  <span className="capitalize font-bold text-slate-600">{tmpl.layout.container} width</span>
                 </div>
               </div>
             );

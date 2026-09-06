@@ -84,20 +84,20 @@ export default function JobsListClient({
   return (
     <div className="space-y-6 font-sans">
       {/* Top Header & Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-slate-800 shadow-lg text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs text-slate-900">
         <div>
           <div className="flex items-center gap-2">
-            <Briefcase className="w-6 h-6 text-cyan-400" />
-            <h1 className="text-2xl font-black tracking-tight">Job Management</h1>
+            <Briefcase className="w-6 h-6 text-[#005d52]" />
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">Job Management</h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             Manage your open requisitions, review candidate applications, and control publication on your candidate careers portal.
           </p>
         </div>
 
         <Link
           href={`/company/${companySlug}/jobs/new`}
-          className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-5 py-3 rounded-2xl shadow-md transition-transform hover:scale-105 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 bg-[#005d52] hover:bg-[#004a41] text-white font-bold text-xs px-5 py-3 rounded-xl shadow-xs transition-transform hover:scale-[1.02] cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Create New Job</span>

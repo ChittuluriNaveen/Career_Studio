@@ -7,6 +7,7 @@ import JobSearchFilter from "@/components/candidate/JobSearchFilter";
 import TemplateRenderer from "./TemplateRenderer";
 import { SectionElement, getDefaultElementsForSectionType } from "@/lib/templates/registry";
 import { getThemeByCompany } from "@/lib/themes/registry";
+import LazySectionReveal from "@/components/ui/LazySectionReveal";
 
 interface CareersPageRendererProps {
   company: {
@@ -386,11 +387,13 @@ export default function CareersPageRenderer({
               );
             };
 
-            // Candidate Public Mode: Clean section rendering
+            // Candidate Public Mode: Clean section rendering with smooth lazy reveal
             if (!isPreviewMode) {
               return (
                 <section key={section.id} id={anchorId} className="scroll-mt-24">
-                  {renderSectionBody()}
+                  <LazySectionReveal direction="up" threshold={0.08}>
+                    {renderSectionBody()}
+                  </LazySectionReveal>
                 </section>
               );
             }
