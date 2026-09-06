@@ -14,6 +14,7 @@ export async function getJobsAction() {
 
   const jobs = await db.job.findMany({
     where: { companyId: session.user.companyId },
+    include: { company: true },
     orderBy: { createdAt: "desc" },
   });
 

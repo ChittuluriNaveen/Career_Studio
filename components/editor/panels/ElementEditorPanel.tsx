@@ -187,7 +187,7 @@ export default function ElementEditorPanel({
             <label className="block font-semibold text-slate-600 mb-1">Heading Text</label>
             <input
               type="text"
-              value={element.content.text || ""}
+              value={element.content.text || element.content.title || element.content.heading || ""}
               onChange={(e) => updateContentField("text", e.target.value)}
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-bold focus:ring-2 focus:ring-teal-600 focus:bg-white"
             />
@@ -221,7 +221,7 @@ export default function ElementEditorPanel({
             <label className="block font-semibold text-slate-600 mb-1">Text Content</label>
             <textarea
               rows={4}
-              value={element.content.text || ""}
+              value={element.content.text || element.content.subtitle || element.content.description || ""}
               onChange={(e) => updateContentField("text", e.target.value)}
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-teal-600 focus:bg-white"
             />
@@ -243,7 +243,7 @@ export default function ElementEditorPanel({
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                value={element.content.url || ""}
+                value={element.content.url || element.content.src || ""}
                 onChange={(e) => updateContentField("url", e.target.value)}
                 placeholder="https://... or @company_banner"
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs"
@@ -299,7 +299,7 @@ export default function ElementEditorPanel({
             <label className="block font-semibold text-slate-600 mb-1">Video Embed URL (YouTube/Vimeo)</label>
             <input
               type="text"
-              value={element.content.videoUrl || ""}
+              value={element.content.videoUrl || element.content.url || ""}
               onChange={(e) => updateContentField("videoUrl", e.target.value)}
               placeholder="https://www.youtube.com/embed/..."
               className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs"
@@ -344,8 +344,18 @@ export default function ElementEditorPanel({
             <label className="block font-semibold text-slate-600 mb-1">Button Label</label>
             <input
               type="text"
-              value={element.content.label || ""}
-              onChange={(e) => updateContentField("label", e.target.value)}
+              value={element.content.label || element.content.text || element.content.ctaText || element.content.buttonText || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                onUpdateElement({
+                  ...element,
+                  content: {
+                    ...element.content,
+                    label: val,
+                    text: val,
+                  },
+                });
+              }}
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-bold"
             />
           </div>
@@ -354,9 +364,19 @@ export default function ElementEditorPanel({
             <label className="block font-semibold text-slate-600 mb-1">Link URL or Section Anchor (#)</label>
             <input
               type="text"
-              value={element.content.linkUrl || ""}
-              onChange={(e) => updateContentField("linkUrl", e.target.value)}
-              placeholder="#jobs, #about, #benefits, #culture, #apply or https://..."
+              value={element.content.linkUrl || element.content.url || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                onUpdateElement({
+                  ...element,
+                  content: {
+                    ...element.content,
+                    linkUrl: val,
+                    url: val,
+                  },
+                });
+              }}
+              placeholder="#open-positions, #jobs, #about, #benefits, #culture, #apply or https://..."
               className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-xs mb-2"
             />
 
@@ -367,7 +387,8 @@ export default function ElementEditorPanel({
               </span>
               <div className="flex flex-wrap gap-1">
                 {[
-                  { tag: "#jobs", label: "Open Positions" },
+                  { tag: "#open-positions", label: "Open Positions" },
+                  { tag: "#jobs", label: "Jobs Section" },
                   { tag: "#about", label: "About Us" },
                   { tag: "#benefits", label: "Perks & Benefits" },
                   { tag: "#culture", label: "Culture" },
@@ -377,9 +398,18 @@ export default function ElementEditorPanel({
                   <button
                     key={anchor.tag}
                     type="button"
-                    onClick={() => updateContentField("linkUrl", anchor.tag)}
+                    onClick={() => {
+                      onUpdateElement({
+                        ...element,
+                        content: {
+                          ...element.content,
+                          linkUrl: anchor.tag,
+                          url: anchor.tag,
+                        },
+                      });
+                    }}
                     className={`px-2 py-1 rounded text-[10px] font-bold border transition-all cursor-pointer ${
-                      element.content.linkUrl === anchor.tag
+                      (element.content.linkUrl || element.content.url) === anchor.tag
                         ? "bg-teal-600 text-white border-teal-700 shadow-2xs"
                         : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
                     }`}

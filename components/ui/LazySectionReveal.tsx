@@ -7,14 +7,14 @@ interface LazySectionRevealProps {
   className?: string;
   delayMs?: number;
   threshold?: number;
-  direction?: "up" | "down" | "fade" | "scale";
+  direction?: "up" | "down" | "left" | "right" | "fade" | "scale";
 }
 
 export default function LazySectionReveal({
   children,
   className = "",
   delayMs = 0,
-  threshold = 0.1,
+  threshold = 0.05,
   direction = "up",
 }: LazySectionRevealProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -49,7 +49,7 @@ export default function LazySectionReveal({
       },
       {
         threshold,
-        rootMargin: "80px 0px", // Trigger slightly before entering viewport for smooth streaming
+        rootMargin: "0px 0px -40px 0px", // Trigger precisely as component enters visible viewport
       }
     );
 
@@ -66,13 +66,17 @@ export default function LazySectionReveal({
   }, [threshold]);
 
   const getTransformStyle = () => {
-    if (isVisible) return "opacity-100 translate-y-0 scale-100";
+    if (isVisible) return "opacity-100 translate-y-0 translate-x-0 scale-100";
 
     switch (direction) {
       case "up":
-        return "opacity-0 translate-y-8 scale-100";
+        return "opacity-0 translate-y-10 scale-100";
       case "down":
-        return "opacity-0 -translate-y-8 scale-100";
+        return "opacity-0 -translate-y-10 scale-100";
+      case "left":
+        return "opacity-0 -translate-x-10 scale-100";
+      case "right":
+        return "opacity-0 translate-x-10 scale-100";
       case "scale":
         return "opacity-0 scale-95";
       case "fade":
@@ -84,8 +88,11 @@ export default function LazySectionReveal({
   return (
     <div
       ref={domRef}
-      style={{ transitionDelay: `${delayMs}ms` }}
-      className={`transition-all duration-700 ease-out will-change-transform ${getTransformStyle()} ${className}`}
+      style={{
+        transitionDelay: `${delayMs}ms`,
+        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+      className={`transition-all duration-700 will-change-transform ${getTransformStyle()} ${className}`}
     >
       {children}
     </div>

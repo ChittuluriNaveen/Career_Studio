@@ -134,33 +134,36 @@ export default function JobSearchFilter({
     <div id="jobs" className="space-y-6 w-full scroll-mt-24 font-sans">
       {/* Search & Filter Control Bar */}
       <div
-        className={`p-5 rounded-3xl shadow-xl space-y-4 border transition-all ${
-          isDarkMode
-            ? "bg-slate-900/90 text-white border-slate-800 backdrop-blur-md"
-            : "bg-white text-slate-900 border-slate-200 shadow-md"
-        }`}
+        className="p-5 rounded-3xl shadow-xl space-y-4 border transition-all"
+        style={{
+          backgroundColor: theme?.cardBg || (isDarkMode ? "rgba(15, 23, 42, 0.85)" : "#ffffff"),
+          borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#e2e8f0"),
+          color: theme?.textColor || (isDarkMode ? "#f8fafc" : "#0f172a"),
+        }}
       >
         <div className={filterRowClass}>
           {/* Search Input */}
           <div className={searchColClass}>
-            <Search className={`w-4 h-4 absolute left-3.5 top-3.5 ${isDarkMode ? "text-slate-400" : "text-slate-400"}`} />
+            <Search className="w-4 h-4 absolute left-3.5 top-3.5 opacity-60" style={{ color: theme?.subtextColor || "#94a3b8" }} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search open positions..."
               aria-label="Search jobs by title or keyword"
-              className={`w-full pl-10 pr-4 py-2.5 rounded-2xl text-xs focus:outline-none focus:ring-2 ${
-                isDarkMode
-                  ? "bg-slate-950/80 border border-slate-700 text-white placeholder-slate-400 focus:ring-cyan-500"
-                  : "bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-teal-500"
-              }`}
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 border transition-colors"
+              style={{
+                backgroundColor: theme?.inputBg || (isDarkMode ? "rgba(2, 6, 23, 0.6)" : "#f8fafc"),
+                borderColor: theme?.inputBorder || (isDarkMode ? "rgba(255, 255, 255, 0.15)" : "#cbd5e1"),
+                color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+              }}
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer"
+                className="absolute right-3 top-3 opacity-70 hover:opacity-100 cursor-pointer"
+                style={{ color: theme?.subtextColor || "#94a3b8" }}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -173,18 +176,19 @@ export default function JobSearchFilter({
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
               aria-label="Filter jobs by department"
-              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 cursor-pointer ${
-                isDarkMode
-                  ? "bg-slate-950/80 border border-slate-700 text-white focus:ring-cyan-500"
-                  : "bg-slate-50 border border-slate-200 text-slate-800 focus:ring-teal-500"
-              }`}
+              className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 border cursor-pointer transition-colors"
+              style={{
+                backgroundColor: theme?.inputBg || (isDarkMode ? "rgba(2, 6, 23, 0.6)" : "#f8fafc"),
+                borderColor: theme?.inputBorder || (isDarkMode ? "rgba(255, 255, 255, 0.15)" : "#cbd5e1"),
+                color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+              }}
             >
               <option value="ALL">All Departments</option>
               {departments.map((dept, idx) => {
                 const deptId = typeof dept === "string" ? `dept-${idx}` : dept.id;
                 const deptName = typeof dept === "string" ? dept : dept.name;
                 return (
-                  <option key={deptId} value={deptName} className={isDarkMode ? "bg-slate-900 text-white" : "bg-white text-slate-900"}>
+                  <option key={deptId} value={deptName} style={{ backgroundColor: isDarkMode ? "#0f172a" : "#ffffff", color: isDarkMode ? "#ffffff" : "#0f172a" }}>
                     {deptName}
                   </option>
                 );
@@ -198,18 +202,19 @@ export default function JobSearchFilter({
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
               aria-label="Filter jobs by location"
-              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 cursor-pointer ${
-                isDarkMode
-                  ? "bg-slate-950/80 border border-slate-700 text-white focus:ring-cyan-500"
-                  : "bg-slate-50 border border-slate-200 text-slate-800 focus:ring-teal-500"
-              }`}
+              className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 border cursor-pointer transition-colors"
+              style={{
+                backgroundColor: theme?.inputBg || (isDarkMode ? "rgba(2, 6, 23, 0.6)" : "#f8fafc"),
+                borderColor: theme?.inputBorder || (isDarkMode ? "rgba(255, 255, 255, 0.15)" : "#cbd5e1"),
+                color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+              }}
             >
               <option value="ALL">All Locations</option>
               {locations.map((loc, idx) => {
                 const locId = typeof loc === "string" ? `loc-${idx}` : loc.id;
                 const locName = typeof loc === "string" ? loc : loc.name;
                 return (
-                  <option key={locId} value={locName} className={isDarkMode ? "bg-slate-900 text-white" : "bg-white text-slate-900"}>
+                  <option key={locId} value={locName} style={{ backgroundColor: isDarkMode ? "#0f172a" : "#ffffff", color: isDarkMode ? "#ffffff" : "#0f172a" }}>
                     {locName}
                   </option>
                 );
@@ -223,26 +228,27 @@ export default function JobSearchFilter({
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
               aria-label="Filter jobs by employment type"
-              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 cursor-pointer ${
-                isDarkMode
-                  ? "bg-slate-950/80 border border-slate-700 text-white focus:ring-cyan-500"
-                  : "bg-slate-50 border border-slate-200 text-slate-800 focus:ring-teal-500"
-              }`}
+              className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 border cursor-pointer transition-colors"
+              style={{
+                backgroundColor: theme?.inputBg || (isDarkMode ? "rgba(2, 6, 23, 0.6)" : "#f8fafc"),
+                borderColor: theme?.inputBorder || (isDarkMode ? "rgba(255, 255, 255, 0.15)" : "#cbd5e1"),
+                color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+              }}
             >
               <option value="ALL">All Job Types</option>
-              <option value="FULL_TIME" className={isDarkMode ? "bg-slate-900 text-white" : ""}>Full Time</option>
-              <option value="PART_TIME" className={isDarkMode ? "bg-slate-900 text-white" : ""}>Part Time</option>
-              <option value="CONTRACT" className={isDarkMode ? "bg-slate-900 text-white" : ""}>Contract</option>
-              <option value="INTERNSHIP" className={isDarkMode ? "bg-slate-900 text-white" : ""}>Internship</option>
+              <option value="FULL_TIME" style={{ backgroundColor: isDarkMode ? "#0f172a" : "#ffffff", color: isDarkMode ? "#ffffff" : "#0f172a" }}>Full Time</option>
+              <option value="PART_TIME" style={{ backgroundColor: isDarkMode ? "#0f172a" : "#ffffff", color: isDarkMode ? "#ffffff" : "#0f172a" }}>Part Time</option>
+              <option value="CONTRACT" style={{ backgroundColor: isDarkMode ? "#0f172a" : "#ffffff", color: isDarkMode ? "#ffffff" : "#0f172a" }}>Contract</option>
+              <option value="INTERNSHIP" style={{ backgroundColor: isDarkMode ? "#0f172a" : "#ffffff", color: isDarkMode ? "#ffffff" : "#0f172a" }}>Internship</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Filter Status Summary */}
-      <div className={`flex items-center justify-between text-xs font-medium px-2 ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+      <div className="flex items-center justify-between text-xs font-medium px-2" style={{ color: theme?.subtextColor || (isDarkMode ? "#94a3b8" : "#475569") }}>
         <span>
-          Showing <strong className={isDarkMode ? "text-white font-bold" : "text-slate-900 font-bold"}>{filteredJobs.length}</strong> of {jobs.length} open roles
+          Showing <strong className="font-bold" style={{ color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a") }}>{filteredJobs.length}</strong> of {jobs.length} open roles
         </span>
 
         {hasActiveFilters && (
@@ -254,7 +260,8 @@ export default function JobSearchFilter({
               setSelectedLocation("ALL");
               setSelectedType("ALL");
             }}
-            className="text-xs text-cyan-400 hover:underline font-bold cursor-pointer"
+            className="text-xs hover:underline font-bold cursor-pointer"
+            style={{ color: primaryColor }}
           >
             Clear All Filters
           </button>
@@ -264,13 +271,16 @@ export default function JobSearchFilter({
       {/* Filtered Jobs Grid */}
       {filteredJobs.length === 0 ? (
         <div
-          className={`text-center py-16 border rounded-3xl p-8 space-y-3 shadow-sm ${
-            isDarkMode ? "bg-slate-900/60 border-slate-800 text-slate-300" : "bg-white border-slate-200 text-slate-800"
-          }`}
+          className="text-center py-16 border rounded-3xl p-8 space-y-3 shadow-sm transition-all"
+          style={{
+            backgroundColor: theme?.cardBg || (isDarkMode ? "rgba(15, 23, 42, 0.6)" : "#ffffff"),
+            borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#e2e8f0"),
+            color: theme?.textColor || (isDarkMode ? "#f8fafc" : "#0f172a"),
+          }}
         >
-          <Briefcase className="w-10 h-10 text-cyan-400 mx-auto" />
+          <Briefcase className="w-10 h-10 mx-auto opacity-80" style={{ color: primaryColor }} />
           <h3 className="text-base font-extrabold">No open positions at this time</h3>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+          <p className="text-xs max-w-sm mx-auto" style={{ color: theme?.subtextColor || "#94a3b8" }}>
             Try adjusting your search terms or clearing your filters.
           </p>
         </div>
@@ -284,26 +294,27 @@ export default function JobSearchFilter({
               <Link
                 key={job.id}
                 href={jobUrl}
-                className={`group border p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all cursor-pointer space-y-4 flex flex-col justify-between block ${
-                  isDarkMode
-                    ? "bg-slate-900/70 hover:bg-slate-900 border-slate-800 hover:border-slate-700 text-white"
-                    : "bg-white hover:bg-slate-50 border-slate-200/90 hover:border-slate-300 text-slate-900"
-                }`}
+                className="group border p-6 rounded-3xl shadow-sm hover:shadow-xl transition-all cursor-pointer space-y-4 flex flex-col justify-between block hover:-translate-y-0.5"
+                style={{
+                  backgroundColor: theme?.cardBg || (isDarkMode ? "rgba(15, 23, 42, 0.7)" : "#ffffff"),
+                  borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.12)" : "#e2e8f0"),
+                  color: theme?.textColor || (isDarkMode ? "#ffffff" : "#0f172a"),
+                }}
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="text-base font-extrabold group-hover:text-cyan-400 transition-colors leading-snug">
+                      <h3 className="text-base font-extrabold transition-colors leading-snug group-hover:opacity-90">
                         {job.title}
                       </h3>
-                      <div className={`flex items-center gap-2 mt-1.5 text-xs font-medium ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                      <div className="flex items-center gap-2 mt-1.5 text-xs font-medium" style={{ color: theme?.subtextColor || (isDarkMode ? "#94a3b8" : "#64748b") }}>
                         <span className="flex items-center gap-1">
-                          <Building className="w-3.5 h-3.5 text-slate-400" />
+                          <Building className="w-3.5 h-3.5 opacity-70" />
                           <span>{job.departmentName || job.department?.name || "General"}</span>
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                          <MapPin className="w-3.5 h-3.5 opacity-70" />
                           <span>
                             {job.locationCity
                               ? `${job.locationCity}${job.locationCountry ? `, ${job.locationCountry}` : ""}`
@@ -321,23 +332,29 @@ export default function JobSearchFilter({
                     </span>
                   </div>
 
-                  <p className={`text-xs line-clamp-3 leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}>
+                  <p className="text-xs line-clamp-3 leading-relaxed" style={{ color: theme?.subtextColor || (isDarkMode ? "#cbd5e1" : "#475569") }}>
                     {job.summary || job.description || "Click to view complete position details, requirements, and candidate application form."}
                   </p>
                 </div>
 
-                <div className={`flex items-center justify-between pt-4 border-t text-xs font-medium ${isDarkMode ? "border-slate-800 text-slate-400" : "border-slate-100 text-slate-400"}`}>
+                <div
+                  className="flex items-center justify-between pt-4 border-t text-xs font-medium transition-colors"
+                  style={{
+                    borderColor: theme?.cardBorder || (isDarkMode ? "rgba(255, 255, 255, 0.1)" : "#f1f5f9"),
+                    color: theme?.subtextColor || (isDarkMode ? "#94a3b8" : "#64748b"),
+                  }}
+                >
                   <div className="flex items-center gap-3">
                     <span suppressHydrationWarning>Posted {formatDate(job.createdAt)}</span>
                     {formatSalary(job) && (
-                      <span className="font-bold text-amber-500 flex items-center gap-1">
+                      <span className="font-bold flex items-center gap-1" style={{ color: primaryColor }}>
                         <DollarSign className="w-3.5 h-3.5" />
                         <span>{formatSalary(job)}</span>
                       </span>
                     )}
                   </div>
-                  <span className="font-bold flex items-center gap-1 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all">
-                    View Role & Apply <ChevronRight className="w-4 h-4 text-cyan-400" />
+                  <span className="font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform" style={{ color: primaryColor }}>
+                    View Role & Apply <ChevronRight className="w-4 h-4" />
                   </span>
                 </div>
               </Link>

@@ -393,16 +393,19 @@ export default function ElementRenderer({
           {(element.content.items || []).map((stat: any) => (
             <div
               key={stat.id || stat.title}
-              className={`p-5 rounded-2xl border shadow-sm text-center space-y-1 ${
-                isDarkMode ? "bg-slate-900/60 border-slate-800/80 text-white" : "bg-white border-slate-200/80 text-slate-900"
-              }`}
-              style={activeStyles}
+              className="p-5 rounded-2xl border shadow-sm text-center space-y-1 transition-all"
+              style={{
+                backgroundColor: theme.cardBg,
+                borderColor: theme.cardBorder,
+                color: theme.textColor,
+                ...activeStyles,
+              }}
             >
               <div className="text-2xl sm:text-3xl font-black" style={{ color: primaryColor }}>
                 {renderText(stat.value, "100+")}
               </div>
               <div className="text-xs font-extrabold">{renderText(stat.title, "Stat")}</div>
-              {stat.description && <div className={`text-[11px] ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>{renderText(stat.description, "")}</div>}
+              {stat.description && <div className="text-[11px]" style={{ color: theme.subtextColor }}>{renderText(stat.description, "")}</div>}
             </div>
           ))}
         </div>
@@ -422,16 +425,19 @@ export default function ElementRenderer({
           {(element.content.items || []).map((item: any) => (
             <div
               key={item.id || item.title}
-              className={`p-5 rounded-2xl border shadow-sm hover:shadow-md transition-all space-y-2 text-left ${
-                isDarkMode ? "bg-slate-900/60 border-slate-800 text-white" : "bg-white border-slate-200 text-slate-900"
-              }`}
-              style={activeStyles}
+              className="p-5 rounded-2xl border shadow-sm hover:shadow-md transition-all space-y-2 text-left"
+              style={{
+                backgroundColor: theme.cardBg,
+                borderColor: theme.cardBorder,
+                color: theme.textColor,
+                ...activeStyles,
+              }}
             >
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <h4 className="text-sm font-extrabold">{renderText(item.title, "Feature")}</h4>
-              <p className={`text-xs leading-relaxed ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>{renderText(item.description, "")}</p>
+              <p className="text-xs leading-relaxed" style={{ color: theme.subtextColor }}>{renderText(item.description, "")}</p>
             </div>
           ))}
         </div>

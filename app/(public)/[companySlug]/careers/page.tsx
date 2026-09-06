@@ -40,7 +40,7 @@ export default async function PublicCareersPage({ params }: PageProps) {
   }
 
   return (
-    <>
+    <div className="page-transition">
       <StructuredData company={data.company} jobs={data.jobs} />
       <PageRenderer
         company={data.company}
@@ -50,6 +50,6 @@ export default async function PublicCareersPage({ params }: PageProps) {
         jobs={data.jobs}
         isPreviewMode={false}
       />
-    </>
+    </div>
   );
 }

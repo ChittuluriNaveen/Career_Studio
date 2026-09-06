@@ -431,7 +431,7 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         enabled: true,
         width: "full",
         content: {
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          videoUrl: "@culture_video",
           posterUrl: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
         },
       },
@@ -471,7 +471,7 @@ export const TEMPLATE_REGISTRY: Record<string, SectionTemplate> = {
         enabled: true,
         width: "half",
         content: {
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          videoUrl: "@culture_video",
           posterUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
         },
       },
@@ -694,7 +694,7 @@ export function createDefaultElement(type: ElementType, position: number = 0): S
         alignment: "center",
         width: "full",
         content: {
-          videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          videoUrl: "@culture_video",
           posterUrl: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
         },
       };
@@ -706,7 +706,7 @@ export function createDefaultElement(type: ElementType, position: number = 0): S
         enabled: true,
         alignment: "left",
         width: "full",
-        content: { label: "Learn More", linkUrl: "#open-positions", variant: "primary" },
+        content: { label: "Learn More", text: "Learn More", linkUrl: "#open-positions", url: "#open-positions", variant: "primary" },
       };
     case "badge":
     case "icon":
@@ -799,30 +799,43 @@ export function preserveElementsOnTemplateSwitch(
   const targetTemplate = getTemplateById(targetTemplateId);
   const targetDefaultElements = JSON.parse(JSON.stringify(targetTemplate.defaultElements)) as SectionElement[];
 
-  // Find existing content items by type
+  // Find existing content items by type with property fallbacks
   const headingElem = currentElements.find((e) => e.type === "heading");
   const textElem = currentElements.find((e) => e.type === "text" || e.type === "richtext");
   const imageElem = currentElements.find((e) => e.type === "image");
   const videoElem = currentElements.find((e) => e.type === "video");
   const buttonElem = currentElements.find((e) => e.type === "button");
 
+  const headingText = headingElem?.content?.text || headingElem?.content?.title || headingElem?.content?.heading;
+  const bodyText = textElem?.content?.text || textElem?.content?.subtitle || textElem?.content?.description;
+  const imageUrl = imageElem?.content?.url || imageElem?.content?.src;
+  const videoUrl = videoElem?.content?.videoUrl || videoElem?.content?.url;
+  const buttonLabel = buttonElem?.content?.label || buttonElem?.content?.text || buttonElem?.content?.ctaText;
+  const buttonLink = buttonElem?.content?.linkUrl || buttonElem?.content?.url;
+
   return targetDefaultElements.map((targetElem) => {
-    if (targetElem.type === "heading" && headingElem?.content?.text) {
-      return { ...targetElem, content: { ...targetElem.content, text: headingElem.content.text } };
+    if (targetElem.type === "heading" && headingText) {
+      return { ...targetElem, content: { ...targetElem.content, text: headingText } };
     }
-    if ((targetElem.type === "text" || targetElem.type === "richtext") && textElem?.content?.text) {
-      return { ...targetElem, content: { ...targetElem.content, text: textElem.content.text } };
+    if ((targetElem.type === "text" || targetElem.type === "richtext") && bodyText) {
+      return { ...targetElem, content: { ...targetElem.content, text: bodyText } };
     }
-    if (targetElem.type === "image" && imageElem?.content?.url) {
-      return { ...targetElem, content: { ...targetElem.content, url: imageElem.content.url, alt: imageElem.content.alt } };
+    if (targetElem.type === "image" && imageUrl) {
+      return { ...targetElem, content: { ...targetElem.content, url: imageUrl, alt: imageElem?.content?.alt } };
     }
-    if (targetElem.type === "video" && videoElem?.content?.videoUrl) {
-      return { ...targetElem, content: { ...targetElem.content, videoUrl: videoElem.content.videoUrl } };
+    if (targetElem.type === "video" && videoUrl) {
+      return { ...targetElem, content: { ...targetElem.content, videoUrl: videoUrl } };
     }
-    if (targetElem.type === "button" && buttonElem?.content?.label) {
+    if (targetElem.type === "button" && buttonLabel) {
       return {
         ...targetElem,
-        content: { ...targetElem.content, label: buttonElem.content.label, linkUrl: buttonElem.content.linkUrl },
+        content: {
+          ...targetElem.content,
+          label: buttonLabel,
+          text: buttonLabel,
+          linkUrl: buttonLink || targetElem.content.linkUrl || "#open-positions",
+          url: buttonLink || targetElem.content.url || "#open-positions",
+        },
       };
     }
     return targetElem;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Save, Upload, CheckCircle2 } from "lucide-react";
 import { updateCompanyDetailsAction } from "@/lib/actions/brand";
@@ -13,16 +13,42 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
   const router = useRouter();
 
   const [name, setName] = useState(company.name || "");
+  const [tagline, setTagline] = useState(company.tagline || "");
   const [website, setWebsite] = useState(company.website || "");
   const [industry, setIndustry] = useState(company.industry || "");
   const [companySize, setCompanySize] = useState(company.companySize || "");
   const [location, setLocation] = useState(company.location || "");
   const [description, setDescription] = useState(company.description || "");
+  const [aboutText, setAboutText] = useState(company.aboutText || "");
   const [logoUrl, setLogoUrl] = useState(company.logoUrl || "");
   const [bannerUrl, setBannerUrl] = useState(company.bannerUrl || "");
   const [cultureVideoUrl, setCultureVideoUrl] = useState(company.cultureVideoUrl || "");
   const [primaryColor, setPrimaryColor] = useState(company.primaryColor || "#005d52");
   const [secondaryColor, setSecondaryColor] = useState(company.secondaryColor || "#0d9488");
+  const [fontFamily, setFontFamily] = useState(company.fontFamily || "Inter");
+  const [cornerRadius, setCornerRadius] = useState<number>(company.cornerRadius ?? 12);
+  const [sectionSpacing, setSectionSpacing] = useState(company.sectionSpacing || "3.5rem");
+
+  useEffect(() => {
+    if (company) {
+      setName(company.name || "");
+      setTagline(company.tagline || "");
+      setWebsite(company.website || "");
+      setIndustry(company.industry || "");
+      setCompanySize(company.companySize || "");
+      setLocation(company.location || "");
+      setDescription(company.description || "");
+      setAboutText(company.aboutText || "");
+      setLogoUrl(company.logoUrl || "");
+      setBannerUrl(company.bannerUrl || "");
+      setCultureVideoUrl(company.cultureVideoUrl || "");
+      setPrimaryColor(company.primaryColor || "#005d52");
+      setSecondaryColor(company.secondaryColor || "#0d9488");
+      setFontFamily(company.fontFamily || "Inter");
+      setCornerRadius(company.cornerRadius ?? 12);
+      setSectionSpacing(company.sectionSpacing || "3.5rem");
+    }
+  }, [company]);
 
   const [loading, setLoading] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
@@ -68,16 +94,21 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
 
     const res = await updateCompanyDetailsAction({
       name: name.trim(),
+      tagline: tagline.trim() || undefined,
       website: website.trim() || undefined,
       industry: industry.trim() || undefined,
       companySize: companySize.trim() || undefined,
       location: location.trim() || undefined,
       description: description.trim() || undefined,
+      aboutText: aboutText.trim() || undefined,
       logoUrl: logoUrl.trim() || undefined,
       bannerUrl: bannerUrl.trim() || undefined,
       cultureVideoUrl: cultureVideoUrl.trim() || undefined,
       primaryColor,
       secondaryColor,
+      fontFamily,
+      cornerRadius,
+      sectionSpacing,
     });
 
     setLoading(false);
@@ -105,11 +136,10 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
 
       {statusMessage && (
         <div
-          className={`p-4 rounded-xl border text-xs font-bold flex items-center gap-2 ${
-            statusMessage.type === "success"
-              ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-              : "bg-rose-50 border-rose-200 text-rose-800"
-          }`}
+          className={`p-4 rounded-xl border text-xs font-bold flex items-center gap-2 ${statusMessage.type === "success"
+            ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+            : "bg-rose-50 border-rose-200 text-rose-800"
+            }`}
         >
           {statusMessage.type === "success" && <CheckCircle2 className="w-4 h-4 text-emerald-700" />}
           <span>{statusMessage.text}</span>
@@ -133,6 +163,17 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#005d52] font-semibold"
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="block text-xs font-bold text-slate-800">Company Tagline / Hero Slogan</label>
+              <input
+                type="text"
+                placeholder="e.g. Empowering Next-Gen Cloud Infrastructure"
+                value={tagline}
+                onChange={(e) => setTagline(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#005d52]"
               />
             </div>
 
@@ -192,12 +233,23 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-800">Company Overview / Description</label>
+              <label className="block text-xs font-bold text-slate-800">Company Overview / Pitch Summary</label>
               <textarea
-                rows={4}
+                rows={3}
                 placeholder="Tell candidates about your company mission, culture, and achievements..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#005d52]"
+              />
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="block text-xs font-bold text-slate-800">Detailed Culture & Mission Story</label>
+              <textarea
+                rows={4}
+                placeholder="Detailed story paragraph for your about us section..."
+                value={aboutText}
+                onChange={(e) => setAboutText(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#005d52]"
               />
             </div>
@@ -283,15 +335,31 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
           </div>
         </div>
 
-        {/* Theme Colors */}
+        {/* Theme Colors & Typography */}
         <div className="space-y-4 pt-4 border-t border-slate-100">
           <h3 className="text-xs font-extrabold text-[#005d52] uppercase tracking-wider pb-2 border-b border-slate-100">
-            Brand Theme Colors
+            Brand Theme Colors & Typography
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="block text-xs font-bold text-slate-800">Portal Background Theme Mode</label>
+              <select
+                value={secondaryColor}
+                onChange={(e) => setSecondaryColor(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-extrabold cursor-pointer"
+              >
+                <option value="corporate-clean">Enterprise Modern Light (Clean Light Mode)</option>
+                <option value="cyber-dark">Cyber AI Dark Portal (Futuristic Neon Dark Mode)</option>
+                <option value="midnight-purple">Midnight Galaxy Glass (Deep Violet Night Dark Mode)</option>
+                <option value="emerald-biotech">Emerald Bio & Eco Tech (Forest Biotech Dark Mode)</option>
+                <option value="minimal-luxury">Minimalist Editorial Luxury (Parchment Cream Light Mode)</option>
+                <option value="vibrant-creative">Vibrant Neon Creative (Purple-Rose Light Mode)</option>
+              </select>
+            </div>
+
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-800">Primary Brand Color</label>
+              <label className="block text-xs font-bold text-slate-800">Primary Brand Accent Color</label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
@@ -309,21 +377,33 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-800">Secondary Accent Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="w-10 h-10 rounded-xl border border-slate-200 cursor-pointer bg-white p-1"
-                />
-                <input
-                  type="text"
-                  value={secondaryColor}
-                  onChange={(e) => setSecondaryColor(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono"
-                />
+              <label className="block text-xs font-bold text-slate-800">Typography Font Family</label>
+              <select
+                value={fontFamily}
+                onChange={(e) => setFontFamily(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-semibold cursor-pointer"
+              >
+                <option value="Inter">Inter (Clean Modern Sans)</option>
+                <option value="Outfit">Outfit (Tech & Biotech)</option>
+                <option value="Roboto">Roboto (Enterprise Corporate)</option>
+                <option value="Poppins">Poppins (Friendly Geometric)</option>
+                <option value="Geist">Geist (Developer / Vercel Style)</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <div className="flex justify-between items-center">
+                <label className="block text-xs font-bold text-slate-800">Card Corner Radius</label>
+                <span className="text-xs font-mono font-bold text-slate-600">{cornerRadius}px</span>
               </div>
+              <input
+                type="range"
+                min={0}
+                max={32}
+                value={cornerRadius}
+                onChange={(e) => setCornerRadius(Number(e.target.value))}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#005d52] mt-2"
+              />
             </div>
           </div>
         </div>

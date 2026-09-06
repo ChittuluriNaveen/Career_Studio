@@ -26,9 +26,15 @@ interface DashboardHeaderProps {
     name: string;
     slug: string;
     primaryColor: string;
+    careersPage?: {
+      isPublished: boolean;
+      publishedAt?: any;
+    } | null;
   };
   deviceMode: "mobile" | "tablet" | "desktop";
   setDeviceMode: (mode: "mobile" | "tablet" | "desktop") => void;
+  activePage?: "careers" | "job-details";
+  setActivePage?: (page: "careers" | "job-details") => void;
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?: () => void;
@@ -38,12 +44,15 @@ interface DashboardHeaderProps {
   onToggleLeftPanel?: () => void;
   isRightPanelOpen?: boolean;
   onToggleRightPanel?: () => void;
+  onPublishSuccess?: () => void;
 }
 
 export default function DashboardHeader({
   company,
   deviceMode,
   setDeviceMode,
+  activePage = "careers",
+  setActivePage,
   canUndo = false,
   canRedo = false,
   onUndo,
@@ -53,8 +62,11 @@ export default function DashboardHeader({
   onToggleLeftPanel,
   isRightPanelOpen = true,
   onToggleRightPanel,
+  onPublishSuccess,
 }: DashboardHeaderProps) {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+
+  const isPublished = Boolean(company.careersPage?.isPublished);
 
   return (
     <>
@@ -76,14 +88,21 @@ export default function DashboardHeader({
             <span className="font-bold text-slate-800">{company.name}</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <span className="font-medium text-slate-500 font-mono">Careers</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              Draft
-            </span>
+            {isPublished ? (
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Published Live
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Draft
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Center Device Viewport & Panel Viewport Controls */}
+        {/* Center Device Viewport Controls */}
         <div className="flex items-center gap-2">
           {/* Left Panel Toggle Button */}
           {onToggleLeftPanel && (
@@ -107,12 +126,12 @@ export default function DashboardHeader({
             <button
               type="button"
               onClick={() => setDeviceMode("mobile")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 deviceMode === "mobile"
-                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200 font-extrabold"
                   : "text-slate-500 hover:text-slate-800"
               }`}
-              title="Mobile Viewport (375px)"
+              title="Mobile Viewport (390px)"
             >
               <Smartphone className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Mobile</span>
@@ -120,9 +139,9 @@ export default function DashboardHeader({
             <button
               type="button"
               onClick={() => setDeviceMode("tablet")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 deviceMode === "tablet"
-                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200 font-extrabold"
                   : "text-slate-500 hover:text-slate-800"
               }`}
               title="Tablet Viewport (768px)"
@@ -133,12 +152,12 @@ export default function DashboardHeader({
             <button
               type="button"
               onClick={() => setDeviceMode("desktop")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 deviceMode === "desktop"
-                  ? "bg-white text-slate-900 shadow-xs border border-slate-200"
+                  ? "bg-white text-slate-900 shadow-xs border border-slate-200 font-extrabold"
                   : "text-slate-500 hover:text-slate-800"
               }`}
-              title="Desktop Canvas (1440px Widescreen)"
+              title="Desktop Canvas"
             >
               <Monitor className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Desktop</span>
@@ -238,6 +257,7 @@ export default function DashboardHeader({
         isOpen={isPublishModalOpen}
         onClose={() => setIsPublishModalOpen(false)}
         companySlug={company.slug}
+        onPublishSuccess={onPublishSuccess}
       />
     </>
   );

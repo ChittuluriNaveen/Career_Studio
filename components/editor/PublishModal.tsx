@@ -8,9 +8,10 @@ interface PublishModalProps {
   isOpen: boolean;
   onClose: () => void;
   companySlug: string;
+  onPublishSuccess?: () => void;
 }
 
-export default function PublishModal({ isOpen, onClose, companySlug }: PublishModalProps) {
+export default function PublishModal({ isOpen, onClose, companySlug, onPublishSuccess }: PublishModalProps) {
   const [publishing, setPublishing] = useState(false);
   const [publishedAt, setPublishedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export default function PublishModal({ isOpen, onClose, companySlug }: PublishMo
     setPublishing(false);
     if (res.success) {
       setPublishedAt(new Date());
+      if (onPublishSuccess) onPublishSuccess();
     } else {
       setError(res.error || "Failed to publish careers page");
     }

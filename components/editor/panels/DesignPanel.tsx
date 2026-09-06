@@ -165,14 +165,19 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Theme Mode / Accent</label>
+            <label className="block text-[11px] font-semibold text-slate-600 mb-1">Background Theme</label>
             <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={formData.secondaryColor}
+                onChange={(e) => updateField("secondaryColor", e.target.value)}
+                className="w-9 h-9 rounded-xl border border-slate-200 cursor-pointer p-0"
+              />
               <input
                 type="text"
                 value={formData.secondaryColor}
                 onChange={(e) => updateField("secondaryColor", e.target.value)}
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 text-xs font-mono"
-                placeholder="theme-id or hex"
               />
             </div>
           </div>

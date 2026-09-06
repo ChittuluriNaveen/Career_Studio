@@ -20,7 +20,8 @@ export default function CompanyVariableChips({
   const getResolvedValue = (item: CompanyVariableItem) => {
     if (!company) return item.example;
     if (item.field === "activeJobsCount") return "5";
-    return company[item.field] || item.example;
+    const val = company[item.field];
+    return val && String(val).trim() !== "" ? String(val).trim() : item.example;
   };
 
   return (

@@ -10,21 +10,6 @@ export async function verifyCompanyAccess(requestedSlug: string) {
 
   const userCompany = await db.company.findUnique({
     where: { id: session.user.companyId },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      logoUrl: true,
-      bannerUrl: true,
-      industry: true,
-      companySize: true,
-      location: true,
-      description: true,
-      website: true,
-      cultureVideoUrl: true,
-      primaryColor: true,
-      secondaryColor: true,
-    },
   });
 
   if (!userCompany) {

@@ -5,16 +5,16 @@ import { FileText, Plus, Edit2, Trash2, GripVertical, Check, Globe } from "lucid
 
 interface PagesPanelProps {
   companySlug: string;
+  activePage?: "careers" | "job-details";
+  onSelectPage?: (page: "careers" | "job-details") => void;
 }
 
-export default function PagesPanel({ companySlug }: PagesPanelProps) {
+export default function PagesPanel({ companySlug, activePage = "careers", onSelectPage }: PagesPanelProps) {
   const [pages, setPages] = useState([
-    { id: "1", name: "Careers", path: "/careers", isDefault: true, isPublished: true },
-    { id: "2", name: "About Us", path: "/about", isDefault: false, isPublished: false },
-    { id: "3", name: "Culture & Life", path: "/culture", isDefault: false, isPublished: false },
+    { id: "careers", name: "Main Careers Page", path: "/careers", isDefault: true, isPublished: true },
+    { id: "job-details", name: "Job Details Page (View Job)", path: "/careers/jobs/[jobId]", isDefault: true, isPublished: true },
   ]);
 
-  const [activePageId, setActivePageId] = useState("1");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
 
@@ -56,25 +56,29 @@ export default function PagesPanel({ companySlug }: PagesPanelProps) {
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div>
           <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Pages</h2>
-          <p className="text-[11px] text-slate-400">Saved site routes ({pages.length})</p>
+          <p className="text-[11px] text-slate-400">Portal templates & routes ({pages.length})</p>
         </div>
         <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
           Active
         </span>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {pages.map((page) => {
-          const isActive = page.id === activePageId;
+          const isActive = page.id === activePage;
           const isEditing = page.id === editingId;
 
           return (
             <div
               key={page.id}
-              onClick={() => setActivePageId(page.id)}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+              onClick={() => {
+                if (onSelectPage && (page.id === "careers" || page.id === "job-details")) {
+                  onSelectPage(page.id as any);
+                }
+              }}
+              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                 isActive
-                  ? "bg-teal-50/90 border-teal-300 text-teal-950 font-bold shadow-2xs"
+                  ? "bg-teal-50/90 border-teal-400 text-teal-950 font-bold shadow-2xs ring-1 ring-teal-300"
                   : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
               }`}
             >
@@ -100,7 +104,7 @@ export default function PagesPanel({ companySlug }: PagesPanelProps) {
                   </div>
                 ) : (
                   <div className="truncate min-w-0">
-                    <span className="text-xs block truncate font-medium">{page.name}</span>
+                    <span className="text-xs block truncate font-bold">{page.name}</span>
                     <span className="text-[10px] font-mono text-slate-400">{page.path}</span>
                   </div>
                 )}
@@ -143,10 +147,10 @@ export default function PagesPanel({ companySlug }: PagesPanelProps) {
       <button
         type="button"
         onClick={handleAddPage}
-        className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5"
+        className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
       >
         <Plus className="w-4 h-4 text-teal-700" />
-        <span>+ Add page</span>
+        <span>+ Add page template</span>
       </button>
     </div>
   );
