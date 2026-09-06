@@ -122,7 +122,7 @@ export function getResponsiveStyles(
     }
   }
 
-  // Automatic padding adjustment for mobile screens
+  // Automatic flex direction and layout adjustment for mobile screens
   if (deviceMode === "mobile") {
     const hasExplicitPadding = Boolean(
       mobileOverrides.spacing?.paddingTop ||
@@ -150,6 +150,33 @@ export function getResponsiveStyles(
           paddingRight: adjustPad(merged.spacing.paddingRight),
         },
       };
+    }
+
+    // Force mobile flex layout stacking if base layout flex-direction is row
+    const baseFlexDir = merged.layout?.flexDirection;
+    const hasExplicitFlexDir = Boolean(mobileOverrides.layout?.flexDirection);
+    if (!hasExplicitFlexDir && baseFlexDir === "row") {
+      merged = {
+        ...merged,
+        layout: {
+          ...merged.layout,
+          flexDirection: "column" as any,
+        },
+      };
+    }
+
+    // Enforce 100% maxWidth on mobile
+    if (merged.layout?.maxWidth) {
+      const rawMax = String(merged.layout.maxWidth).trim();
+      if (rawMax.endsWith("px") && parseInt(rawMax, 10) > 360) {
+        merged = {
+          ...merged,
+          layout: {
+            ...merged.layout,
+            maxWidth: "100%",
+          },
+        };
+      }
     }
   }
 

@@ -120,7 +120,9 @@ export default function JobSearchFilter({
   const dropdownColClass = isMobileView ? "block w-full" : "block w-full lg:col-span-3";
   const jobsGridClass = isMobileView
     ? "grid grid-cols-1 gap-4 w-full"
-    : "grid grid-cols-1 md:grid-cols-2 gap-5 w-full";
+    : deviceMode === "tablet"
+    ? "grid grid-cols-1 sm:grid-cols-2 gap-5 w-full"
+    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full";
 
   const hasActiveFilters =
     searchTerm !== "" ||

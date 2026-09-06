@@ -9,12 +9,6 @@ import {
   Plus,
   Save,
   Check,
-  PanelLeftClose,
-  PanelLeftOpen,
-  PanelRightClose,
-  PanelRightOpen,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 import DashboardHeader from "@/components/editor/DashboardHeader";
@@ -470,18 +464,6 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         {/* Column 2: Switchable Secondary Panel */}
         {isLeftPanelOpen && (
           <div className="w-88 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs relative">
-            {/* Header collapse button */}
-            <div className="absolute top-3 right-3 z-20">
-              <button
-                type="button"
-                onClick={() => setIsLeftPanelOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
-                title="Collapse Left Panel"
-              >
-                <PanelLeftClose className="w-4 h-4" />
-              </button>
-            </div>
-
             {activeNavTab === "pages" && company && <PagesPanel companySlug={company.slug} />}
             
             {activeNavTab === "sections" && (
@@ -531,37 +513,12 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
 
         {/* Column 3: Center Responsive Preview Canvas */}
         <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-6 flex justify-center items-start overflow-x-auto relative">
-          {/* Quick Floating Re-expand controls */}
-          {!isLeftPanelOpen && (
-            <button
-              type="button"
-              onClick={() => setIsLeftPanelOpen(true)}
-              className="absolute top-4 left-4 z-40 bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700 hover:bg-[#005d52] transition-all flex items-center gap-1.5 cursor-pointer"
-              title="Expand Left Panel"
-            >
-              <PanelLeftOpen className="w-4 h-4 text-teal-400" />
-              <span>Show Left Panel</span>
-            </button>
-          )}
-
-          {!isRightPanelOpen && (
-            <button
-              type="button"
-              onClick={() => setIsRightPanelOpen(true)}
-              className="absolute top-4 right-4 z-40 bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xl border border-slate-700 hover:bg-[#005d52] transition-all flex items-center gap-1.5 cursor-pointer"
-              title="Expand Inspector Panel"
-            >
-              <PanelRightOpen className="w-4 h-4 text-teal-400" />
-              <span>Show Inspector</span>
-            </button>
-          )}
-
           <div
             className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
               deviceMode === "mobile"
-                ? "w-[375px] shrink-0 ring-8 ring-slate-400/40 my-4"
+                ? "w-[390px] max-w-full shrink-0 ring-8 ring-slate-400/40 my-4"
                 : deviceMode === "tablet"
-                ? "w-[768px] shrink-0 ring-8 ring-slate-400/40 my-4"
+                ? "w-[768px] max-w-full shrink-0 ring-8 ring-slate-400/40 my-4"
                 : "w-full max-w-none my-2"
             }`}
           >
@@ -629,16 +586,6 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                   {selectedElement && (
                     <span className="absolute top-1.5 right-1.5 w-2 rounded-full bg-[#005d52] ring-2 ring-white"></span>
                   )}
-                </button>
-
-                {/* Right Collapse Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsRightPanelOpen(false)}
-                  className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors ml-1 cursor-pointer"
-                  title="Collapse Inspector Panel"
-                >
-                  <PanelRightClose className="w-4 h-4" />
                 </button>
               </div>
 

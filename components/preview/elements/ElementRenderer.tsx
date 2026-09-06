@@ -307,12 +307,23 @@ export default function ElementRenderer({
         <div className={`w-full flex ${alignClass}`}>
           <div
             className={`overflow-hidden rounded-2xl border shadow-lg max-w-full ${isDarkMode ? "border-slate-800" : "border-slate-200/80"} ${
-              element.width === "half" ? "w-full md:w-1/2" : element.width === "third" ? "w-full md:w-1/3" : "w-full"
+              deviceMode === "mobile"
+                ? "w-full"
+                : element.width === "half"
+                ? "w-full md:w-1/2"
+                : element.width === "third"
+                ? "w-full md:w-1/3"
+                : "w-full"
             }`}
             style={activeStyles}
           >
             {resolveImageUrl(element.content.url) ? (
-              <div className="relative w-full h-48 sm:h-64 md:h-96" style={{ height: activeStyles.height || undefined }}>
+              <div
+                className={`relative w-full ${
+                  deviceMode === "mobile" ? "h-48 sm:h-56" : "h-48 sm:h-64 md:h-96"
+                }`}
+                style={{ height: activeStyles.height || undefined }}
+              >
                 <img
                   src={resolveImageUrl(element.content.url)}
                   alt={renderText(element.content.alt, "Careers visual")}

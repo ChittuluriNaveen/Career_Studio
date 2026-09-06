@@ -84,12 +84,16 @@ export default function TemplateRenderer({
       ? "grid-cols-1 md:grid-cols-2 gap-6"
       : "grid-cols-1 md:grid-cols-2 gap-8 md:gap-12";
 
+  const isLeftImage = leftElements.some((e) => e.type === "image" || e.type === "video");
+  const leftColOrderClass = isLeftImage ? "order-2 md:order-1" : "order-1 md:order-1";
+  const rightColOrderClass = isLeftImage ? "order-1 md:order-2" : "order-2 md:order-2";
+
   if (isSplitLayout && leftElements.length > 0 && rightElements.length > 0) {
     return (
       <div className={`w-full mx-auto ${containerWidthClass} ${pyClass}`}>
         <div className={`grid ${splitGridClass} items-center min-w-0`}>
           {/* Left Column */}
-          <div className="space-y-4 min-w-0">
+          <div className={`space-y-4 min-w-0 ${leftColOrderClass}`}>
             {leftElements.map((element) => (
               <ElementRenderer
                 key={element.id}
@@ -106,7 +110,7 @@ export default function TemplateRenderer({
           </div>
 
           {/* Right Column */}
-          <div className="space-y-4 min-w-0">
+          <div className={`space-y-4 min-w-0 ${rightColOrderClass}`}>
             {rightElements.map((element) => (
               <ElementRenderer
                 key={element.id}

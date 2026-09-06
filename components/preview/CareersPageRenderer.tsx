@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SectionType } from "@prisma/client";
 import { Sparkles, ArrowUp, ArrowDown, Copy, Eye, EyeOff, Trash2, Menu, X, Briefcase, ExternalLink, Globe } from "lucide-react";
 import JobSearchFilter from "@/components/candidate/JobSearchFilter";
@@ -90,6 +90,16 @@ export default function CareersPageRenderer({
   const [hoveredSectionId, setHoveredSectionId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Auto-scroll center canvas to selected section when selected from Sections tab or inspector
+  useEffect(() => {
+    if (isPreviewMode && selectedSectionId) {
+      const targetElement = document.getElementById(`section-${selectedSectionId}`);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [selectedSectionId, isPreviewMode]);
+
   // Filter sections based on mode
   const activeSections = [...sections]
     .filter((sec) => (isPreviewMode ? true : sec.isPublished && sec.enabled !== false))
@@ -119,7 +129,11 @@ export default function CareersPageRenderer({
 
   const scrollToAnchor = (anchorId: string) => {
     setMobileMenuOpen(false);
-    const element = document.getElementById(anchorId);
+    const element =
+      document.getElementById(anchorId) ||
+      document.querySelector(`[data-anchor="${anchorId}"]`) ||
+      document.getElementById("open-positions");
+
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -186,7 +200,7 @@ export default function CareersPageRenderer({
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className={deviceMode === "mobile" ? "hidden" : "hidden md:flex items-center gap-6"}>
             {navItems.map((item) => (
               <button
                 key={item.key}
@@ -203,7 +217,7 @@ export default function CareersPageRenderer({
           </nav>
 
           {/* Right Header Action Button */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className={deviceMode === "mobile" ? "hidden" : "hidden sm:flex items-center gap-3"}>
             <button
               onClick={() => scrollToAnchor("jobs")}
               className="px-4 py-2 text-xs font-extrabold shadow-md transition-transform hover:scale-105 text-white flex items-center gap-1.5 cursor-pointer"
@@ -221,7 +235,7 @@ export default function CareersPageRenderer({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`md:hidden p-2 rounded-lg transition-colors ${
+            className={`${deviceMode === "mobile" ? "block" : "md:hidden"} p-2 rounded-lg transition-colors ${
               isDarkMode ? "text-slate-300 hover:bg-slate-800" : "text-slate-700 hover:bg-slate-100"
             }`}
             aria-label="Toggle Navigation Menu"
@@ -233,7 +247,7 @@ export default function CareersPageRenderer({
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div
-            className={`md:hidden pt-4 pb-3 border-t mt-3 space-y-2 animate-in slide-in-from-top-2 duration-150 ${
+            className={`${deviceMode === "mobile" ? "block" : "md:hidden"} pt-4 pb-3 border-t mt-3 space-y-2 animate-in slide-in-from-top-2 duration-150 ${
               isDarkMode ? "border-slate-800 text-white" : "border-slate-200 text-slate-900"
             }`}
           >
@@ -403,7 +417,8 @@ export default function CareersPageRenderer({
             return (
               <section
                 key={section.id}
-                id={anchorId}
+                id={`section-${section.id}`}
+                data-anchor={anchorId}
                 onMouseEnter={() => setHoveredSectionId(section.id)}
                 onMouseLeave={() => setHoveredSectionId(null)}
                 onClick={(e) => {

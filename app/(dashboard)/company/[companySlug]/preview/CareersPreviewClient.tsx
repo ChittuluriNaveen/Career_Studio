@@ -61,7 +61,7 @@ export default function CareersPreviewClient({
         </div>
 
         {/* Center: Device Viewport Controls */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button
             type="button"
             onClick={() => setDeviceMode("desktop")}
@@ -84,7 +84,7 @@ export default function CareersPreviewClient({
             }`}
           >
             <Tablet className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Tablet</span>
+            <span className="hidden sm:inline">Tablet (768px)</span>
           </button>
           <button
             type="button"
@@ -96,7 +96,7 @@ export default function CareersPreviewClient({
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Mobile</span>
+            <span className="hidden sm:inline">Mobile (390px)</span>
           </button>
         </div>
 
@@ -145,9 +145,9 @@ export default function CareersPreviewClient({
         <div
           className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-300 relative ${
             deviceMode === "mobile"
-              ? "w-[375px] ring-8 ring-slate-400/40 my-4"
+              ? "w-[390px] max-w-full ring-8 ring-slate-400/40 my-4"
               : deviceMode === "tablet"
-              ? "w-[768px] ring-8 ring-slate-400/40 my-4"
+              ? "w-[768px] max-w-full ring-8 ring-slate-400/40 my-4"
               : "w-full max-w-7xl my-2"
           }`}
         >
