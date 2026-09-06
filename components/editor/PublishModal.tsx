@@ -18,7 +18,8 @@ export default function PublishModal({ isOpen, onClose, companySlug, onPublishSu
 
   if (!isOpen) return null;
 
-  const publicUrl = `http://localhost:3000/${companySlug}/careers`;
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const publicUrl = `${baseUrl}/${companySlug}/careers`;
 
   const handlePublish = async () => {
     setPublishing(true);

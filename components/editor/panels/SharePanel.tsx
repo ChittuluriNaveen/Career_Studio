@@ -9,7 +9,8 @@ interface SharePanelProps {
 
 export default function SharePanel({ companySlug }: SharePanelProps) {
   const [copied, setCopied] = useState(false);
-  const publicUrl = `http://localhost:3000/${companySlug}/careers`;
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const publicUrl = `${baseUrl}/${companySlug}/careers`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(publicUrl);

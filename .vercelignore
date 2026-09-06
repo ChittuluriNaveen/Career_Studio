@@ -1,0 +1,7 @@
+pgdata
+pg.log
+local_backup.sql
+.env
+.env*.local
+.next
+node_modules
