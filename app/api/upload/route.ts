@@ -24,16 +24,20 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
-
-    // Generate safe unique filename
     const safeFilename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-    const filePath = path.join(uploadsDir, safeFilename);
+    let publicUrl = `/uploads/${safeFilename}`;
 
-    await writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/${safeFilename}`;
+    try {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await mkdir(uploadsDir, { recursive: true });
+      const filePath = path.join(uploadsDir, safeFilename);
+      await writeFile(filePath, buffer);
+    } catch (fsError: any) {
+      console.warn("Serverless filesystem read-only warning (Vercel). Falling back to Data URL:", fsError?.message);
+      const mimeType = file.type || "image/png";
+      const base64 = buffer.toString("base64");
+      publicUrl = `data:${mimeType};base64,${base64}`;
+    }
 
     // Record in database scoped to tenant companyId
     const media = await db.media.create({

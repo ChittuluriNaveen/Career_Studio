@@ -4,9 +4,15 @@ import { db } from "@/lib/db";
 import { JobStatus } from "@prisma/client";
 
 export async function getPublicCareersData(companySlug: string, isPreviewMode: boolean = false) {
-  const company = await db.company.findUnique({
-    where: { slug: companySlug },
+  let company = await db.company.findFirst({
+    where: { slug: { equals: companySlug, mode: "insensitive" } },
   });
+
+  if (!company) {
+    company = await db.company.findUnique({
+      where: { slug: companySlug },
+    });
+  }
 
   if (!company) {
     return null;

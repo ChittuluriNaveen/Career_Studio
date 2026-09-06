@@ -266,25 +266,27 @@ export async function getPublicActiveJobsAction(companySlug: string) {
 }
 
 export async function getPublicJobByIdAction(companySlug: string, jobIdOrSlug: string) {
-  const company = await db.company.findUnique({
-    where: { slug: companySlug },
+  let company = await db.company.findFirst({
+    where: { slug: { equals: companySlug, mode: "insensitive" } },
   });
 
-  if (!company) return null;
+  if (!company) {
+    company = await db.company.findUnique({
+      where: { slug: companySlug },
+    });
+  }
 
-  const now = new Date();
+  if (!company) return null;
 
   const job = await db.job.findFirst({
     where: {
       companyId: company.id,
-      status: "ACTIVE",
-      AND: [
-        { OR: [{ id: jobIdOrSlug }, { slug: jobIdOrSlug }] },
-        { OR: [{ expiryDate: null }, { expiryDate: { gt: now } }] },
-      ],
+      OR: [{ id: jobIdOrSlug }, { slug: jobIdOrSlug }],
     },
     include: {
       company: true,
+      department: true,
+      location: true,
     },
   });
 
