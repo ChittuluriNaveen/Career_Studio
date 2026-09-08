@@ -223,13 +223,15 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
         </div>
 
         <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Section Padding Spacing</label>
+          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Section Gap Spacing</label>
           <select
             value={formData.sectionSpacing}
             onChange={(e) => updateField("sectionSpacing", e.target.value)}
-            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs cursor-pointer"
+            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-xs font-semibold cursor-pointer"
           >
-            <option value="2rem">Compact (32px)</option>
+            <option value="1rem">Ultra Compact (16px)</option>
+            <option value="1.5rem">Compact (24px)</option>
+            <option value="2.5rem">Balanced Clean (40px)</option>
             <option value="3.5rem">Comfortable (56px)</option>
             <option value="5rem">Spacious Premium (80px)</option>
           </select>

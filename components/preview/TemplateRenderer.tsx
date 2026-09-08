@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import { SectionElement, SectionLayoutConfig, getTemplateById } from "@/lib/templates/registry";
+import { SectionElement, SectionLayoutConfig, SectionCardStyles, getTemplateById } from "@/lib/templates/registry";
 import ElementRenderer from "./elements/ElementRenderer";
 
 interface TemplateRendererProps {
   templateId: string;
   elements: SectionElement[];
   layout?: SectionLayoutConfig;
+  cardStyles?: SectionCardStyles;
   company?: any;
   jobsCount?: number;
   companyPrimaryColor?: string;
@@ -23,6 +24,7 @@ export default function TemplateRenderer({
   templateId,
   elements,
   layout,
+  cardStyles,
   company,
   jobsCount = 0,
   companyPrimaryColor = "#005d52",
@@ -36,6 +38,9 @@ export default function TemplateRenderer({
   const template = getTemplateById(templateId);
   const layoutConfig = layout || template.layout;
 
+  const horizAlign = cardStyles?.horizontalAlignment || layoutConfig.alignment || "left";
+  const vertAlign = cardStyles?.verticalAlignment || "top";
+
   // Filter & sort enabled elements by position
   const activeElements = [...elements]
     .filter((e) => e.enabled !== false)
@@ -47,23 +52,41 @@ export default function TemplateRenderer({
       ? "w-full max-w-full px-3"
       : deviceMode === "tablet"
       ? "max-w-3xl px-4"
-      : layoutConfig.container === "narrow"
+      : cardStyles?.containerWidth === "narrow" || layoutConfig.container === "narrow"
       ? "max-w-3xl px-6"
-      : layoutConfig.container === "full"
+      : cardStyles?.containerWidth === "full" || layoutConfig.container === "full"
       ? "w-full max-w-none px-0"
       : "max-w-7xl px-4 sm:px-6 lg:px-8";
 
-  // Padding Y
-  const pyClass =
-    deviceMode === "mobile"
-      ? "py-6"
-      : deviceMode === "tablet"
-      ? "py-10"
-      : layoutConfig.paddingY === "sm"
-      ? "py-8"
-      : layoutConfig.paddingY === "lg"
-      ? "py-16 sm:py-24"
-      : "py-12 sm:py-16";
+  // Padding Y: disable default pyClass if explicit paddingTop/paddingBottom is set on cardStyles
+  const hasExplicitPadding = Boolean(cardStyles?.paddingTop || cardStyles?.paddingBottom);
+  const pyClass = hasExplicitPadding
+    ? ""
+    : vertAlign !== "top"
+    ? "py-4 sm:py-6"
+    : deviceMode === "mobile"
+    ? "py-4 sm:py-6"
+    : deviceMode === "tablet"
+    ? "py-6 sm:py-8"
+    : layoutConfig.paddingY === "sm"
+    ? "py-4 sm:py-6"
+    : layoutConfig.paddingY === "lg"
+    ? "py-8 sm:py-12"
+    : "py-6 sm:py-8";
+
+  const horizAlignClass =
+    horizAlign === "center"
+      ? "items-center text-center mx-auto"
+      : horizAlign === "right"
+      ? "items-end text-right ml-auto"
+      : "items-start text-left mr-auto";
+
+  const vertAlignClass =
+    vertAlign === "center"
+      ? "justify-center"
+      : vertAlign === "bottom"
+      ? "justify-end"
+      : "justify-start";
 
   // Split layouts check (e.g. side-by-side split for hero-split, about-image-left, culture-split)
   const isSplitLayout =
@@ -92,14 +115,15 @@ export default function TemplateRenderer({
 
   if (isSplitLayout && leftElements.length > 0 && rightElements.length > 0) {
     return (
-      <div className={`w-full mx-auto ${containerWidthClass} ${pyClass}`}>
-        <div className={`grid ${splitGridClass} items-center min-w-0`}>
+      <div className={`w-full flex-1 flex flex-col ${vertAlignClass} mx-auto ${containerWidthClass} ${pyClass}`}>
+        <div className={`grid ${splitGridClass} items-center min-w-0 w-full`}>
           {/* Left Column */}
           <div className={`space-y-4 min-w-0 ${leftColOrderClass}`}>
             {leftElements.map((element) => (
               <ElementRenderer
                 key={element.id}
                 element={element}
+                containerAlignment={horizAlign}
                 company={company}
                 jobsCount={jobsCount}
                 companyPrimaryColor={companyPrimaryColor}
@@ -118,6 +142,7 @@ export default function TemplateRenderer({
               <ElementRenderer
                 key={element.id}
                 element={element}
+                containerAlignment={horizAlign}
                 company={company}
                 jobsCount={jobsCount}
                 companyPrimaryColor={companyPrimaryColor}
@@ -132,18 +157,19 @@ export default function TemplateRenderer({
         </div>
 
         {/* External Jobs Grid Component if needed */}
-        {jobsComponent && <div className="mt-8">{jobsComponent}</div>}
+        {jobsComponent && <div className="mt-8 w-full">{jobsComponent}</div>}
       </div>
     );
   }
 
   // Standard Stacked Layout (Centered / Default)
   return (
-    <div className={`w-full mx-auto px-4 sm:px-6 md:px-8 ${containerWidthClass} ${pyClass} space-y-6`}>
+    <div className={`w-full flex-1 flex flex-col ${vertAlignClass} ${horizAlignClass} mx-auto px-4 sm:px-6 md:px-8 ${containerWidthClass} ${pyClass} space-y-6`}>
       {activeElements.map((element) => (
         <ElementRenderer
           key={element.id}
           element={element}
+          containerAlignment={horizAlign}
           company={company}
           jobsCount={jobsCount}
           companyPrimaryColor={companyPrimaryColor}
@@ -156,7 +182,7 @@ export default function TemplateRenderer({
       ))}
 
       {/* External Jobs Grid Component if needed */}
-      {jobsComponent && <div className="mt-8">{jobsComponent}</div>}
+      {jobsComponent && <div className="mt-8 w-full">{jobsComponent}</div>}
     </div>
   );
 }

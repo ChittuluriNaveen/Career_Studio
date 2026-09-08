@@ -10,6 +10,7 @@ import { getElementStyles } from "@/lib/templates/stylesResolver";
 
 interface ElementRendererProps {
   element: SectionElement;
+  containerAlignment?: "left" | "center" | "right" | string;
   company?: any;
   jobsCount?: number;
   companyPrimaryColor?: string;
@@ -23,6 +24,7 @@ interface ElementRendererProps {
 
 export default function ElementRenderer({
   element,
+  containerAlignment,
   company,
   jobsCount = 0,
   companyPrimaryColor = "#005d52",
@@ -44,10 +46,12 @@ export default function ElementRenderer({
 
   const computedStyles = getElementStyles(element, deviceMode);
 
+  const effectiveAlignment = element.alignment || containerAlignment || "left";
+
   const alignClass =
-    element.alignment === "center"
+    effectiveAlignment === "center"
       ? "text-center mx-auto items-center justify-center"
-      : element.alignment === "right"
+      : effectiveAlignment === "right"
       ? "text-right ml-auto items-end justify-end"
       : "text-left mr-auto items-start justify-start";
 

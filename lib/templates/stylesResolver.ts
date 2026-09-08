@@ -380,6 +380,9 @@ export function resolveSectionContainerStyles(
   const containerStyle: React.CSSProperties = {
     position: "relative",
     overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
   };
 
   // Min Height
@@ -388,7 +391,8 @@ export function resolveSectionContainerStyles(
     else if (active.minHeight === "md") containerStyle.minHeight = "500px";
     else if (active.minHeight === "lg") containerStyle.minHeight = "680px";
     else if (active.minHeight === "full") containerStyle.minHeight = "100vh";
-    else containerStyle.minHeight = active.minHeight;
+    else if (active.minHeight === "auto") containerStyle.minHeight = "auto";
+    else containerStyle.minHeight = formatCssValue(active.minHeight);
   }
 
   // Padding & Margin
@@ -519,11 +523,11 @@ export function resolveSectionContainerStyles(
     flexDirection: "column",
   };
 
-  // Horizontal Alignment
-  if (active.horizontalAlignment === "center") {
+  const horizAlign = active.horizontalAlignment || "left";
+  if (horizAlign === "center") {
     contentStyle.alignItems = "center";
     contentStyle.textAlign = "center";
-  } else if (active.horizontalAlignment === "right") {
+  } else if (horizAlign === "right") {
     contentStyle.alignItems = "flex-end";
     contentStyle.textAlign = "right";
   } else {
@@ -531,31 +535,23 @@ export function resolveSectionContainerStyles(
     contentStyle.textAlign = "left";
   }
 
-  // Vertical Alignment
-  if (active.verticalAlignment === "center") {
+  const vertAlign = active.verticalAlignment || "top";
+  if (vertAlign === "center") {
     contentStyle.justifyContent = "center";
-  } else if (active.verticalAlignment === "bottom") {
+  } else if (vertAlign === "bottom") {
     contentStyle.justifyContent = "flex-end";
   } else {
     contentStyle.justifyContent = "flex-start";
   }
 
-  // Max Width
+  // Content Max Width
   if (active.contentMaxWidth) {
     contentStyle.maxWidth = formatCssValue(active.contentMaxWidth);
-    contentStyle.marginLeft =
-      active.horizontalAlignment === "center"
-        ? "auto"
-        : active.horizontalAlignment === "right"
-        ? "auto"
-        : "0";
-    contentStyle.marginRight =
-      active.horizontalAlignment === "center"
-        ? "auto"
-        : active.horizontalAlignment === "left"
-        ? "auto"
-        : "0";
+    contentStyle.marginLeft = horizAlign === "center" ? "auto" : horizAlign === "right" ? "auto" : "0";
+    contentStyle.marginRight = horizAlign === "center" ? "auto" : horizAlign === "left" ? "auto" : "0";
   }
+
+  return { containerStyle, overlayStyle, contentStyle };
 
   return { containerStyle, overlayStyle, contentStyle };
 }

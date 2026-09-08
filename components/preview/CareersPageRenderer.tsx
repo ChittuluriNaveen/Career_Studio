@@ -382,8 +382,8 @@ export default function CareersPageRenderer({
 
       {/* 2. MAIN SCROLLABLE SECTIONS BODY */}
       <main
-        className="flex-1 w-full space-y-12"
-        style={{ paddingTop: sectionSpacing, paddingBottom: sectionSpacing }}
+        className="flex-1 w-full space-y-6 sm:space-y-8"
+        style={{ paddingTop: sectionSpacing || "1.5rem", paddingBottom: sectionSpacing || "1.5rem" }}
       >
         {activeSections.length === 0 ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -447,6 +447,7 @@ export default function CareersPageRenderer({
                       templateId={templateId}
                       elements={elements}
                       layout={section.content?.layout}
+                      cardStyles={cardStyles}
                       company={company}
                       jobsCount={jobs?.length || 0}
                       companyPrimaryColor={primaryColor}

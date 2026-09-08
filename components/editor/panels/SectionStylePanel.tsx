@@ -108,7 +108,128 @@ export default function SectionStylePanel({
         </div>
       </div>
 
-      {/* 1. BACKGROUND & IMAGE SETTINGS */}
+      {/* 1. SECTION SPACING, MARGIN & PADDING INSPECTOR */}
+      <div className="bg-gradient-to-br from-teal-50/90 to-slate-50 p-4 rounded-2xl border border-teal-200 space-y-4 shadow-2xs">
+        <div className="flex items-center justify-between pb-2 border-b border-teal-200/80">
+          <div className="flex items-center gap-2 text-[#005d52] font-black text-xs uppercase tracking-wider">
+            <Sliders className="w-4 h-4 text-[#005d52]" />
+            <span>Section Spacing, Margin & Padding</span>
+          </div>
+          <span className="text-[10px] font-mono font-bold bg-white text-[#005d52] px-2 py-0.5 rounded-md border border-teal-200 capitalize">
+            {deviceContext}
+          </span>
+        </div>
+
+        {/* Quick Preset Spacing Controls */}
+        <div>
+          <label className="block text-[11px] font-bold text-slate-700 mb-1.5">Quick Spacing Presets</label>
+          <div className="grid grid-cols-4 gap-1.5">
+            {[
+              { label: "Tight", top: "12px", bottom: "12px", mt: "0px", mb: "0px" },
+              { label: "Balanced", top: "24px", bottom: "24px", mt: "12px", mb: "12px" },
+              { label: "Comfort", top: "48px", bottom: "48px", mt: "24px", mb: "24px" },
+              { label: "Zero", top: "0px", bottom: "0px", mt: "0px", mb: "0px" },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => {
+                  updateProp("paddingTop", p.top);
+                  updateProp("paddingBottom", p.bottom);
+                  updateProp("marginTop", p.mt);
+                  updateProp("marginBottom", p.mb);
+                }}
+                className="py-1.5 px-2 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl font-extrabold text-[10px] text-slate-700 hover:text-[#005d52] transition-all cursor-pointer shadow-2xs text-center"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Interactive Visual CSS Box Model Diagram */}
+        <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+          <span className="text-[10px] font-black uppercase text-slate-400 block tracking-wider text-center">
+            Section Box Model Spacing ({deviceContext})
+          </span>
+
+          {/* Margin Box (Outer) */}
+          <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-xl space-y-2 text-center relative">
+            <span className="text-[9px] font-black uppercase text-amber-700 block">MARGIN (Outer Offset)</span>
+            <div className="flex items-center justify-center gap-2">
+              <div className="flex-1">
+                <label className="text-[9px] font-bold text-slate-500 block mb-0.5">Top Margin</label>
+                <input
+                  type="text"
+                  value={getActiveProp("marginTop", "")}
+                  onChange={(e) => updateProp("marginTop", e.target.value)}
+                  placeholder="0px"
+                  className="w-full p-1 bg-white border border-amber-200 rounded-lg text-xs font-mono font-bold text-center"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-[9px] font-bold text-slate-500 block mb-0.5">Bottom Margin</label>
+                <input
+                  type="text"
+                  value={getActiveProp("marginBottom", "")}
+                  onChange={(e) => updateProp("marginBottom", e.target.value)}
+                  placeholder="0px"
+                  className="w-full p-1 bg-white border border-amber-200 rounded-lg text-xs font-mono font-bold text-center"
+                />
+              </div>
+            </div>
+
+            {/* Padding Box (Inner) */}
+            <div className="p-3 bg-teal-50/70 border border-teal-200 rounded-xl space-y-2 text-center mt-2">
+              <span className="text-[9px] font-black uppercase text-teal-800 block">PADDING (Inner Card Space)</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[9px] font-bold text-slate-500 block mb-0.5">Top Padding</label>
+                  <input
+                    type="text"
+                    value={getActiveProp("paddingTop", "")}
+                    onChange={(e) => updateProp("paddingTop", e.target.value)}
+                    placeholder="24px"
+                    className="w-full p-1 bg-white border border-teal-200 rounded-lg text-xs font-mono font-bold text-center"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold text-slate-500 block mb-0.5">Bottom Padding</label>
+                  <input
+                    type="text"
+                    value={getActiveProp("paddingBottom", "")}
+                    onChange={(e) => updateProp("paddingBottom", e.target.value)}
+                    placeholder="24px"
+                    className="w-full p-1 bg-white border border-teal-200 rounded-lg text-xs font-mono font-bold text-center"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold text-slate-500 block mb-0.5">Left Padding</label>
+                  <input
+                    type="text"
+                    value={getActiveProp("paddingLeft", "")}
+                    onChange={(e) => updateProp("paddingLeft", e.target.value)}
+                    placeholder="16px"
+                    className="w-full p-1 bg-white border border-teal-200 rounded-lg text-xs font-mono font-bold text-center"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] font-bold text-slate-500 block mb-0.5">Right Padding</label>
+                  <input
+                    type="text"
+                    value={getActiveProp("paddingRight", "")}
+                    onChange={(e) => updateProp("paddingRight", e.target.value)}
+                    placeholder="16px"
+                    className="w-full p-1 bg-white border border-teal-200 rounded-lg text-xs font-mono font-bold text-center"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. BACKGROUND & IMAGE SETTINGS */}
       <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5 shadow-2xs">
         <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
           <div className="flex items-center gap-1.5 text-teal-800 font-extrabold">
@@ -392,6 +513,98 @@ export default function SectionStylePanel({
             placeholder="e.g. 800px, 1200px, 100%"
             className="w-full p-2 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold"
           />
+        </div>
+      </div>
+
+      {/* 4. MANUAL PADDING & MARGIN CONTROL */}
+      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3.5 shadow-2xs">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+          <div className="flex items-center gap-1.5 text-teal-800 font-extrabold">
+            <Sliders className="w-4 h-4 text-teal-700" />
+            <span>Manual Padding & Margin Spacing</span>
+          </div>
+          <span className="text-[10px] font-mono text-slate-400 capitalize">{deviceContext}</span>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-500 mb-1">Top Padding (Inner Space Above)</label>
+          <div className="flex items-center gap-1.5">
+            <div className="grid grid-cols-4 gap-1 flex-1">
+              {["0px", "16px", "24px", "40px"].map((val) => (
+                <button
+                  key={`pt-${val}`}
+                  type="button"
+                  onClick={() => updateProp("paddingTop", val)}
+                  className={`py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                    getActiveProp("paddingTop", "") === val
+                      ? "bg-teal-800 text-white shadow-xs"
+                      : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={getActiveProp("paddingTop", "")}
+              onChange={(e) => updateProp("paddingTop", e.target.value)}
+              placeholder="Custom"
+              className="w-20 p-1.5 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold text-center"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[10px] font-bold text-slate-500 mb-1">Bottom Padding (Inner Space Below)</label>
+          <div className="flex items-center gap-1.5">
+            <div className="grid grid-cols-4 gap-1 flex-1">
+              {["0px", "16px", "24px", "40px"].map((val) => (
+                <button
+                  key={`pb-${val}`}
+                  type="button"
+                  onClick={() => updateProp("paddingBottom", val)}
+                  className={`py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                    getActiveProp("paddingBottom", "") === val
+                      ? "bg-teal-800 text-white shadow-xs"
+                      : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={getActiveProp("paddingBottom", "")}
+              onChange={(e) => updateProp("paddingBottom", e.target.value)}
+              placeholder="Custom"
+              className="w-20 p-1.5 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold text-center"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1">Top Margin (Outer Offset)</label>
+            <input
+              type="text"
+              value={getActiveProp("marginTop", "")}
+              onChange={(e) => updateProp("marginTop", e.target.value)}
+              placeholder="e.g. 0px, 12px, 24px"
+              className="w-full p-2 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 mb-1">Bottom Margin (Outer Offset)</label>
+            <input
+              type="text"
+              value={getActiveProp("marginBottom", "")}
+              onChange={(e) => updateProp("marginBottom", e.target.value)}
+              placeholder="e.g. 0px, 12px, 24px"
+              className="w-full p-2 bg-white border border-slate-200 rounded-xl font-mono text-xs font-bold"
+            />
+          </div>
         </div>
       </div>
 
