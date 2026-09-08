@@ -85,6 +85,26 @@ export default function CareersPageRenderer({
   deviceMode = "desktop",
   onNavigatePage,
 }: CareersPageRendererProps) {
+  const [effectiveDeviceMode, setEffectiveDeviceMode] = useState<"desktop" | "tablet" | "mobile">(deviceMode);
+
+  useEffect(() => {
+    if (isPreviewMode) {
+      setEffectiveDeviceMode(deviceMode);
+      return;
+    }
+
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 640) setEffectiveDeviceMode("mobile");
+      else if (w < 1024) setEffectiveDeviceMode("tablet");
+      else setEffectiveDeviceMode("desktop");
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isPreviewMode, deviceMode]);
+
   // Resolve Theme styling parameters dynamically
   const theme = getThemeByCompany(company);
   const primaryColor = company.primaryColor || theme.primaryColor;
@@ -113,7 +133,7 @@ export default function CareersPageRenderer({
 
   // Filter sections based on mode
   const activeSections = [...sections]
-    .filter((sec) => (isPreviewMode ? true : sec.isPublished && sec.enabled !== false))
+    .filter((sec) => (isPreviewMode ? true : sec.enabled !== false))
     .sort((a, b) => a.orderIndex - b.orderIndex);
 
   // Helper for generating section anchor IDs
@@ -221,7 +241,7 @@ export default function CareersPageRenderer({
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className={deviceMode === "mobile" ? "hidden" : "hidden md:flex items-center gap-6"}>
+          <nav className={effectiveDeviceMode === "mobile" ? "hidden" : "hidden md:flex items-center gap-6"}>
             {navItems.map((item) => {
               const isJobsNav = item.type === SectionType.OPEN_ROLES || item.id === "jobs" || item.id === "open-positions";
               return isJobsNav && !isPreviewMode ? (
@@ -253,7 +273,7 @@ export default function CareersPageRenderer({
           </nav>
 
           {/* Right Header Action Button */}
-          <div className={deviceMode === "mobile" ? "hidden" : "hidden sm:flex items-center gap-3"}>
+          <div className={effectiveDeviceMode === "mobile" ? "hidden" : "hidden sm:flex items-center gap-3"}>
             {isPreviewMode ? (
               <button
                 type="button"
@@ -286,7 +306,7 @@ export default function CareersPageRenderer({
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className={`${deviceMode === "mobile" ? "block" : "md:hidden"} p-2 rounded-lg transition-colors ${
+            className={`${effectiveDeviceMode === "mobile" ? "block" : "md:hidden"} p-2 rounded-lg transition-colors ${
               isDarkMode ? "text-slate-300 hover:bg-slate-800" : "text-slate-700 hover:bg-slate-100"
             }`}
             aria-label="Toggle Navigation Menu"
@@ -298,7 +318,7 @@ export default function CareersPageRenderer({
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div
-            className={`${deviceMode === "mobile" ? "block" : "md:hidden"} pt-4 pb-3 border-t mt-3 space-y-2 animate-in slide-in-from-top-2 duration-150 ${
+            className={`${effectiveDeviceMode === "mobile" ? "block" : "md:hidden"} pt-4 pb-3 border-t mt-3 space-y-2 animate-in slide-in-from-top-2 duration-150 ${
               isDarkMode ? "border-slate-800 text-white" : "border-slate-200 text-slate-900"
             }`}
           >
@@ -404,7 +424,7 @@ export default function CareersPageRenderer({
                     primaryColor={primaryColor}
                     theme={theme}
                     companySlug={company.slug}
-                    deviceMode={deviceMode}
+                    deviceMode={effectiveDeviceMode}
                     isPreviewMode={isPreviewMode}
                     onNavigatePage={onNavigatePage}
                   />
@@ -415,7 +435,7 @@ export default function CareersPageRenderer({
               const cardStyles = section.content?.cardStyles || {};
               const { containerStyle, overlayStyle, contentStyle } = resolveSectionContainerStyles(
                 cardStyles,
-                deviceMode,
+                effectiveDeviceMode,
                 { ...theme, bannerUrl: company.bannerUrl, logoUrl: company.logoUrl }
               );
 
@@ -437,7 +457,7 @@ export default function CareersPageRenderer({
                         if (onSelectElement) onSelectElement(elem, section.id);
                       }}
                       jobsComponent={renderJobsGrid}
-                      deviceMode={deviceMode}
+                      deviceMode={effectiveDeviceMode}
                       onNavigatePage={onNavigatePage}
                     />
                   </div>

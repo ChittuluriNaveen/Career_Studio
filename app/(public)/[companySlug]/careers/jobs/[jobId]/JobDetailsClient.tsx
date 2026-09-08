@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -40,6 +40,26 @@ export default function JobDetailsClient({
   deviceMode = "desktop",
   onNavigatePage,
 }: JobDetailsClientProps) {
+  const [effectiveDeviceMode, setEffectiveDeviceMode] = useState<"desktop" | "tablet" | "mobile">(deviceMode);
+
+  useEffect(() => {
+    if (isPreviewMode) {
+      setEffectiveDeviceMode(deviceMode);
+      return;
+    }
+
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 640) setEffectiveDeviceMode("mobile");
+      else if (w < 1024) setEffectiveDeviceMode("tablet");
+      else setEffectiveDeviceMode("desktop");
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isPreviewMode, deviceMode]);
+
   const company = job.company || job.companyOverride || {};
   const theme = getThemeByCompany(company);
   const primaryColor = company.primaryColor || theme.primaryColor;

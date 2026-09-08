@@ -77,8 +77,8 @@ export async function addSectionAction(input: CreateSectionInput) {
         layoutVariant: validated.data.layoutVariant || "01",
         orderIndex: existingCount,
         enabled: true,
-        isDraft: true,
-        isPublished: false,
+        isDraft: false,
+        isPublished: true,
       },
     });
 
@@ -114,7 +114,8 @@ export async function updateSectionOrderAction(input: UpdateSectionOrderInput) {
           },
           data: {
             orderIndex: item.orderIndex,
-            isDraft: true,
+            isPublished: true,
+            isDraft: false,
           },
         })
       )
@@ -161,7 +162,8 @@ export async function updateSectionContentAction(input: UpdateSectionContentInpu
         content: validated.data.content,
         ...(validated.data.layoutVariant ? { layoutVariant: validated.data.layoutVariant } : {}),
         ...(typeof validated.data.enabled === "boolean" ? { enabled: validated.data.enabled } : {}),
-        isDraft: true,
+        isPublished: true,
+        isDraft: false,
       },
     });
 
@@ -203,7 +205,8 @@ export async function toggleSectionVisibilityAction(input: ToggleSectionVisibili
       where: { id: validated.data.id },
       data: {
         enabled: validated.data.enabled,
-        isDraft: true,
+        isPublished: true,
+        isDraft: false,
       },
     });
 
@@ -246,8 +249,8 @@ export async function duplicateSectionAction(id: string) {
         layoutVariant: sourceSection.layoutVariant,
         orderIndex: existingCount,
         enabled: sourceSection.enabled,
-        isDraft: true,
-        isPublished: false,
+        isDraft: false,
+        isPublished: true,
       },
     });
 

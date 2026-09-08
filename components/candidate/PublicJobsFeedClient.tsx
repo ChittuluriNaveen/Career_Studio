@@ -67,6 +67,7 @@ interface PublicJobsFeedClientProps {
     defaultSort?: string;
   };
   isPreviewMode?: boolean;
+  deviceMode?: "desktop" | "tablet" | "mobile";
   onNavigatePage?: (page: "careers" | "jobs" | "job-details") => void;
 }
 
@@ -77,12 +78,33 @@ export default function PublicJobsFeedClient({
   filterDimensions,
   jobsExperienceConfig = {},
   isPreviewMode = false,
+  deviceMode = "desktop",
   onNavigatePage,
 }: PublicJobsFeedClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  const [effectiveDeviceMode, setEffectiveDeviceMode] = useState<"desktop" | "tablet" | "mobile">(deviceMode);
+
+  useEffect(() => {
+    if (isPreviewMode) {
+      setEffectiveDeviceMode(deviceMode);
+      return;
+    }
+
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w < 640) setEffectiveDeviceMode("mobile");
+      else if (w < 1024) setEffectiveDeviceMode("tablet");
+      else setEffectiveDeviceMode("desktop");
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isPreviewMode, deviceMode]);
 
   const theme = getThemeByCompany(company);
   const primaryColor = company.primaryColor || theme.primaryColor;
