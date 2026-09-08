@@ -18,10 +18,18 @@ export async function getPublicCareersData(companySlug: string, isPreviewMode: b
     return null;
   }
 
+  const careersPage = await db.careersPage.findUnique({
+    where: { companyId: company.id },
+  });
+
+  if (!isPreviewMode && !careersPage?.isPublished) {
+    return null;
+  }
+
   // Fetch sections (in preview mode return draft sections, in candidate mode return published & enabled sections)
   const sections = await db.pageSection.findMany({
     where: {
-      companyId: company.id, // Strict tenant isolation guard
+      companyId: company.id,
       ...(isPreviewMode ? {} : { isPublished: true, enabled: true }),
     },
     orderBy: { orderIndex: "asc" },

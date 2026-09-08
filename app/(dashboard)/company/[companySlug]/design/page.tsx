@@ -1,5 +1,4 @@
 import { verifyCompanyAccess } from "@/lib/auth-guard";
-import { RecruiterNav } from "@/components/navigation/RecruiterNav";
 import CareerStudioClient from "./CareerStudioClient";
 
 interface PageProps {
@@ -10,18 +9,11 @@ interface PageProps {
 
 export default async function CareersDesignPage({ params }: PageProps) {
   const { companySlug } = await params;
-  const { session, company } = await verifyCompanyAccess(companySlug);
+  const { company } = await verifyCompanyAccess(companySlug);
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      <RecruiterNav
-        companySlug={company.slug}
-        companyName={company.name}
-        userName={session.user?.name}
-      />
-      <div className="flex-1">
-        <CareerStudioClient companySlug={company.slug} />
-      </div>
+    <div className="h-screen w-full flex flex-col bg-slate-100 overflow-hidden">
+      <CareerStudioClient companySlug={company.slug} />
     </div>
   );
 }

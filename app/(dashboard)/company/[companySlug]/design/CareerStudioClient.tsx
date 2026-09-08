@@ -12,6 +12,9 @@ import {
   Sparkles,
   CheckCircle2,
   XCircle,
+  FileText,
+  Layers,
+  Palette,
 } from "lucide-react";
 
 import DashboardHeader from "@/components/editor/DashboardHeader";
@@ -58,7 +61,7 @@ interface CareerStudioClientProps {
 }
 
 export default function CareerStudioClient({ companySlug }: CareerStudioClientProps) {
-  const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "mobile" | "desktop">("desktop");
+  const [deviceMode, setDeviceMode] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [activePage, setActivePage] = useState<"careers" | "jobs" | "job-details">("careers");
   const [activeNavTab, setActiveNavTab] = useState<LeftNavTab>("sections");
   const [inspectorTab, setInspectorTab] = useState<"content" | "templates" | "element">("content");
@@ -66,6 +69,15 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   // Collapsible Sidebars State
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(true);
+
+  // Auto-collapse sidebars on mobile screens on initial render
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsLeftPanelOpen(false);
+      setIsRightPanelOpen(false);
+      setDeviceMode("mobile");
+    }
+  }, []);
 
   const [company, setCompany] = useState<any | null>(null);
   const [sections, setSections] = useState<any[]>([]);
@@ -309,6 +321,10 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     setSelectedSectionId(section.id);
     setSelectedElementId(null);
     setInspectorTab("content");
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsRightPanelOpen(true);
+      setIsLeftPanelOpen(false);
+    }
   };
 
   const handleSelectElement = (element: SectionElement, sectionId?: string) => {
@@ -317,6 +333,10 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
     }
     setSelectedElementId(element.id);
     setInspectorTab("element");
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setIsRightPanelOpen(true);
+      setIsLeftPanelOpen(false);
+    }
   };
 
   const activeSections = activePage === "job-details" ? jobSections : sections;
@@ -829,7 +849,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900 relative">
+    <div className="h-full flex-1 flex flex-col bg-slate-100 overflow-hidden font-sans text-slate-900 relative">
       <OperationLoader
         isVisible={isApplyingTemplate}
         title="Applying Section Template..."
@@ -873,9 +893,48 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
           }}
         />
 
+        {/* Mobile Backdrop Overlay when panels are open */}
+        {(isLeftPanelOpen || isRightPanelOpen) && (
+          <div
+            className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-2xs z-35 animate-in fade-in"
+            onClick={() => {
+              setIsLeftPanelOpen(false);
+              setIsRightPanelOpen(false);
+            }}
+          />
+        )}
+
         {/* Column 2: Switchable Secondary Panel */}
         {isLeftPanelOpen && (
-          <div className="w-88 bg-white border-r border-slate-200 flex flex-col justify-between flex-shrink-0 z-10 shadow-2xs relative">
+          <div className="fixed inset-x-0 bottom-0 top-14 z-40 bg-white rounded-t-3xl border-t border-slate-300 shadow-2xl flex flex-col justify-between lg:relative lg:inset-y-0 lg:left-0 lg:w-88 lg:rounded-none lg:border-t-0 lg:border-r lg:shadow-2xs lg:z-20 h-auto lg:h-full flex-shrink-0">
+            {/* Mobile Header Bar */}
+            <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50/90 rounded-t-3xl sticky top-0 z-30">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#005d52]" />
+                <span className="font-extrabold text-sm text-slate-900 capitalize">
+                  {activeNavTab === "sections"
+                    ? "Sections Architecture"
+                    : activeNavTab === "design"
+                    ? "Brand Design System"
+                    : activeNavTab === "pages"
+                    ? "Pages Navigation"
+                    : activeNavTab === "jobs-experience"
+                    ? "Jobs Experience"
+                    : activeNavTab === "share"
+                    ? "Share & Export"
+                    : activeNavTab === "seo"
+                    ? "SEO Settings"
+                    : "Studio Settings"}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLeftPanelOpen(false)}
+                className="px-3 py-1 bg-[#005d52] hover:bg-[#004a41] text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                Done ✓
+              </button>
+            </div>
             {activeNavTab === "pages" && company && (
               <PagesPanel
                 companySlug={company.slug}
@@ -970,7 +1029,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
         )}
 
         {/* Column 3: Center Responsive Preview Canvas */}
-        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-4 md:p-6 flex justify-center items-start overflow-x-auto relative">
+        <div className="flex-1 bg-slate-200/80 overflow-y-auto p-2 sm:p-4 md:p-6 pb-24 lg:pb-6 flex justify-center items-start overflow-x-auto relative">
           <div
             className={`transition-all duration-300 bg-white rounded-2xl shadow-xl overflow-hidden min-h-[600px] border border-slate-300 relative ${
               deviceMode === "mobile"
@@ -1041,7 +1100,23 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
 
         {/* Column 4: Right Inspector Side Box */}
         {isRightPanelOpen && (
-          <div className="w-88 bg-white border-l border-slate-200 flex flex-col justify-between flex-shrink-0 p-4 z-10 overflow-y-auto shadow-2xs relative">
+          <div className="fixed inset-x-0 bottom-0 top-14 z-40 bg-white rounded-t-3xl border-t border-slate-300 shadow-2xl flex flex-col p-4 overflow-y-auto lg:relative lg:inset-y-0 lg:right-0 lg:w-88 lg:rounded-none lg:border-t-0 lg:border-l lg:shadow-2xs lg:z-20 h-auto lg:h-full flex-shrink-0 justify-between">
+            {/* Mobile Header Bar */}
+            <div className="lg:hidden flex items-center justify-between pb-3 mb-2 border-b border-slate-200 bg-white sticky top-0 z-30">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#005d52]" />
+                <span className="font-extrabold text-sm text-slate-900">
+                  Element & Section Inspector
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsRightPanelOpen(false)}
+                className="px-3 py-1 bg-[#005d52] hover:bg-[#004a41] text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                Done ✓
+              </button>
+            </div>
             {activePage === "job-details" ? (
               <div className="space-y-4">
                 <div className="pb-3 border-b border-slate-100">
@@ -1356,6 +1431,95 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             )}
           </div>
         )}
+
+        {/* Mobile Bottom Navigation Bar (< lg screens) */}
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-2 flex items-center justify-around shadow-xl">
+          <button
+            type="button"
+            onClick={() => {
+              setIsLeftPanelOpen(false);
+              setIsRightPanelOpen(false);
+            }}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
+              !isLeftPanelOpen && !isRightPanelOpen
+                ? "text-[#005d52] font-black bg-teal-50 border border-teal-200"
+                : "text-slate-500 font-medium hover:text-slate-900"
+            }`}
+          >
+            <Monitor className="w-5 h-5" />
+            <span className="text-[10px]">Canvas</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveNavTab("sections");
+              setIsLeftPanelOpen(true);
+              setIsRightPanelOpen(false);
+            }}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
+              isLeftPanelOpen && activeNavTab === "sections"
+                ? "text-[#005d52] font-black bg-teal-50 border border-teal-200"
+                : "text-slate-500 font-medium hover:text-slate-900"
+            }`}
+          >
+            <Layers className="w-5 h-5" />
+            <span className="text-[10px]">Sections</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveNavTab("design");
+              setIsLeftPanelOpen(true);
+              setIsRightPanelOpen(false);
+            }}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
+              isLeftPanelOpen && activeNavTab === "design"
+                ? "text-[#005d52] font-black bg-teal-50 border border-teal-200"
+                : "text-slate-500 font-medium hover:text-slate-900"
+            }`}
+          >
+            <Palette className="w-5 h-5" />
+            <span className="text-[10px]">Theme</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setIsRightPanelOpen(true);
+              setIsLeftPanelOpen(false);
+            }}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer relative ${
+              isRightPanelOpen
+                ? "text-[#005d52] font-black bg-teal-50 border border-teal-200"
+                : "text-slate-500 font-medium hover:text-slate-900"
+            }`}
+          >
+            <Sparkles className="w-5 h-5" />
+            <span className="text-[10px]">Inspector</span>
+            {selectedElementId && (
+              <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-[#005d52]" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveNavTab("pages");
+              setIsLeftPanelOpen(true);
+              setIsRightPanelOpen(false);
+            }}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
+              isLeftPanelOpen && activeNavTab !== "sections" && activeNavTab !== "design"
+                ? "text-[#005d52] font-black bg-teal-50 border border-teal-200"
+                : "text-slate-500 font-medium hover:text-slate-900"
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+            <span className="text-[10px]">Pages</span>
+          </button>
+        </div>
       </div>
 
       {/* Activity Toast Notification Banner */}

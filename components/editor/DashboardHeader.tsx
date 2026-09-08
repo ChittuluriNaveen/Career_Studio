@@ -11,12 +11,18 @@ import {
   Redo2,
   Check,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   Globe,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
+  LayoutDashboard,
+  Briefcase,
+  Building2,
+  ExternalLink,
+  Menu,
 } from "lucide-react";
 import PublishModal from "./PublishModal";
 
@@ -70,28 +76,29 @@ export default function DashboardHeader({
 
   return (
     <>
-      <header className="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between gap-4 z-30 shadow-2xs">
-        {/* Left Branding & Breadcrumb */}
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-teal-800 flex items-center justify-center font-black text-white text-xs shadow-xs">
+      <header className="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 sm:py-2.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 z-30 shadow-2xs">
+        {/* Left Branding & Breadcrumb Navigation */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/dashboard" className="flex items-center gap-1.5 sm:gap-2 group" title="Return to Recruiter Dashboard">
+            <span className="w-7 h-7 rounded-lg bg-teal-800 flex items-center justify-center font-black text-white text-xs shadow-xs group-hover:bg-teal-900 transition-colors">
               CS
             </span>
-            <span className="font-extrabold text-slate-900 text-sm tracking-tight hidden sm:inline">
+            <span className="font-extrabold text-slate-900 text-sm tracking-tight hidden sm:inline group-hover:text-teal-800 transition-colors">
               Career Studio
             </span>
           </Link>
 
           <span className="text-slate-300">|</span>
 
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="font-bold text-slate-800">{company.name}</span>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-medium text-slate-500 font-mono">Careers</span>
+          <div className="flex items-center gap-1 sm:gap-1.5 text-xs">
+            <span className="font-bold text-slate-800 truncate max-w-[90px] sm:max-w-none">{company.name}</span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden xs:inline" />
+            <span className="font-medium text-slate-500 font-mono hidden xs:inline">Careers</span>
             {isPublished ? (
               <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Published Live
+                <span className="hidden sm:inline">Published Live</span>
+                <span className="sm:hidden">Live</span>
               </span>
             ) : (
               <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">

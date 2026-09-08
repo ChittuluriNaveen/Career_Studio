@@ -417,11 +417,11 @@ export default function CompanyDetailsForm({ company }: CompanyDetailsFormProps)
         </div>
 
         {/* Action Button */}
-        <div className="pt-4 border-t border-slate-100 flex justify-end">
+        <div className="pt-4 border-t border-slate-100 flex justify-end w-full">
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-[#005d52] hover:bg-[#004a41] text-white rounded-xl text-xs font-extrabold shadow-xs transition-all cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-[#005d52] hover:bg-[#004a41] text-white rounded-xl text-xs font-extrabold shadow-xs transition-all cursor-pointer"
           >
             {loading ? (
               <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />

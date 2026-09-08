@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   FileText,
   Layers,
@@ -8,6 +9,7 @@ import {
   Share2,
   Search,
   LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
@@ -29,8 +31,18 @@ export default function LeftIconRail({ activeTab, setActiveTab }: LeftIconRailPr
   ];
 
   return (
-    <aside className="w-16 bg-white border-r border-slate-200 flex flex-col items-center justify-between py-4 flex-shrink-0 z-20 shadow-2xs">
+    <aside className="hidden lg:flex w-16 bg-white border-r border-slate-200 flex-col items-center justify-between py-4 flex-shrink-0 z-20 shadow-2xs">
       <div className="flex flex-col items-center gap-3 w-full px-2">
+        <Link
+          href="/dashboard"
+          title="Return to Recruiter Dashboard"
+          className="p-3 rounded-2xl text-slate-500 hover:text-teal-800 hover:bg-teal-50 transition-colors group relative cursor-pointer mb-1 border-b border-slate-200 pb-3"
+        >
+          <LayoutDashboard className="w-5 h-5 text-[#005d52]" />
+          <span className="absolute left-16 top-2.5 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
+            Recruiter Dashboard
+          </span>
+        </Link>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;

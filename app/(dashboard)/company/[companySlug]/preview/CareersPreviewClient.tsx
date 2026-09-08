@@ -79,7 +79,7 @@ export default function CareersPreviewClient({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* Recruiter Preview Top Toolbar */}
-      <header className="bg-white border-b border-slate-200 py-2.5 px-4 sm:px-6 sticky top-0 z-50 flex items-center justify-between gap-3 shadow-2xs overflow-x-auto whitespace-nowrap scrollbar-none">
+      <header className="bg-white border-b border-slate-200 py-2.5 px-4 sm:px-6 flex items-center justify-between gap-3 shadow-2xs overflow-x-auto whitespace-nowrap scrollbar-none">
         {/* Left: Back & Status Indicator */}
         <div className="flex items-center gap-2 shrink-0">
           <Link

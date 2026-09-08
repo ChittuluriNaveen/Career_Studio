@@ -1,7 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Plus, Edit2, Trash2, GripVertical, Check, Globe } from "lucide-react";
+import Link from "next/link";
+import {
+  FileText,
+  Plus,
+  Edit2,
+  Trash2,
+  GripVertical,
+  Check,
+  Globe,
+  LayoutDashboard,
+  Palette,
+  Briefcase,
+  Building2,
+  Eye,
+  ExternalLink,
+} from "lucide-react";
 
 interface PagesPanelProps {
   companySlug: string;
@@ -10,6 +25,15 @@ interface PagesPanelProps {
 }
 
 export default function PagesPanel({ companySlug, activePage = "careers", onSelectPage }: PagesPanelProps) {
+  const portalLinks = [
+    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Design Careers Studio", href: `/company/${companySlug}/design`, icon: Palette, active: true },
+    { label: "Job Postings", href: `/company/${companySlug}/jobs`, icon: Briefcase },
+    { label: "Company Details", href: `/company/${companySlug}/details`, icon: Building2 },
+    { label: "Full Draft Preview", href: `/company/${companySlug}/preview`, icon: Eye },
+    { label: "Public Live Site", href: `/${companySlug}/careers`, icon: ExternalLink, external: true },
+  ];
+
   const [pages, setPages] = useState([
     { id: "careers", name: "Main Careers Story Page", path: "/careers", isDefault: true, isPublished: true },
     { id: "jobs", name: "Dedicated Jobs Marketplace", path: "/careers/jobs", isDefault: true, isPublished: true },
@@ -53,106 +77,150 @@ export default function PagesPanel({ companySlug, activePage = "careers", onSele
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-        <div>
-          <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Pages</h2>
-          <p className="text-[11px] text-slate-400">Portal templates & routes ({pages.length})</p>
+    <div className="p-4 space-y-5 overflow-y-auto max-h-full">
+      {/* SECTION 1: RECRUITER PORTAL NAVIGATION SIDEBAR LINKS (ITEM BY ITEM) */}
+      <div className="space-y-3 pb-4 border-b border-slate-200">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-black uppercase text-slate-800 tracking-wider">Recruiter Navigation</h2>
+          <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+            Sidebar Menu
+          </span>
         </div>
-        <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-          Active
-        </span>
+
+        <div className="space-y-1">
+          {portalLinks.map((link) => {
+            const Icon = link.icon;
+            if (link.external) {
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-teal-900 hover:bg-teal-50 transition-all border border-transparent hover:border-teal-200"
+                >
+                  <Icon className="w-4 h-4 text-teal-700 flex-shrink-0" />
+                  <span>{link.label}</span>
+                </a>
+              );
+            }
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                  link.active
+                    ? "bg-[#005d52] text-white shadow-xs"
+                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                }`}
+              >
+                <Icon className={`w-4 h-4 flex-shrink-0 ${link.active ? "text-white" : "text-slate-500"}`} />
+                <span>{link.label}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="space-y-2">
-        {pages.map((page) => {
-          const isActive = page.id === activePage;
-          const isEditing = page.id === editingId;
+      {/* SECTION 2: STUDIO CANVAS VIEWS */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xs font-extrabold uppercase text-slate-800 tracking-wider">Canvas Views</h2>
+            <p className="text-[11px] text-slate-400">Switch preview canvas page ({pages.length})</p>
+          </div>
+        </div>
 
-          return (
-            <div
-              key={page.id}
-              onClick={() => {
-                if (onSelectPage && (page.id === "careers" || page.id === "jobs" || page.id === "job-details")) {
-                  onSelectPage(page.id as any);
-                }
-              }}
-              className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
-                isActive
-                  ? "bg-teal-50/90 border-teal-400 text-teal-950 font-bold shadow-2xs ring-1 ring-teal-300"
-                  : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
-              }`}
-            >
-              <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                <GripVertical className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                <FileText className="w-4 h-4 text-teal-700 flex-shrink-0" />
-                
-                {isEditing ? (
-                  <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="text"
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      className="w-full px-2 py-0.5 bg-white border border-slate-300 rounded text-xs text-slate-900"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleSaveRename(page.id)}
-                      className="p-1 rounded bg-teal-800 text-white"
-                    >
-                      <Check className="w-3 h-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="truncate min-w-0">
-                    <span className="text-xs block truncate font-bold">{page.name}</span>
-                    <span className="text-[10px] font-mono text-slate-400">{page.path}</span>
-                  </div>
-                )}
-              </div>
+        <div className="space-y-2">
+          {pages.map((page) => {
+            const isActive = page.id === activePage;
+            const isEditing = page.id === editingId;
 
-              {!isEditing && (
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStartRename(page.id, page.name);
-                    }}
-                    className="p-1 rounded text-slate-400 hover:text-teal-700 transition-colors"
-                    title="Rename page"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                  </button>
+            return (
+              <div
+                key={page.id}
+                onClick={() => {
+                  if (onSelectPage && (page.id === "careers" || page.id === "jobs" || page.id === "job-details")) {
+                    onSelectPage(page.id as any);
+                  }
+                }}
+                className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                  isActive
+                    ? "bg-teal-50/90 border-teal-400 text-teal-950 font-bold shadow-2xs ring-1 ring-teal-300"
+                    : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700"
+                }`}
+              >
+                <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                  <GripVertical className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  <FileText className="w-4 h-4 text-teal-700 flex-shrink-0" />
+                  
+                  {isEditing ? (
+                    <div className="flex items-center gap-1 flex-1" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        className="w-full px-2 py-0.5 bg-white border border-slate-300 rounded text-xs text-slate-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleSaveRename(page.id)}
+                        className="p-1 rounded bg-teal-800 text-white"
+                      >
+                        <Check className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="truncate min-w-0">
+                      <span className="text-xs block truncate font-bold">{page.name}</span>
+                      <span className="text-[10px] font-mono text-slate-400">{page.path}</span>
+                    </div>
+                  )}
+                </div>
 
-                  {!page.isDefault && (
+                {!isEditing && (
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeletePage(page.id);
+                        handleStartRename(page.id, page.name);
                       }}
-                      className="p-1 rounded text-slate-400 hover:text-red-600 transition-colors"
-                      title="Delete page"
+                      className="p-1 rounded text-slate-400 hover:text-teal-700 transition-colors"
+                      title="Rename page"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3.5 h-3.5" />
                     </button>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
 
-      <button
-        type="button"
-        onClick={handleAddPage}
-        className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-      >
-        <Plus className="w-4 h-4 text-teal-700" />
-        <span>+ Add page template</span>
-      </button>
+                    {!page.isDefault && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePage(page.id);
+                        }}
+                        className="p-1 rounded text-slate-400 hover:text-red-600 transition-colors"
+                        title="Delete page"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleAddPage}
+          className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2"
+        >
+          <Plus className="w-4 h-4 text-teal-700" />
+          <span>+ Add page template</span>
+        </button>
+      </div>
     </div>
   );
 }
