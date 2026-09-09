@@ -107,6 +107,10 @@ export default function SectionFormModal({
       ...(sectionToEdit?.content || {}),
       templateId: selectedTemplateId,
       layout: templateConfig.layout,
+      cardStyles: {
+        ...(templateConfig.cardStyles || {}),
+        ...(sectionToEdit?.content?.cardStyles || {}),
+      },
       elements: elementsToSave,
     };
 

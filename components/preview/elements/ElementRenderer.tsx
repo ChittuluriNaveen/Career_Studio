@@ -387,7 +387,7 @@ export default function ElementRenderer({
             }`}
             style={activeStyles}
           >
-            {resolveImageUrl(element.content.url) ? (
+            {resolveImageUrl(element.content.url || element.content.src || element.content.imageUrl) ? (
               <div
                 className={`relative w-full ${
                   deviceMode === "mobile" ? "h-48 sm:h-56" : "h-48 sm:h-64 md:h-96"
@@ -395,7 +395,7 @@ export default function ElementRenderer({
                 style={{ height: activeStyles.height || undefined }}
               >
                 <img
-                  src={resolveImageUrl(element.content.url)}
+                  src={resolveImageUrl(element.content.url || element.content.src || element.content.imageUrl)}
                   alt={renderText(element.content.alt, "Careers visual")}
                   loading="lazy"
                   decoding="async"

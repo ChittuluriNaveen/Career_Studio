@@ -47,18 +47,27 @@ export default function SectionStylePanel({
     return rawCardStyles[key] !== undefined ? rawCardStyles[key] : fallback;
   };
 
-  const updateProp = (key: keyof SectionCardStyles, value: any) => {
+  const updateMultipleProps = (propsMap: Record<string, any>) => {
     const updated: SectionCardStyles = JSON.parse(JSON.stringify(rawCardStyles));
 
     if (deviceContext === "desktop") {
-      (updated as any)[key] = value;
+      Object.entries(propsMap).forEach(([k, v]) => {
+        (updated as any)[k] = v;
+      });
     } else {
       if (!updated.responsive) updated.responsive = {};
-      if (!updated.responsive[deviceContext]) updated.responsive[deviceContext] = {};
-      (updated.responsive[deviceContext] as any)[key] = value;
+      const resp = updated.responsive;
+      if (!resp[deviceContext]) resp[deviceContext] = {};
+      Object.entries(propsMap).forEach(([k, v]) => {
+        (resp[deviceContext] as any)[k] = v;
+      });
     }
 
     onUpdateSectionCardStyles(updated);
+  };
+
+  const updateProp = (key: keyof SectionCardStyles, value: any) => {
+    updateMultipleProps({ [key]: value });
   };
 
   return (
@@ -318,8 +327,10 @@ export default function SectionStylePanel({
             <button
               type="button"
               onClick={() => {
-                updateProp("background", "image");
-                updateProp("backgroundImageUrl", "@company_banner");
+                updateMultipleProps({
+                  background: "image",
+                  backgroundImageUrl: "@company_banner",
+                });
               }}
               className="px-2 py-1 bg-teal-50 text-teal-900 hover:bg-teal-100 border border-teal-200 rounded-lg text-[10px] font-extrabold cursor-pointer transition-colors"
             >
@@ -328,8 +339,10 @@ export default function SectionStylePanel({
             <button
               type="button"
               onClick={() => {
-                updateProp("background", "image");
-                updateProp("backgroundImageUrl", "@company_logo");
+                updateMultipleProps({
+                  background: "image",
+                  backgroundImageUrl: "@company_logo",
+                });
               }}
               className="px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 rounded-lg text-[10px] font-extrabold cursor-pointer transition-colors"
             >
@@ -676,8 +689,10 @@ export default function SectionStylePanel({
         isOpen={isMediaPickerOpen}
         onClose={() => setIsMediaPickerOpen(false)}
         onSelectMedia={(url) => {
-          updateProp("backgroundImageUrl", url);
-          updateProp("background", "image");
+          updateMultipleProps({
+            backgroundImageUrl: url,
+            background: "image",
+          });
           setIsMediaPickerOpen(false);
         }}
       />

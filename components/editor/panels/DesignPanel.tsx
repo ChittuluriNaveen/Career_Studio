@@ -305,8 +305,8 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
         isOpen={activeMediaTarget !== null}
         onClose={() => setActiveMediaTarget(null)}
         onSelectMedia={(url) => {
-          if (activeMediaTarget === "logo") setFormData((prev) => ({ ...prev, logoUrl: url }));
-          if (activeMediaTarget === "banner") setFormData((prev) => ({ ...prev, bannerUrl: url }));
+          if (activeMediaTarget === "logo") updateField("logoUrl", url);
+          if (activeMediaTarget === "banner") updateField("bannerUrl", url);
           setActiveMediaTarget(null);
         }}
       />
