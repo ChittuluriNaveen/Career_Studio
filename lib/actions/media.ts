@@ -39,7 +39,6 @@ export async function createMediaRecordAction(input: {
     });
 
     if (session.user.companySlug) {
-      revalidatePath(`/company/${session.user.companySlug}/design`);
       revalidatePath(`/company/${session.user.companySlug}/details`);
       revalidatePath(`/${session.user.companySlug}/careers`);
     }
@@ -66,7 +65,6 @@ export async function deleteMediaRecordAction(id: string) {
     });
 
     if (session.user.companySlug) {
-      revalidatePath(`/company/${session.user.companySlug}/design`);
       revalidatePath(`/company/${session.user.companySlug}/details`);
     }
     revalidatePath("/dashboard");

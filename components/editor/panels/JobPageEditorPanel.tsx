@@ -5,6 +5,7 @@ import { Check, Sparkles, Palette, Briefcase, Layout, ShieldCheck } from "lucide
 import { THEME_REGISTRY, getThemeByCompany } from "@/lib/themes/registry";
 import { updateBrandThemeAction } from "@/lib/actions/brand";
 import OperationLoader from "@/components/ui/OperationLoader";
+import AIPolishButton from "@/components/editor/AIPolishButton";
 
 interface JobPageEditorPanelProps {
   company: any;
@@ -221,7 +222,15 @@ export default function JobPageEditorPanel({
         </label>
 
         <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Sample Job Title</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-[11px] font-semibold text-slate-600">Sample Job Title</label>
+            <AIPolishButton
+              currentText={jobData.title}
+              type="heading"
+              companyName={company?.name}
+              onApplyEnhancedText={(enhanced) => updateJobField("title", enhanced)}
+            />
+          </div>
           <input
             type="text"
             value={jobData.title}
@@ -270,7 +279,15 @@ export default function JobPageEditorPanel({
         </div>
 
         <div>
-          <label className="block text-[11px] font-semibold text-slate-600 mb-1">Job Summary</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-[11px] font-semibold text-slate-600">Job Summary</label>
+            <AIPolishButton
+              currentText={jobData.summary}
+              type="description"
+              companyName={company?.name}
+              onApplyEnhancedText={(enhanced) => updateJobField("summary", enhanced)}
+            />
+          </div>
           <textarea
             rows={3}
             value={jobData.summary}

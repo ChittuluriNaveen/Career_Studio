@@ -26,6 +26,7 @@ import DesignPanel from "@/components/editor/panels/DesignPanel";
 import SharePanel from "@/components/editor/panels/SharePanel";
 import SEOPanel from "@/components/editor/panels/SEOPanel";
 import ElementEditorPanel from "@/components/editor/panels/ElementEditorPanel";
+import AIPolishButton from "@/components/editor/AIPolishButton";
 
 import PageRenderer from "@/components/preview/PageRenderer";
 import JobDetailsClient from "@/app/(public)/[companySlug]/careers/jobs/[jobId]/JobDetailsClient";
@@ -37,6 +38,7 @@ import {
   getSectionsAction,
   deleteSectionAction,
   updateSectionContentAction,
+  saveAllSectionsAction,
   updateSectionOrderAction,
   toggleSectionVisibilityAction,
   duplicateSectionAction,
@@ -224,6 +226,9 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   const pushHistory = (newSections: any[]) => {
     const cloned = JSON.parse(JSON.stringify(newSections));
     const updatedHistory = history.slice(0, historyIndex + 1);
+    if (updatedHistory.length >= 25) {
+      updatedHistory.shift();
+    }
     setHistory([...updatedHistory, cloned]);
     setHistoryIndex(updatedHistory.length);
     setSaveStatus("unsaved");
@@ -710,64 +715,89 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
       const updatedSections = sections.map((s) => (s.id === selectedSection.id ? { ...s, content: newContent } : s));
       setSections(updatedSections);
       pushHistory(updatedSections);
-      setSaveStatus("saving");
-
-      await updateSectionContentAction({
-        id: selectedSection.id,
-        title: selectedSection.title || undefined,
-        content: newContent,
-      });
-
-      setSaveStatus("saved");
     }
   };
 
   const handleSaveInspector = async () => {
-    if (!selectedSection) return;
     setSavingInspector(true);
     setSaveStatus("saving");
 
-    if (activePage === "careers") {
-      await updateSectionContentAction({
-        id: selectedSection.id,
-        title: selectedSection.title || undefined,
-        content: selectedSection.content || {},
-      });
-      await fetchStudioData();
-    } else {
-      if (currentJob.id && !currentJob.id.startsWith("sample-")) {
-        await updateJobAction(currentJob.id, {
-          title: currentJob.title,
-          departmentName: currentJob.departmentName || "Engineering",
-          employmentType: currentJob.employmentType || "FULL_TIME",
-          workMode: currentJob.workMode || "HYBRID",
-          locationCity: currentJob.locationCity || "Remote",
-          locationCountry: currentJob.locationCountry || "Global",
-          salaryMin: currentJob.salaryMin,
-          salaryMax: currentJob.salaryMax,
-          currency: currentJob.currency || "USD",
-          salaryVisible: currentJob.salaryVisible,
-          summary: currentJob.summary,
-          responsibilities: Array.isArray(currentJob.responsibilities) ? currentJob.responsibilities : [],
-          requirements: Array.isArray(currentJob.requirements) ? currentJob.requirements : [],
-          preferredSkills: Array.isArray(currentJob.preferredSkills) ? currentJob.preferredSkills : [],
-          benefits: Array.isArray(currentJob.benefits) ? currentJob.benefits : [],
-          status: currentJob.status || "ACTIVE",
-          expiryDate: currentJob.expiryDate || null,
-        });
-      }
-    }
+    try {
+      if (activePage === "careers") {
+        const res = await saveAllSectionsAction(
+          sections.map((s) => ({
+            id: s.id,
+            title: s.title,
+            content: s.content,
+            layoutVariant: s.layoutVariant,
+            enabled: s.enabled,
+            orderIndex: s.orderIndex,
+          }))
+        );
 
-    setSavingInspector(false);
-    setSaveStatus("saved");
+        if (res.success) {
+          setSaveStatus("saved");
+          showToast("All changes saved successfully!");
+        } else {
+          setSaveStatus("unsaved");
+          showToast(res.error || "Failed to save changes", "error");
+        }
+      } else {
+        if (currentJob.id && !currentJob.id.startsWith("sample-")) {
+          const res = await updateJobAction(currentJob.id, {
+            title: currentJob.title,
+            departmentName: currentJob.departmentName || "Engineering",
+            employmentType: currentJob.employmentType || "FULL_TIME",
+            workMode: currentJob.workMode || "HYBRID",
+            locationCity: currentJob.locationCity || "Remote",
+            locationCountry: currentJob.locationCountry || "Global",
+            salaryMin: currentJob.salaryMin,
+            salaryMax: currentJob.salaryMax,
+            currency: currentJob.currency || "USD",
+            salaryVisible: currentJob.salaryVisible,
+            summary: currentJob.summary,
+            responsibilities: Array.isArray(currentJob.responsibilities) ? currentJob.responsibilities : [],
+            requirements: Array.isArray(currentJob.requirements) ? currentJob.requirements : [],
+            preferredSkills: Array.isArray(currentJob.preferredSkills) ? currentJob.preferredSkills : [],
+            benefits: Array.isArray(currentJob.benefits) ? currentJob.benefits : [],
+            status: currentJob.status || "ACTIVE",
+            expiryDate: currentJob.expiryDate || null,
+          });
+
+          if (res.success) {
+            setSaveStatus("saved");
+            showToast("Job details saved successfully!");
+          } else {
+            setSaveStatus("unsaved");
+            showToast(res.error || "Failed to save job details", "error");
+          }
+        }
+      }
+    } catch (err: any) {
+      setSaveStatus("unsaved");
+      showToast("An error occurred while saving", "error");
+    } finally {
+      setSavingInspector(false);
+    }
   };
 
   const handleDeleteSection = async (id: string) => {
     if (confirm("Delete section from careers page canvas?")) {
       setSaveStatus("saving");
-      await deleteSectionAction(id);
-      setSaveStatus("saved");
-      fetchStudioData();
+      const updated = sections.filter((s) => s.id !== id);
+      setSections(updated);
+      pushHistory(updated);
+      if (selectedSectionId === id) {
+        setSelectedSectionId(updated[0]?.id || null);
+      }
+      const res = await deleteSectionAction(id);
+      if (res.success) {
+        setSaveStatus("saved");
+        showToast("Section deleted");
+      } else {
+        setSaveStatus("unsaved");
+        showToast(res.error || "Failed to delete section", "error");
+      }
     }
   };
 
@@ -810,10 +840,13 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
   const handleDuplicateSection = async (id: string) => {
     setSaveStatus("saving");
     const res = await duplicateSectionAction(id);
-    if (res.success) {
+    if (res.success && res.section) {
+      const updated = [...sections, res.section];
+      setSections(updated);
+      pushHistory(updated);
+      setSelectedSectionId(res.section.id);
       setSaveStatus("saved");
       showToast("Section duplicated successfully");
-      fetchStudioData();
     } else {
       setSaveStatus("unsaved");
       showToast("Failed to duplicate section", "error");
@@ -1020,7 +1053,7 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
               <DesignPanel
                 company={company}
                 onCompanyUpdated={(updated) => setCompany(updated)}
-                onUpdate={fetchStudioData}
+                onUpdate={() => showToast("Theme branding updated!")}
               />
             )}
             {activeNavTab === "share" && company && <SharePanel companySlug={company.slug} />}
@@ -1215,7 +1248,19 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
                           </button>
                         </div>
                         <div>
-                          <label className="block text-xs font-extrabold text-slate-800 mb-1.5">Section Title</label>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-extrabold text-slate-800">Section Title</label>
+                            <AIPolishButton
+                              currentText={selectedSection.title || ""}
+                              type="heading"
+                              companyName={company?.name}
+                              onApplyEnhancedText={(enhanced) => {
+                                const updated = sections.map((s) => (s.id === selectedSection.id ? { ...s, title: enhanced } : s));
+                                setSections(updated);
+                                pushHistory(updated);
+                              }}
+                            />
+                          </div>
                           <input
                             type="text"
                             value={selectedSection.title || ""}

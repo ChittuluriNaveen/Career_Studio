@@ -32,14 +32,28 @@ export async function getPublicCareersData(companySlug: string, isPreviewMode: b
     });
   }
 
-  // Fetch sections (in candidate live view, fetch all enabled sections for company tenant)
-  const sections = await db.pageSection.findMany({
+  // Fetch draft sections from database
+  let sections = await db.pageSection.findMany({
     where: {
       companyId: company.id,
       ...(isPreviewMode ? {} : { enabled: true }),
     },
     orderBy: { orderIndex: "asc" },
   });
+
+  let activeCompany = company;
+
+  // In public candidate live view (non-preview mode), prefer publishedConfig snapshot if available
+  if (!isPreviewMode && careersPage?.publishedConfig && typeof careersPage.publishedConfig === "object") {
+    const pub = careersPage.publishedConfig as any;
+    if (pub.company && pub.sections && Array.isArray(pub.sections)) {
+      activeCompany = {
+        ...company,
+        ...pub.company,
+      };
+      sections = pub.sections.filter((s: any) => s.enabled !== false);
+    }
+  }
 
   const now = new Date();
 
@@ -92,7 +106,7 @@ export async function getPublicCareersData(companySlug: string, isPreviewMode: b
   const locations = dbLocations.length > 0 ? dbLocations : extractedLocs;
 
   return {
-    company,
+    company: activeCompany,
     sections,
     departments,
     locations,
@@ -221,10 +235,21 @@ export async function getPublicJobsFeedAction(
     where: { companyId: company.id },
   });
 
+  let activeCompany = company;
+  if (!isPreviewMode && careersPage?.publishedConfig && typeof careersPage.publishedConfig === "object") {
+    const pub = careersPage.publishedConfig as any;
+    if (pub.company) {
+      activeCompany = {
+        ...company,
+        ...pub.company,
+      };
+    }
+  }
+
   const jobsExperienceConfig = (careersPage?.jobsExperienceConfig as any) || {};
 
   return {
-    company,
+    company: activeCompany,
     jobs: filteredJobs,
     totalCount: allActiveJobs.length,
     filteredCount: filteredJobs.length,

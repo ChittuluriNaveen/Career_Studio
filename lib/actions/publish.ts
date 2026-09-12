@@ -14,7 +14,47 @@ export async function publishCareersPageAction() {
   const companySlug = session.user.companySlug;
 
   try {
-    // 1. Transactionally promote all draft page sections to published
+    const [company, sections] = await Promise.all([
+      db.company.findUnique({ where: { id: companyId } }),
+      db.pageSection.findMany({
+        where: { companyId },
+        orderBy: { orderIndex: "asc" },
+      }),
+    ]);
+
+    if (!company) {
+      return { success: false, error: "Company not found" };
+    }
+
+    const publishedConfig = {
+      company: {
+        id: company.id,
+        name: company.name,
+        slug: company.slug,
+        primaryColor: company.primaryColor,
+        secondaryColor: company.secondaryColor,
+        fontFamily: company.fontFamily,
+        logoUrl: company.logoUrl,
+        bannerUrl: company.bannerUrl,
+        tagline: company.tagline,
+        aboutText: company.aboutText,
+        cornerRadius: company.cornerRadius,
+        sectionSpacing: company.sectionSpacing,
+      },
+      sections: sections.map((s) => ({
+        id: s.id,
+        type: s.type,
+        title: s.title,
+        content: s.content,
+        layoutVariant: s.layoutVariant,
+        orderIndex: s.orderIndex,
+        enabled: s.enabled,
+        isPublished: true,
+        isDraft: false,
+      })),
+    };
+
+    // 1. Transactionally promote all draft page sections to published and update publishedConfig snapshot
     await db.$transaction([
       db.pageSection.updateMany({
         where: { companyId },
@@ -28,11 +68,13 @@ export async function publishCareersPageAction() {
         update: {
           isPublished: true,
           publishedAt: new Date(),
+          publishedConfig,
         },
         create: {
           companyId,
           isPublished: true,
           publishedAt: new Date(),
+          publishedConfig,
         },
       }),
     ]);
@@ -40,7 +82,6 @@ export async function publishCareersPageAction() {
     // 2. Purge Next.js static cache for candidate & recruiter views
     if (companySlug) {
       revalidatePath(`/${companySlug}/careers`);
-      revalidatePath(`/company/${companySlug}/design`);
       revalidatePath(`/company/${companySlug}/preview`);
     }
     revalidatePath("/dashboard");

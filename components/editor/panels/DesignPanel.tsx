@@ -107,11 +107,10 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
                 key={t.id}
                 type="button"
                 onClick={() => handleSelectTheme(t.id)}
-                className={`p-3 rounded-2xl border text-left space-y-2 transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-indigo-50/90 border-indigo-600 ring-2 ring-indigo-600/30 shadow-sm"
-                    : "bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
-                }`}
+                className={`p-3 rounded-2xl border text-left space-y-2 transition-all cursor-pointer ${isSelected
+                  ? "bg-indigo-50/90 border-indigo-600 ring-2 ring-indigo-600/30 shadow-sm"
+                  : "bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -123,9 +122,8 @@ export default function DesignPanel({ company, onCompanyUpdated, onUpdate }: Des
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                        t.mode === "dark" ? "bg-slate-900 text-teal-300" : "bg-white text-slate-700 border"
-                      }`}
+                      className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${t.mode === "dark" ? "bg-slate-900 text-teal-300" : "bg-white text-slate-700 border"
+                        }`}
                     >
                       {t.mode}
                     </span>

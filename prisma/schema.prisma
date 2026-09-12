@@ -114,6 +114,7 @@ model CareersPage {
   metaTitle            String?
   metaDescription      String?
   jobsExperienceConfig Json?         @default("{}")
+  publishedConfig      Json?         @default("{}")
   sections             PageSection[]
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt

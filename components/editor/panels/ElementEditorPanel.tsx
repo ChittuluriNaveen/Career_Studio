@@ -21,6 +21,7 @@ import ElementStylePanel from "./ElementStylePanel";
 import { ElementStyles } from "@/lib/templates/registry";
 import MediaPickerModal from "@/components/editor/MediaPickerModal";
 import CompanyVariableChips from "@/components/editor/CompanyVariableChips";
+import AIPolishButton from "@/components/editor/AIPolishButton";
 
 export const TECH_STACK_PRESETS = [
   { name: "React 19", icon: "⚛️", category: "Frontend & SSR", description: "Server components, reactive hooks, and component architecture." },
@@ -209,7 +210,15 @@ export default function ElementEditorPanel({
           />
 
           <div>
-            <label className="block font-semibold text-slate-600 mb-1">Heading Text</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-semibold text-slate-600">Heading Text</label>
+              <AIPolishButton
+                currentText={element.content.text || element.content.title || element.content.heading || ""}
+                type="heading"
+                companyName={company?.name}
+                onApplyEnhancedText={(enhanced) => updateContentField("text", enhanced)}
+              />
+            </div>
             <input
               type="text"
               value={element.content.text || element.content.title || element.content.heading || ""}
@@ -243,7 +252,15 @@ export default function ElementEditorPanel({
           />
 
           <div>
-            <label className="block font-semibold text-slate-600 mb-1">Text Content</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-semibold text-slate-600">Text Content</label>
+              <AIPolishButton
+                currentText={element.content.text || element.content.subtitle || element.content.description || ""}
+                type="description"
+                companyName={company?.name}
+                onApplyEnhancedText={(enhanced) => updateContentField("text", enhanced)}
+              />
+            </div>
             <textarea
               rows={4}
               value={element.content.text || element.content.subtitle || element.content.description || ""}
@@ -366,7 +383,24 @@ export default function ElementEditorPanel({
           />
 
           <div>
-            <label className="block font-semibold text-slate-600 mb-1">Button Label</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-semibold text-slate-600">Button Label</label>
+              <AIPolishButton
+                currentText={element.content.label || element.content.text || element.content.ctaText || element.content.buttonText || ""}
+                type="button"
+                companyName={company?.name}
+                onApplyEnhancedText={(enhanced) => {
+                  onUpdateElement({
+                    ...element,
+                    content: {
+                      ...element.content,
+                      label: enhanced,
+                      text: enhanced,
+                    },
+                  });
+                }}
+              />
+            </div>
             <input
               type="text"
               value={element.content.label || element.content.text || element.content.ctaText || element.content.buttonText || ""}

@@ -14,13 +14,54 @@ import {
   type ToggleSectionVisibilityInput,
 } from "@/lib/validators/section";
 
-function revalidateAll(slug?: string) {
+function revalidatePublicPages(slug?: string) {
   if (slug) {
-    revalidatePath(`/company/${slug}/design`);
     revalidatePath(`/company/${slug}/preview`);
-    revalidatePath(`/${slug}/careers`);
   }
   revalidatePath("/dashboard");
+}
+
+export async function saveAllSectionsAction(
+  sectionsInput: Array<{
+    id: string;
+    title?: string;
+    content?: any;
+    layoutVariant?: string;
+    enabled?: boolean;
+    orderIndex?: number;
+  }>
+) {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    return { success: false, error: "Unauthorized: Recruiter session required" };
+  }
+
+  const companyId = session.user.companyId;
+
+  try {
+    await db.$transaction(
+      sectionsInput.map((sec) =>
+        db.pageSection.updateMany({
+          where: {
+            id: sec.id,
+            companyId,
+          },
+          data: {
+            ...(sec.title !== undefined ? { title: sec.title } : {}),
+            ...(sec.content !== undefined ? { content: sec.content } : {}),
+            ...(sec.layoutVariant ? { layoutVariant: sec.layoutVariant } : {}),
+            ...(typeof sec.enabled === "boolean" ? { enabled: sec.enabled } : {}),
+            ...(typeof sec.orderIndex === "number" ? { orderIndex: sec.orderIndex } : {}),
+            isDraft: true,
+          },
+        })
+      )
+    );
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to save sections" };
+  }
 }
 
 export async function getSectionsAction() {
@@ -82,8 +123,6 @@ export async function addSectionAction(input: CreateSectionInput) {
       },
     });
 
-    revalidateAll(session.user.companySlug);
-
     return { success: true, section };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to add section" };
@@ -120,8 +159,6 @@ export async function updateSectionOrderAction(input: UpdateSectionOrderInput) {
         })
       )
     );
-
-    revalidateAll(session.user.companySlug);
 
     return { success: true };
   } catch (error: any) {
@@ -167,8 +204,6 @@ export async function updateSectionContentAction(input: UpdateSectionContentInpu
       },
     });
 
-    revalidateAll(session.user.companySlug);
-
     return { success: true, count: 1, section: updated };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update section content" };
@@ -209,8 +244,6 @@ export async function toggleSectionVisibilityAction(input: ToggleSectionVisibili
         isDraft: false,
       },
     });
-
-    revalidateAll(session.user.companySlug);
 
     return { success: true, section: updated };
   } catch (error: any) {
@@ -254,8 +287,6 @@ export async function duplicateSectionAction(id: string) {
       },
     });
 
-    revalidateAll(session.user.companySlug);
-
     return { success: true, section: duplicate };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to duplicate section" };
@@ -277,8 +308,6 @@ export async function deleteSectionAction(id: string) {
         companyId, // Strict tenant boundary guard
       },
     });
-
-    revalidateAll(session.user.companySlug);
 
     return { success: true, count: deleted.count };
   } catch (error: any) {
@@ -308,7 +337,7 @@ export async function publishCareersPageAction() {
       update: { isPublished: true, publishedAt: new Date() },
     });
 
-    revalidateAll(session.user.companySlug);
+    revalidatePublicPages(session.user.companySlug);
 
     return { success: true };
   } catch (error: any) {
@@ -332,7 +361,6 @@ export async function updateJobsExperienceConfigAction(config: any) {
     });
 
     if (session.user.companySlug) {
-      revalidatePath(`/company/${session.user.companySlug}/design`);
       revalidatePath(`/company/${session.user.companySlug}/preview`);
       revalidatePath(`/${session.user.companySlug}/careers/jobs`);
     }

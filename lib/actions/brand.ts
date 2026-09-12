@@ -163,9 +163,7 @@ export async function updateCompanyDetailsAction(input: CompanyDetailsInput) {
     }
 
     revalidatePath(`/company/${slug}/details`);
-    revalidatePath(`/company/${slug}/design`);
     revalidatePath(`/company/${slug}/preview`);
-    revalidatePath(`/${slug}/careers`);
     revalidatePath("/dashboard");
 
     return { success: true, company: updatedCompany };

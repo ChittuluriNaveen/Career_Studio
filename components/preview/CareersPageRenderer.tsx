@@ -400,7 +400,7 @@ export default function CareersPageRenderer({
             </div>
           </div>
         ) : (
-          activeSections.map((section) => {
+          activeSections.map((section, sectionIdx) => {
             const isSelected = selectedSectionId === section.id;
             const isHovered = hoveredSectionId === section.id;
             const isEnabled = section.enabled !== false;
@@ -436,13 +436,14 @@ export default function CareersPageRenderer({
               const { containerStyle, overlayStyle, contentStyle } = resolveSectionContainerStyles(
                 cardStyles,
                 effectiveDeviceMode,
-                { ...theme, bannerUrl: company.bannerUrl, logoUrl: company.logoUrl }
+                { ...theme, bannerUrl: company.bannerUrl, logoUrl: company.logoUrl },
+                sectionIdx
               );
 
               return (
                 <div className="transition-all w-full relative overflow-hidden group" style={containerStyle}>
                   {overlayStyle && <div style={overlayStyle} />}
-                  <div style={contentStyle}>
+                  <div style={contentStyle} className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
                     <TemplateRenderer
                       templateId={templateId}
                       elements={elements}
@@ -466,9 +467,7 @@ export default function CareersPageRenderer({
               );
             };
 
-            const sectionWrapperClass = isHeroSection
-              ? "w-full"
-              : "max-w-7xl mx-auto px-4 sm:px-6";
+            const sectionWrapperClass = "w-full";
 
             // Candidate Public Mode: Clean section rendering with smooth lazy reveal
             if (!isPreviewMode) {
