@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhiteCarrot - Complete Architecture, Routing & Code Execution Guide</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #0f172a;
+            --accent: #06b6d4;
+            --bg-dark: #090d16;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --code-bg: #030712;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border-radius: 16px;
+            border: 1px solid #312e81;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .card h3 {
+            color: #60a5fa;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-blue { background: #1e3a8a; color: #93c5fd; }
+        .badge-green { background: #064e3b; color: #6ee7b7; }
+        .badge-amber { background: #78350f; color: #fde68a; }
+        .badge-purple { background: #4c1d95; color: #c4b5fd; }
+
+        section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        section h2 {
+            font-size: 1.8rem;
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tree-list {
+            list-style: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        .tree-list li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .folder { color: #f59e0b; font-weight: bold; }
+        .file { color: #38bdf8; }
+        .desc { color: var(--text-muted); font-family: sans-serif; font-size: 0.88rem; margin-left: 0.5rem; }
+
+        .flow-step {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .flow-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 45px;
+            bottom: -20px;
+            width: 2px;
+            background-color: #374151;
+        }
+
+        .step-num {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+
+        .step-content {
+            background-color: #1a2234;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            padding: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .step-content h4 {
+            font-size: 1.1rem;
+            color: #f3f4f6;
+            margin-bottom: 0.5rem;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            color: #f472b6;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #1f2937;
+            color: #e5e7eb;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            margin-top: 0.75rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: #1a2234;
+            color: #93c5fd;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #172033;
+        }
+
+        .diagram-box {
+            background-color: #0d1322;
+            border: 1px dashed #3b82f6;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WhiteCarrot Architecture & Routing Blueprint</h1>
+            <p>A complete deep-dive into the Next.js 15 App Router architecture, folder responsibility, code transitions, and feature execution lifecycles.</p>
+        </header>
+
+        <!-- Executive Summary Cards -->
+        <div class="grid">
+            <div class="card">
+                <h3>🛠 Core Tech Stack</h3>
+                <p><strong>Framework:</strong> Next.js 15 (App Router)</p>
+                <p><strong>Database:</strong> PostgreSQL + Prisma ORM</p>
+                <p><strong>Authentication:</strong> NextAuth.js (Auth.js)</p>
+                <p><strong>Styling:</strong> Vanilla CSS + Tailwind + Shadcn UI</p>
+                <p><strong>Validation:</strong> Zod Schemas</p>
+            </div>
+            <div class="card">
+                <h3>🚦 Routing Paradigms</h3>
+                <p><strong>Route Groups:</strong> <code>(auth)</code>, <code>(dashboard)</code>, <code>(public)</code></p>
+                <p><strong>Dynamic Routes:</strong> <code>/company/[companySlug]/...</code></p>
+                <p><strong>Protection:</strong> Edge Middleware <code>middleware.ts</code></p>
+                <p><strong>Data Mutation:</strong> Server Actions in <code>lib/actions/</code></p>
+            </div>
+            <div class="card">
+                <h3>💡 Architectural Benefits</h3>
+                <p><strong>Separation of Concerns:</strong> Server logic in <code>lib/</code>, UI in <code>components/</code>, routes in <code>app/</code>.</p>
+                <p><strong>Security:</strong> DB queries execution strictly on Node.js Server runtime.</p>
+                <p><strong>Performance:</strong> Instant client updates via Next.js cache revalidation.</p>
+            </div>
+        </div>
+
+        <!-- Section 1: Detailed Directory & File Map -->
+        <section>
+            <h2>📁 Complete Directory & File Guide</h2>
+            <p>Every directory in this project has a specific structural responsibility:</p>
+            <br>
+            <ul class="tree-list">
+                <li><span class="folder">app/</span> <span class="desc">Next.js App Router root containing pages, layouts, and API routes</span>
+                    <ul>
+                        <li><span class="folder">(auth)/</span> <span class="badge badge-amber">Route Group</span> <span class="desc">Authentication pages (URLs do NOT include "(auth)")</span>
+                            <ul>
+                                <li><span class="file">login/page.tsx</span> <span class="desc">Recruiter sign-in interface</span></li>
+                                <li><span class="file">register/page.tsx</span> <span class="desc">Account creation interface</span></li>
+                            </ul>
+                        </li>
+                        <li><span class="folder">(dashboard)/</span> <span class="badge badge-purple">Route Group</span> <span class="desc">Protected Recruiter Admin Experience</span>
+                            <ul>
+                                <li><span class="file">layout.tsx</span> <span class="desc">Dashboard sidebar & header navigation layout</span></li>
+                                <li><span class="file">dashboard/page.tsx</span> <span class="desc">Overview of companies & metrics</span></li>
+                                <li><span class="folder">company/[companySlug]/</span> <span class="desc">Dynamic route for specific company administration</span>
+                                    <ul>
+                                        <li><span class="file">design/page.tsx</span> <span class="desc">Visual No-Code Career Page Builder</span></li>
+                                        <li><span class="file">details/page.tsx</span> <span class="desc">Company branding & profile editor</span></li>
+                                        <li><span class="file">jobs/page.tsx</span> <span class="desc">Job postings list & applicant tracking</span></li>
+                                        <li><span class="file">preview/page.tsx</span> <span class="desc">Recruiter draft preview mode</span></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><span class="folder">(public)/</span> <span class="badge badge-green">Route Group</span> <span class="desc">Public candidate career portal</span>
+                            <ul>
+                                <li><span class="folder">[companySlug]/careers/</span>
+                                    <ul>
+                                        <li><span class="file">page.tsx</span> <span class="desc">Public candidate career page site</span></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><span class="folder">api/</span> <span class="desc">REST endpoints</span>
+                            <ul>
+                                <li><span class="file">auth/[...nextauth]/route.ts</span> <span class="desc">NextAuth session handler</span></li>
+                                <li><span class="file">upload/route.ts</span> <span class="desc">File upload handler (logos, banners, resumes)</span></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <br>
+                <li><span class="folder">components/</span> <span class="desc">React Client & Server UI Components</span>
+                    <ul>
+                        <li><span class="folder">candidate/</span> <span class="desc">Job listings cards, search filters, application modal</span></li>
+                        <li><span class="folder">editor/</span> <span class="desc">Drag-and-drop section panels, style controls, theme pickers</span></li>
+                        <li><span class="folder">navigation/</span> <span class="desc">Header, Recruiter Navbar, Footer components</span></li>
+                        <li><span class="folder">preview/</span> <span class="desc">Section renderers (Hero, Culture Video, Open Roles, Perks)</span></li>
+                        <li><span class="folder">ui/</span> <span class="desc">Atomic UI components (Button, Dialog, Input, Select, Switch)</span></li>
+                    </ul>
+                </li>
+                <br>
+                <li><span class="folder">lib/</span> <span class="desc">Core Logic, Infrastructure & Utilities</span>
+                    <ul>
+                        <li><span class="folder">actions/</span> <span class="desc">Next.js Server Actions (Database CRUD operations)</span>
+                            <ul>
+                                <li><span class="file">careers-page.ts</span> <span class="desc">Draft saving, section reordering, publishing logic</span></li>
+                                <li><span class="file">company.ts</span> <span class="desc">Company profile creation & updates</span></li>
+                                <li><span class="file">jobs.ts</span> <span class="desc">Job creation, editing, status changes</span></li>
+                                <li><span class="file">applications.ts</span> <span class="desc">Candidate application submissions</span></li>
+                                <li><span class="file">public.ts</span> <span class="desc">Public data fetching for candidate career site</span></li>
+                            </ul>
+                        </li>
+                        <li><span class="file">db.ts</span> <span class="desc">Prisma Client singleton instance connection</span></li>
+                        <li><span class="file">auth.ts</span> <span class="desc">NextAuth options, password hash verification, session callbacks</span></li>
+                        <li><span class="folder">validators/</span> <span class="desc">Zod schemas for form & payload verification</span></li>
+                    </ul>
+                </li>
+                <br>
+                <li><span class="file">middleware.ts</span> <span class="desc">Edge middleware intercepter for route authentication checks</span></li>
+            </ul>
+        </section>
+
+        <!-- Section 2: Routing Mechanics & Interception Lifecycle -->
+        <section>
+            <h2>🚦 Next.js Routing Mechanics & Protection</h2>
+            <p>Here is exact flow when an HTTP request enters the application:</p>
+
+            <div class="diagram-box">
+                User Requests URL → Edge Middleware (middleware.ts) → Route Group Matching → Layout Wrap → Page Render
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Requested Path</th>
+                        <th>Matched File</th>
+                        <th>Middleware Action</th>
+                        <th>Render Output</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/login</code></td>
+                        <td><code>app/(auth)/login/page.tsx</code></td>
+                        <td>Passes through</td>
+                        <td>Login Form</td>
+                    </tr>
+                    <tr>
+                        <td><code>/dashboard</code></td>
+                        <td><code>app/(dashboard)/dashboard/page.tsx</code></td>
+                        <td>Checks <code>authjs.session-token</code> cookie. If missing → <strong>Redirects to /login</strong></td>
+                        <td>Recruiter Dashboard</td>
+                    </tr>
+                    <tr>
+                        <td><code>/acme/careers</code></td>
+                        <td><code>app/(public)/[companySlug]/careers/page.tsx</code></td>
+                        <td>Passes through (Public)</td>
+                        <td>Published Careers Page for "acme"</td>
+                    </tr>
+                    <tr>
+                        <td><code>/company/acme/design</code></td>
+                        <td><code>app/(dashboard)/company/[companySlug]/design/page.tsx</code></td>
+                        <td>Protected → Requires Auth</td>
+                        <td>No-Code Studio Editor</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Section 3: Feature Code Transitions (Trace by Trace) -->
+        <section>
+            <h2>🔁 Step-by-Step Code Transitions for Core Features</h2>
+
+            <!-- Feature 1 -->
+            <h3 style="color: #60a5fa; margin-bottom: 1rem;">1. Recruiter Authentication Flow</h3>
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>User Fills Credentials Form</h4>
+                    <p>File: <code>app/(auth)/login/page.tsx</code></p>
+                    <p>User enters email & password and submits form. Clicking "Sign In" invokes <code>signIn('credentials', { email, password })</code> from NextAuth.</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Authentication Verification</h4>
+                    <p>File: <code>lib/auth.ts</code> via <code>app/api/auth/[...nextauth]/route.ts</code></p>
+                    <p>NextAuth calls the <code>authorize()</code> callback inside <code>lib/auth.ts</code>. It uses Prisma (<code>lib/db.ts</code>) to query the <code>User</code> record and verifies password hash using bcrypt.</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Session Cookie Creation & Redirect</h4>
+                    <p>File: <code>middleware.ts</code> & NextAuth Engine</p>
+                    <p>An encrypted JWT session cookie is attached to the browser response. Next.js router navigates to <code>/dashboard</code>.</p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <h3 style="color: #60a5fa; margin-top: 2rem; margin-bottom: 1rem;">2. Career Page Design Studio (No-Code Builder Flow)</h3>
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Studio Page Initialization</h4>
+                    <p>File: <code>app/(dashboard)/company/[companySlug]/design/page.tsx</code></p>
+                    <p>A Server Component fetches initial draft sections and company preferences using <code>getCareersPageDraft(companySlug)</code> from <code>lib/actions/careers-page.ts</code>.</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Interactive Drag & Style Control</h4>
+                    <p>Files: <code>CareerStudioClient.tsx</code> & <code>components/editor/panels/SectionStylePanel.tsx</code></p>
+                    <p>Recruiter re-orders sections or edits colors. React state updates locally for instant 60fps responsiveness.</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Live Canvas Rendering</h4>
+                    <p>File: <code>components/preview/CareersPageRenderer.tsx</code></p>
+                    <p>The right canvas dynamically loops through sections array and renders corresponding section components (e.g., <code>HeroSection</code>, <code>CultureVideoSection</code>, <code>OpenRolesSection</code>).</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                    <h4>Saving & Publishing to Database</h4>
+                    <p>File: <code>lib/actions/careers-page.ts</code></p>
+                    <p>Clicking "Publish" executes Server Action <code>publishCareersPage()</code>. It marks sections as <code>isPublished: true</code> in PostgreSQL and calls <code>revalidatePath('/[companySlug]/careers')</code> so candidate visitors immediately see live updates.</p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <h3 style="color: #60a5fa; margin-top: 2rem; margin-bottom: 1rem;">3. Candidate Job Search & Application Flow</h3>
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Candidate Views Public Careers Site</h4>
+                    <p>File: <code>app/(public)/[companySlug]/careers/page.tsx</code></p>
+                    <p>Calls <code>getPublicCareersPage(companySlug)</code> in <code>lib/actions/public.ts</code>. Fetches published page sections, active jobs, and company branding.</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Opening Application Form</h4>
+                    <p>Files: <code>components/candidate/JobCard.tsx</code> & <code>ApplicationModal.tsx</code></p>
+                    <p>Candidate filters jobs by department/work mode and clicks "Apply". Modal renders application input fields (Name, Email, Resume URL, Cover Letter).</p>
+                </div>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Submitting Application</h4>
+                    <p>File: <code>lib/actions/applications.ts</code></p>
+                    <p>Form submission triggers Server Action <code>submitApplication()</code>. Validates data with Zod, creates <code>Application</code> row in Prisma DB, and returns success confirmation.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Architectural Design Rationale -->
+        <section>
+            <h2>🧠 Architectural Rationale: Why `lib/`, `components/`, and `app/`?</h2>
+            
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));">
+                <div class="card">
+                    <h3 style="color: #38bdf8;">Why `lib/` directory?</h3>
+                    <p>Contains pure non-UI TypeScript logic. Keeping database queries (Prisma), server actions, authentication logic, and schemas inside <code>lib/</code> ensures:</p>
+                    <ul style="margin-left: 1.2rem; margin-top: 0.5rem; color: var(--text-muted);">
+                        <li>Strict separation between UI presentation and data persistence.</li>
+                        <li>Server Actions in <code>lib/actions/</code> can be safely called from any Client Component.</li>
+                        <li>Prevents accidental leaking of backend secrets to the browser.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #38bdf8;">Why `components/` directory?</h3>
+                    <p>Holds reusable React components divided by domain (<code>candidate</code>, <code>editor</code>, <code>preview</code>, <code>ui</code>):</p>
+                    <ul style="margin-left: 1.2rem; margin-top: 0.5rem; color: var(--text-muted);">
+                        <li>Modular component design reduces bundle size.</li>
+                        <li><code>components/ui/</code> contains low-level primitives (Buttons, Dialogs) isolated from business logic.</li>
+                        <li>Easier maintenance when updating specific feature UI without breaking page routes.</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #38bdf8;">Why Next.js App Router (`app/`)?</h3>
+                    <p>Leverages Next.js 15 route groups and nested layouts:</p>
+                    <ul style="margin-left: 1.2rem; margin-top: 0.5rem; color: var(--text-muted);">
+                        <li><code>(auth)</code>, <code>(dashboard)</code>, and <code>(public)</code> provide dedicated layouts without bloating URLs.</li>
+                        <li>Server Components by default allow instant streaming and fast SEO page loads.</li>
+                        <li>Edge middleware provides centralized route security.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

@@ -1,118 +1,181 @@
-# 🎙️ 4-Minute Demo Script: WhiteCarrot Career Studio & Candidate Portal
+# 🎙️ Master Interview & Demo Script: WhiteCarrot Career Studio
 
-> **Target Duration**: Exactly 4:00 Minutes (240 Seconds)  
-> **Key Strategy**: Highlight core assignment requirements while emphasizing high-impact features built **above and beyond expectations** (Relative Luminance Theme Engine, Preview Canvas Navigation Isolation, Real Draft/Published State, Google Jobs JSON-LD, Multi-Tenant Boundaries).
+This document contains the **complete word-for-word presentation script**, **feature explanations**, and **technical Q&A guide** for your interview presentation.
 
 ---
 
 ## ⏱️ Timeline & Presentation Flow
 
 ```
-[0:00 - 0:30]  │ 1. Hook & Product Architecture Split
-[0:30 - 1:45]  │ 2. Recruiter Studio & Engineering Innovations (Above & Beyond)
-[1:45 - 3:00]  │ 3. Candidate Experience, Filter Marketplace & Preview Isolation
-[3:00 - 3:45]  │ 4. Tech Stack, Data Isolation & SEO Engineering
-[3:45 - 4:00]  │ 5. Summary & Closing
+[0:00 - 0:30]  │ 1. Project Overview & Multi-Tenant Split Architecture
+[0:30 - 1:30]  │ 2. Studio Layout, Drag & Drop, Templates & Style Engine
+[1:30 - 2:30]  │ 3. Target Devices & Responsive Viewport Simulation Engine
+[2:30 - 3:15]  │ 4. Draft vs. Published State Isolation & Live Real-Time Canvas Preview
+[3:15 - 4:00]  │ 5. SEO Panel, Google Jobs JSON-LD & Published Candidate Marketplace
+[4:00 - 5:00]  │ 6. Technical Q&A Cheatsheet for Interviewer Questions
 ```
 
 ---
 
-## 📄 Word-for-Word Presentation Script
+## 📄 WORD-FOR-WORD DEMO SCRIPT
 
-### 📍 [0:00 - 0:30] Phase 1: Hook & Product Architecture Split
+### 📍 Phase 1: Overview & Multi-Tenant Architecture [0:00 - 0:30]
 
-**What to do on screen**: Start on the Recruiter Dashboard landing page or Login page (`recruiter@acme.com`).
+**On Screen**: Recruiter Studio landing page or login page (`recruiter@acme.com`).
 
 **Script**:
-> "Hi everyone! Today I’m excited to show you the **WhiteCarrot Career Experience Studio**.
+> "Hi everyone! Today I’m excited to present the **WhiteCarrot Career Experience Studio**.
 > 
-> When looking at how modern companies recruit, we realized that putting an entire job board onto a single homepage creates clutter and lowers candidate conversion. 
+> Modern companies need a way for talent teams to customize their employer brand without relying on engineers for every text or color change. 
 > 
-> So instead of a simple static page, we built a **two-tier candidate experience ecosystem**:
-> 1. A rich **Company Careers Story** (`/acme-corp/careers`) focused on employer branding, culture, video, and team testimonials.
-> 2. A separate, high-performance **Dedicated Candidate Marketplace** (`/acme-corp/careers/jobs`) with dynamic multi-filtering.
+> We built a **multi-tenant SaaS platform** divided into two distinct environments:
+> 1. **Recruiter Studio (`/company/acme-corp/design`)**: An authenticated, state-heavy editing suite where recruiters customize sections, templates, themes, and SEO.
+> 2. **Candidate Portal (`/acme-corp/careers`)**: A fast, server-rendered public careers story and job marketplace optimized for SEO and conversions.
 > 
-> Both of these experiences are controlled in real-time by recruiters through our visual Studio."
+> Every tenant's data is strictly isolated in PostgreSQL via `companyId` foreign key boundaries."
 
 ---
 
-### 📍 [0:30 - 1:45] Phase 2: Recruiter Studio & "Above & Beyond" Innovations
+### 📍 Phase 2: Drag & Drop, Templates & Style Engine [0:30 - 1:30]
 
-**What to do on screen**: 
-1. Log in as `recruiter@acme.com` and open the **Studio Editor** (`/company/acme-corp/design`).
-2. Drag and drop a section to reorder it.
-3. Open the **Theme Customizer**, change background colors between Dark (`#0f172a`), Light (`#f8fafc`), and presets like `cyber-dark` or `emerald-biotech`.
-4. Point out how text and card contrast change automatically.
-5. Click **Desktop / Tablet / Mobile** device viewport toggles.
+**On Screen**: Logged into Recruiter Studio (`/company/acme-corp/design`).
+1. Drag a section up and down in the left sidebar (`SectionList.tsx`).
+2. Open the **Templates Panel** (`TemplatePickerPanel.tsx`) and highlight section types.
+3. Open the **Theme Customizer** (`BrandThemeEditor.tsx`) and switch background colors between Dark (`#030712`), Light (`#f8fafc`), or custom hex values.
 
 **Script**:
-> "Here in the **Recruiter Studio**, we give talent teams complete creative freedom—without letting them break brand design standards.
->
-> **1. Visual Drag-and-Drop Canvas**: Powered by `@dnd-kit/sortable`, recruiters can instantly reorder sections like Hero Banners, Culture Videos, Stats, and Testimonials with keyboard and touch accessibility.
+> "Here in the Studio, recruiters have complete creative control:
 > 
-> **2. Relative Luminance Contrast Engine (★ ABOVE & BEYOND)**: 
-> Instead of hardcoding dark or light mode CSS, we engineered a custom color engine using the ITU-R relative luminance formula:
+> **1. Accessible Drag-and-Drop Reordering**: Powered by `@dnd-kit/sortable` in `SectionList.tsx`. Reordering sections like Hero Banners, Culture Videos, and Open Roles updates the React client state array instantly and syncs the new `orderIndex` to PostgreSQL via Server Actions.
+> 
+> **2. Pre-Built Template System**: In `lib/templates/registry.ts`, we define core section types like `HERO`, `ABOUT_US`, `CULTURE_VIDEO`, `PERKS_BENEFITS`, and `OPEN_ROLES`, combined with layout variants like `split-image` or `centered-bold`. Recruiters can insert pre-designed templates with one click.
+> 
+> **3. Relative Luminance Theme Engine (★ Key Innovation)**:
+> When recruiters select custom brand background colors, text contrast is **mathematically guaranteed**. In `lib/themes/registry.ts`, we compute ITU-R relative luminance:
 > $$Y = 0.2126R + 0.7152G + 0.0722B$$
 > 
-> Watch what happens when I switch between background hex colors or brand presets: whether the recruiter chooses deep slate dark or high-contrast white, our system dynamically computes font colors, border opacity, and card glassmorphism. Text readability is **mathematically guaranteed** across every single section and page!
-> 
-> **3. Live Interpolation & Responsive Viewports**: Recruiters can preview their layout across Desktop, Tablet, and Mobile frames in real-time while using live variables like `@company_name` and `@jobs_count`.
-> 
-> **4. Draft vs. Published State Isolation (★ ABOVE & BEYOND)**: Edits are saved in a draft state first. Recruiters can test radical design changes without disrupting live candidate traffic until they click 'Save & Publish'."
+> If $Y < 140$ (Dark mode), text automatically converts to high-contrast white (`#f8fafc`) with dark glassmorphism cards. If $Y \ge 140$ (Light mode), text switches to slate dark (`#0f172a`). Readability meets WCAG contrast standards automatically!"
 
 ---
 
-### 📍 [0:45 - 3:00] Phase 3: Candidate Marketplace & Studio Preview Isolation
+### 📍 Phase 3: Target Devices & Responsive Viewport Engine [1:30 - 2:30]
 
-**What to do on screen**:
-1. Click **"Explore Jobs"** inside the Studio Preview canvas to show page switching inside the iframe/canvas.
-2. Open the published candidate portal (`/acme-corp/careers`).
-3. Click "Explore Open Roles" to land on the **Job Marketplace** (`/acme-corp/careers/jobs`).
-4. Apply filters (Department: *Engineering*, Work Mode: *Remote*, Search query: *Senior*).
-5. Click a job card to view the Job Details page and open the candidate application form.
+**On Screen**: Click the **Desktop 🖥️**, **Tablet 📱**, and **Mobile 📲** viewport toggle buttons in the top preview header.
 
 **Script**:
-> "Now let's look at the **Candidate Portal**. 
->
-> When candidates click 'Explore Open Roles', they transition seamlessly to the **Dedicated Job Marketplace**.
+> "Recruiters can test how their page looks across different target devices in real time:
 > 
-> **1. Theme Consistency**: The exact brand palette, fonts, and dark/light luminance styling set by the recruiter in the studio carry over cleanly across the careers page, job feed, and job details.
+> **1. Target Device Simulation**: Toggling between Desktop, Tablet, and Mobile resizes the center preview container (`DeviceViewportFrame.tsx`) to match exact device screen widths (375px for mobile, 768px for tablet).
 > 
-> **2. Dynamic Multi-Dimensional Search**: Candidates can filter open roles simultaneously by Department, City/Country Location, Employment Type (Full-time/Contract), and Work Mode (Remote/Hybrid/Onsite)—with instant client-side search across job titles and descriptions.
-> 
-> **3. Preview Navigation Isolation (★ ABOVE & BEYOND)**: 
-> In standard editors, clicking links inside a preview takes you away from the editor page. We engineered preview isolation: when recruiters test navigation inside the studio canvas, our system intercepts route changes and renders internal sub-pages without losing the recruiter’s editor session or URL state.
-> 
-> **4. Application Flow**: Clicking any role opens a dedicated job page complete with requirements, salary ranges, benefits snapshot, and a direct application submission form that writes directly to PostgreSQL."
+> **2. Automated Responsive Styling Engine**: In `lib/templates/stylesResolver.ts`, our `getResponsiveStyles()` function handles mobile layout adaptation:
+> - **Proportional Font Scaling**: Headings $\ge 24\text{px}$ are automatically scaled down by $0.65\times$ for mobile screens so text never overflows.
+> - **Flex Layout Stacking**: Horizontal flex rows automatically convert to vertical columns (`flexDirection: "column"`).
+> - **Padding Optimization**: Container padding $>24\text{px}$ is automatically reduced for mobile viewports."
 
 ---
 
-### 📍 [3:00 - 3:45] Phase 4: Tech Stack, Security & Enterprise Architecture
+### 📍 Phase 4: Draft vs. Published State & Live Real-Time Studio Preview [2:30 - 3:15]
 
-**What to do on screen**: Briefly show `README.md` or high-level architecture diagram.
+**On Screen**: Edit a section heading or change background color in the studio. Show how the preview updates instantly. Show that the published live site URL remains unchanged until clicking "Save & Publish".
 
 **Script**:
-> "Under the hood, this platform is built for production reliability and speed:
+> "One of our key engineering highlights is **Draft vs. Published State Isolation**:
 > 
-> - **Framework**: Built on **Next.js 16 (App Router)** with **TypeScript** — verifying zero type errors with `npx tsc --noEmit`.
-> - **Database & Security**: **PostgreSQL** paired with **Prisma ORM**. All database queries enforce strict multi-tenant scoping via `companyId` foreign key boundaries to prevent data leakage.
-> - **Auth & Validation**: **Auth.js (v5)** with JWT session enrichment and **Zod** schema validation on server actions.
-> - **SEO & Google Jobs (★ ABOVE & BEYOND)**: Public job pages generate server-side `JobPosting` and `Organization` JSON-LD structured data for automatic Google Jobs indexing."
+> **How Live Preview Works Without Publishing**:
+> When a recruiter adds new items, changes fonts, or reorders sections in the Studio, changes update the client React state in memory (`sections[]`). The center canvas (`CareersPageRenderer.tsx`) renders this active draft state directly. Recruiters can test radical design changes in real time at 60 FPS **without affecting live candidate traffic**.
+> 
+> **Why Un-published Edits are Invisible to Candidates**:
+> All draft edits save to PostgreSQL with `isDraft = true` and `isPublished = false`. Public candidate routes (`/acme-corp/careers`) strictly query records where `isPublished = true`.
+> 
+> **The Publish Flow**:
+> When ready, the recruiter clicks **'Save & Publish'**. `publishPageAction()` in `lib/actions/publish.ts` atomically sets `isPublished = true` in PostgreSQL and calls Next.js `revalidatePath('/acme-corp/careers')` to purge server-side HTML cache, updating the live site instantly!"
 
 ---
 
-### 📍 [3:45 - 4:00] Phase 5: Closing Statement
+### 📍 Phase 5: SEO Panel, Google Jobs JSON-LD & Published Candidate Marketplace [3:15 - 4:00]
 
-**What to do on screen**: Return to the sleek live published careers page.
+**On Screen**:
+1. Open **SEO Panel** (`SEOPanel.tsx`) showing custom Meta Title, Description, and Social Share preview.
+2. Open the published live link `/acme-corp/careers/jobs` in a new tab.
+3. Show job filtering by Department, Work Mode, Location, and instant text search.
 
 **Script**:
-> "To summarize: we didn't just build a simple form editor. We built a full-stack, enterprise-ready **Career Experience Studio** with mathematical theme contrast, preview isolation, full multi-tenant data boundaries, and a dedicated candidate job marketplace.
+> "Finally, let me show you **SEO & Candidate Experience**:
 > 
-> Thank you! I’d love to take any questions."
+> **1. SEO & Social Share Customization**: In the **SEO Panel**, recruiters can set custom Meta Titles, Meta Descriptions, Keywords, and Social Share images (OpenGraph cards).
+> 
+> **2. Google Jobs JSON-LD Schema (★ Key Innovation)**: On public job detail pages, `StructuredData.tsx` generates standard schema.org `JobPosting` JSON-LD code. Search engines like Google Jobs automatically index the open roles, salary ranges, and work modes.
+> 
+> **3. Published Candidate Marketplace**: Candidates visit `/acme-corp/careers/jobs` for a high-performance marketplace featuring instant client-side search and multi-dimensional filters across Department, Work Mode (Remote/Hybrid/Onsite), and Location—allowing candidates to apply directly!"
 
 ---
 
-## 💡 Quick Tips for Delivery
-1. **Pacing**: Speak at a steady, confident pace. Don't rush; the timing is allocated naturally.
-2. **Key Buzzwords to Emphasize**: *"Mathematical contrast guarantee"*, *"Preview isolation"*, *"Multi-tenant boundaries"*, *"Draft vs Published state"*.
-3. **If Short on Time**: You can skip showing the mobile view toggle in Phase 2 and jump straight to the candidate marketplace.
+# 🧠 DEEP FEATURE EXPLANATIONS & CODE POINTERS
+
+Use this reference guide when explaining features in detail during your interview:
+
+### 1. Templates System
+* **Code location**: [lib/templates/registry.ts](file:///home/user/Videos/WhiteCarrot_assignment/lib/templates/registry.ts) & [components/editor/panels/TemplatePickerPanel.tsx](file:///home/user/Videos/WhiteCarrot_assignment/components/editor/panels/TemplatePickerPanel.tsx)
+* **How it works**: Pre-defines section types (`HERO`, `ABOUT_US`, `CULTURE_VIDEO`, `PERKS_BENEFITS`, `GALLERY`, `OPEN_ROLES`, `CTA`) paired with layout variants (`split-image`, `centered-bold`, `grid-cards`). Selecting a template populates the `PageSection.content` JSON schema with default elements and styling.
+
+### 2. Styles System
+* **Code location**: [lib/templates/stylesResolver.ts](file:///home/user/Videos/WhiteCarrot_assignment/lib/templates/stylesResolver.ts) & [components/editor/panels/SectionStylePanel.tsx](file:///home/user/Videos/WhiteCarrot_assignment/components/editor/panels/SectionStylePanel.tsx)
+* **How it works**: Converts layout, spacing, typography, border radius, shadow presets, and glassmorphism settings into inline React `style={...}` objects.
+
+### 3. Responsives & Target Device Simulation
+* **Code location**: [lib/templates/stylesResolver.ts](file:///home/user/Videos/WhiteCarrot_assignment/lib/templates/stylesResolver.ts#L75-L184) & `DeviceViewportFrame.tsx`
+* **How it works**: Resizes canvas wrapper (`375px` mobile, `768px` tablet, `100%` desktop). `getResponsiveStyles()` applies device overrides, auto-scales font sizes down by $0.65\times$ for mobile, and stacks flex rows into vertical columns.
+
+### 4. Drag & Drop Reordering
+* **Code location**: [components/editor/SectionList.tsx](file:///home/user/Videos/WhiteCarrot_assignment/components/editor/SectionList.tsx) & [lib/actions/sections.ts](file:///home/user/Videos/WhiteCarrot_assignment/lib/actions/sections.ts#L45-L80)
+* **How it works**: Uses `@dnd-kit/sortable` to reorder elements in React state via `arrayMove()`. The updated `orderIndex` is saved to PostgreSQL via Server Action `reorderSectionsAction()`.
+
+### 5. SEO Panel & Google Jobs JSON-LD
+* **Code location**: [components/editor/panels/SEOPanel.tsx](file:///home/user/Videos/WhiteCarrot_assignment/components/editor/panels/SEOPanel.tsx) & [components/candidate/StructuredData.tsx](file:///home/user/Videos/WhiteCarrot_assignment/components/candidate/StructuredData.tsx)
+* **How it works**: Configures meta tags and embeds `<script type="application/ld+json">` with `JobPosting` and `Organization` structured data for search engine bots.
+
+### 6. Link Generation & Public Routes
+* **Recruiter Studio**: `/company/[companySlug]/design`
+* **Candidate Story Page**: `/[companySlug]/careers`
+* **Candidate Job Marketplace**: `/[companySlug]/careers/jobs`
+* **Candidate Job Details**: `/[companySlug]/careers/jobs/[jobId]`
+* **Code location**: [components/editor/panels/SharePanel.tsx](file:///home/user/Videos/WhiteCarrot_assignment/components/editor/panels/SharePanel.tsx) provides instant link copy and QR code generation.
+
+### 7. Draft vs. Published Architecture & Live Real-Time Studio Preview
+* **Real-time Studio Preview**: Canvas renders the active in-memory React state `sections[]` directly at 60 FPS without needing to publish.
+* **Database Isolation**: Edits save as `isDraft = true`, `isPublished = false`. Public routes filter strictly by `where: { isPublished: true }`.
+* **Publish Action**: [lib/actions/publish.ts](file:///home/user/Videos/WhiteCarrot_assignment/lib/actions/publish.ts) sets `isPublished = true` in PostgreSQL and triggers `revalidatePath(...)` to refresh Next.js HTML server cache.
+
+---
+
+# ❓ TOP 10 INTERVIEWER QUESTIONS & EXACT ANSWERS
+
+1. **Q: How does the editor show unsaved draft changes without updating the live site?**
+   * **A**: *"The Recruiter Studio renders active client state `sections[]` in memory inside the center canvas frame. In PostgreSQL, edits update draft records (`isDraft = true`), while the public candidate routes strictly query `isPublished = true`."*
+
+2. **Q: What happens when the recruiter clicks 'Save & Publish'?**
+   * **A**: *"It triggers `publishPageAction()` in `lib/actions/publish.ts`. This updates database records to `isPublished = true` and invokes Next.js `revalidatePath('/[companySlug]/careers')` to flush server caches so candidates see the updated page immediately."*
+
+3. **Q: How do responsive styles adapt when switching to mobile mode?**
+   * **A**: *"Our `getResponsiveStyles()` engine in `stylesResolver.ts` applies mobile style overrides, automatically scales headings $\ge 24\text{px}$ down by $0.65\times$, converts horizontal flex rows into vertical columns, and reduces padding."*
+
+4. **Q: How do you guarantee WCAG typography contrast when recruiters choose custom background colors?**
+   * **A**: *"We compute ITU-R relative luminance $Y = 0.2126R + 0.7152G + 0.0722B$ in `lib/themes/registry.ts`. If $Y < 140$, the system automatically enforces high-contrast white text `#f8fafc`. If $Y \ge 140$, it applies dark slate text `#0f172a`."*
+
+5. **Q: How is drag-and-drop implemented?**
+   * **A**: *"Using `@dnd-kit/sortable` in `SectionList.tsx`. Dragging calls `arrayMove()` to update array order in React state instantly, followed by a Server Action `reorderSectionsAction()` updating PostgreSQL `orderIndex`."*
+
+6. **Q: How do public URLs work for different companies?**
+   * **A**: *"We use Next.js dynamic routing with `[companySlug]`. Each company's public story page is served at `/[companySlug]/careers` and job marketplace at `/[companySlug]/careers/jobs`."*
+
+7. **Q: How does Google Jobs index your job posts?**
+   * **A**: *"Public job pages render `StructuredData.tsx`, which injects schema.org `JobPosting` JSON-LD structured data directly into the HTML `<head>`."*
+
+8. **Q: How do dynamic variables like `@company_name` get replaced?**
+   * **A**: *"In `lib/templates/variables.ts`, a regex parsing engine replaces tokens like `@company_name` or `@jobs_count` with dynamic data at render time."*
+
+9. **Q: How do you handle multi-tenancy security?**
+   * **A**: *"All database models have an indexed `companyId` foreign key, and Server Actions verify `companyId` matching against authenticated JWT session claims."*
+
+10. **Q: What is the main tech stack?**
+    * **A**: *"Next.js 16 (App Router), TypeScript, PostgreSQL with Prisma ORM, Auth.js (v5), Tailwind CSS, and `@dnd-kit`."*

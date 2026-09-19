@@ -134,6 +134,7 @@ model PageSection {
   enabled       Boolean     @default(true)
   isDraft       Boolean     @default(true)
   isPublished   Boolean     @default(false)
+  version       Int         @default(1)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 

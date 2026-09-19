@@ -95,15 +95,24 @@ export default function DashboardHeader({
             <ChevronRight className="w-3.5 h-3.5 text-slate-400 hidden xs:inline" />
             <span className="font-medium text-slate-500 font-mono hidden xs:inline">Careers</span>
             {isPublished ? (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="hidden sm:inline">Published Live</span>
-                <span className="sm:hidden">Live</span>
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="hidden sm:inline">Published Live</span>
+                  <span className="sm:hidden">Live</span>
+                </span>
+                {saveStatus === "unsaved" && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-300 text-amber-900 font-extrabold text-[10px] uppercase tracking-wider flex items-center gap-1 animate-pulse" title="You have edited section content since last publish">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    <span className="hidden md:inline">Draft Changes</span>
+                    <span className="md:hidden">Draft</span>
+                  </span>
+                )}
+              </div>
             ) : (
               <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                Draft
+                Draft Mode
               </span>
             )}
           </div>

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Key System Design Questions & Architecture Master Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
+    
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .heading-font {
+      font-family: 'Outfit', 'Inter', sans-serif;
+    }
+    .diagram-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+    }
+    .diagram-box {
+      background: #0f172a;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid #1e293b;
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      padding: 1rem;
+    }
+    /* FIX MERMAID DIAGRAM TEXT VISIBILITY FOR MAXIMUM HIGH CONTRAST */
+    .mermaid text {
+      fill: #ffffff !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+    }
+    .mermaid .edgeLabel text, .mermaid .edgeLabel {
+      fill: #38bdf8 !important;
+      color: #38bdf8 !important;
+      background-color: #0f172a !important;
+      font-weight: 700 !important;
+      font-size: 12px !important;
+    }
+    .mermaid .node rect, .mermaid .node circle, .mermaid .node polygon {
+      stroke-width: 2px !important;
+    }
+    .badge-file {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #1e293b;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .badge-func {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #f1f5f9;
+      color: #0f766e;
+      border: 1px solid #cbd5e1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+    .code-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #090d16;
+      color: #38bdf8;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      font-size: 0.875rem;
+    }
+    .issue-box {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-left: 4px solid #e11d48;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    .solution-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #16a34a;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+  </style>
+</head>
+<body class="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
+
+  <!-- Main Header -->
+  <header class="mb-10 text-center bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold mb-4">
+      💡 System Design Interview Master Reference
+    </div>
+    <h1 class="heading-font text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
+      Key System Design Questions & Architecture Solutions
+    </h1>
+    <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+      In-depth technical answers addressing <strong>What it is</strong>, <strong>Why it is used</strong>, <strong>How it works</strong>, <strong>Addressing potential issues & edge cases</strong>, and <strong>High-contrast visual flowcharts</strong>.
+    </p>
+  </header>
+
+  <!-- Table of Contents Navigation -->
+  <nav class="mb-12 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+    <h2 class="heading-font text-xl font-bold text-slate-900 mb-4 text-center">📌 Key Design Questions Index</h2>
+    <div class="flex flex-wrap gap-2 justify-center">
+      <a href="#q1" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-800 text-sm font-semibold border border-slate-200 transition">Q1. Storing Company Data Separately</a>
+      <a href="#q2" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-800 text-sm font-semibold border border-slate-200 transition">Q2. Recruiter Page Customization</a>
+      <a href="#q3" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-800 text-sm font-semibold border border-slate-200 transition">Q3. Safe Edits & Publishing Flow</a>
+      <a href="#q4" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-800 text-sm font-semibold border border-slate-200 transition">Q4. Smooth Candidate Job Browsing</a>
+      <a href="#q5" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-800 text-sm font-semibold border border-slate-200 transition">Q5. Cross-Device Adaptation</a>
+      <a href="#q6" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-800 text-sm font-semibold border border-slate-200 transition">Q6. Scaling to Thousands of Companies</a>
+    </div>
+  </nav>
+
+  <div class="space-y-16">
+
+    <!-- ==================== QUESTION 1 ==================== -->
+    <section id="q1" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">System Design Question 1</span>
+          <h2 class="heading-font text-3xl font-extrabold text-slate-900 mt-1">How will you store data for each company separately?</h2>
+        </div>
+        <div class="badge-file">prisma/schema.prisma & lib/auth-guard.ts</div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">📌 WHAT IT IS:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            A <strong>Logical Multi-Tenant Architecture</strong> where data for all companies lives in a shared PostgreSQL database, but every single table row is isolated using an indexed <span class="badge-func">companyId</span> foreign key.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">💡 WHY IT IS USED:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Provisioning separate database instances for every signup is expensive and hard to maintain. Logical partitioning gives **enterprise-grade data isolation** at 1/100th of the operational cost!
+          </p>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="issue-box">
+          <h4 class="font-bold text-rose-900 text-sm mb-1">⚠️ Potential Risk / Challenge Addressed:</h4>
+          <p class="text-rose-800 text-sm leading-relaxed">
+            <strong>Cross-Tenant Data Leakage</strong>: If a developer forgets to add <span class="badge-func">where: { companyId }</span> to a query, Company A could accidentally see Company B's candidate resumes or draft section designs.
+          </p>
+        </div>
+        <div class="solution-box">
+          <h4 class="font-bold text-emerald-900 text-sm mb-1">🛡️ How Our System Guarantees Safety:</h4>
+          <p class="text-emerald-800 text-sm leading-relaxed">
+            Server Actions invoke <span class="badge-func">requireRecruiter()</span> guard in <span class="badge-func">lib/auth-guard.ts</span>. It extracts verified <span class="badge-func">companyId</span> from encrypted JWT session cookies, making it impossible to query data outside the user's company boundary.
+          </p>
+        </div>
+      </div>
+
+      <!-- Diagram -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-3">📊 Visual Multi-Tenant Isolation Architecture:</h3>
+      <div class="diagram-box mb-6">
+        <div class="mermaid">
+flowchart TD
+    subgraph Client_Requests["1. Recruiter API Requests"]
+        ReqA["Recruiter Acme Corp"] --> SessionA["Encrypted JWT (companyId: 'comp_acme')"]
+        ReqB["Recruiter TechCorp"] --> SessionB["Encrypted JWT (companyId: 'comp_tech')"]
+    end
+
+    subgraph Security_Guard["2. Server Security Guard (lib/auth-guard.ts)"]
+        SessionA --> GuardA["requireRecruiter() extracts companyId = 'comp_acme'"]
+        SessionB --> GuardB["requireRecruiter() extracts companyId = 'comp_tech'"]
+    end
+
+    subgraph Database_Layer["3. Shared PostgreSQL Database (Prisma ORM)"]
+        GuardA --> QueryA["Prisma Query: WHERE companyId = 'comp_acme'"]
+        GuardB --> QueryB["Prisma Query: WHERE companyId = 'comp_tech'"]
+        
+        QueryA --> TableAcme["Acme Corp PageSections, Jobs & Applications"]
+        QueryB --> TableTech["TechCorp PageSections, Jobs & Applications"]
+    end
+        </div>
+      </div>
+
+      <!-- Code Box -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-2">💾 Database Schema Indexing in Prisma (prisma/schema.prisma):</h3>
+      <div class="code-block overflow-x-auto">
+model PageSection {
+  id        String   @id @default(cuid())
+  companyId String   // Foreign key linking to root Company entity
+  type      SectionType
+  content   Json
+  
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId]) // B-Tree index for sub-millisecond multi-tenant SQL queries
+}
+      </div>
+    </section>
+
+    <!-- ==================== QUESTION 2 ==================== -->
+    <section id="q2" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">System Design Question 2</span>
+          <h2 class="heading-font text-3xl font-extrabold text-slate-900 mt-1">How can recruiters easily build and customize their page?</h2>
+        </div>
+        <div class="badge-file">CareerStudioClient.tsx & lib/themes/registry.ts</div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">📌 WHAT IT IS:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            A <strong>State-Heavy Studio Editing Environment</strong> providing visual drag-and-drop section reordering, mathematical color contrast calculation, and real-time live preview binding at 60 FPS.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">💡 WHY IT IS USED:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Non-technical recruiters need full creative freedom over employer branding without needing frontend engineers for every text or color change, while enforcing brand guidelines so design standards are never violated.
+          </p>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="issue-box">
+          <h4 class="font-bold text-rose-900 text-sm mb-1">⚠️ Potential Risk / Challenge Addressed:</h4>
+          <p class="text-rose-800 text-sm leading-relaxed">
+            <strong>Illegible Text & Bad Contrast</strong>: If a recruiter picks a dark slate background and white text, then changes the background to bright yellow, standard CSS makes text completely invisible!
+          </p>
+        </div>
+        <div class="solution-box">
+          <h4 class="font-bold text-emerald-900 text-sm mb-1">🛡️ How Our System Guarantees Safety:</h4>
+          <p class="text-emerald-800 text-sm leading-relaxed">
+            Our <strong>Relative Luminance Theme Engine</strong> evaluates ITU-R relative luminance $Y = 0.2126R + 0.7152G + 0.0722B$. If $Y < 140$, text automatically converts to white `#f8fafc`. If $Y \ge 140$, text converts to dark slate `#0f172a`, mathematically guaranteeing WCAG contrast!
+          </p>
+        </div>
+      </div>
+
+      <!-- Diagram -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-3">📊 Visual Studio Customization Workflow:</h3>
+      <div class="diagram-box mb-6">
+        <div class="mermaid">
+flowchart LR
+    subgraph User_Inputs["1. Recruiter Controls"]
+        A1["Drag Section Handle"] --> B1["@dnd-kit arrayMove() in memory"]
+        A2["Type Text or Insert Token @company_name"] --> B2["interpolateCompanyVariables() Parser"]
+        A3["Pick Custom Hex Color #06b6d4"] --> B3["Relative Luminance Math Y = 0.2126R + 0.7152G + 0.0722B"]
+    end
+
+    subgraph Client_State["2. React Memory State"]
+        B1 & B2 & B3 --> C["CareerStudioClient.tsx useState(sections[])"]
+        C --> D["Push snapshot to history[] stack (Undo/Redo)"]
+    end
+
+    subgraph Preview_Canvas["3. Center Canvas Frame (60 FPS)"]
+        D --> E["CareersPageRenderer.tsx renders updated sections instantly"]
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== QUESTION 3 ==================== -->
+    <section id="q3" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">System Design Question 3</span>
+          <h2 class="heading-font text-3xl font-extrabold text-slate-900 mt-1">How will edits safely update the page?</h2>
+        </div>
+        <div class="badge-file">lib/actions/publish.ts & app/(public)/...</div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">📌 WHAT IT IS:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            A <strong>Draft vs. Published Dual-State Isolation Architecture</strong> separating studio work in progress from live candidate traffic.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">💡 WHY IT IS USED:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Recruiters often test radical design changes over several days. Edits must be previewable in real time in the studio without publishing half-finished pages to active candidate traffic.
+          </p>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="issue-box">
+          <h4 class="font-bold text-rose-900 text-sm mb-1">⚠️ Potential Risk / Challenge Addressed:</h4>
+          <p class="text-rose-800 text-sm leading-relaxed">
+            <strong>Broken Live Site & Stale Cache</strong>: Unsaved edits leaking to live site, or candidates seeing stale cached HTML after the recruiter clicks Publish.
+          </p>
+        </div>
+        <div class="solution-box">
+          <h4 class="font-bold text-emerald-900 text-sm mb-1">🛡️ How Our System Guarantees Safety:</h4>
+          <p class="text-emerald-800 text-sm leading-relaxed">
+            Candidate routes query <span class="badge-func">where: { isPublished: true }</span>. When ready, clicking 'Save & Publish' executes a database transaction setting <span class="badge-func">isPublished = true</span> and calls Next.js <span class="badge-func">revalidatePath()</span> to purge server memory HTML cache immediately!
+          </p>
+        </div>
+      </div>
+
+      <!-- Diagram -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-3">📊 Visual Draft vs. Published Sequence Diagram:</h3>
+      <div class="diagram-box mb-6">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor R as Recruiter
+    actor C as Candidate
+    participant Studio as Recruiter Studio (CareerStudioClient.tsx)
+    participant Action as lib/actions/sections.ts & publish.ts
+    participant DB as PostgreSQL Database
+    participant NextCache as Next.js Server Cache (revalidatePath)
+    participant CandidatePage as app/(public)/[companySlug]/careers/page.tsx
+
+    Note over R, DB: Phase 1: Draft Edits (Invisible to Candidates)
+    R->>Studio: Edits text / reorders sections
+    Studio->>Action: Calls updateSectionAction()
+    Action->>DB: Updates record with isDraft = true, isPublished = false
+    
+    C->>CandidatePage: Visits public careers page (/acme-corp/careers)
+    CandidatePage->>DB: prisma.pageSection.findMany({ where: { isPublished: true } })
+    DB-->>CandidatePage: Returns OLD published data
+    CandidatePage-->>C: Sees clean live site (Unaware of draft edits)
+
+    Note over R, NextCache: Phase 2: Save & Publish Event
+    R->>Studio: Clicks "Save & Publish"
+    Studio->>Action: Calls publishPageAction()
+    Action->>DB: Transaction: sets isPublished = true & isDraft = true for active sections
+    Action->>NextCache: Calls revalidatePath("/[companySlug]/careers")
+    NextCache-->>NextCache: Purges old server HTML cache
+
+    Note over C, CandidatePage: Phase 3: Immediate Live Update
+    C->>CandidatePage: Refreshes public careers page
+    CandidatePage->>DB: Fetches newly published sections
+    CandidatePage-->>C: Sees updated live site instantly!
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== QUESTION 4 ==================== -->
+    <section id="q4" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">System Design Question 4</span>
+          <h2 class="heading-font text-3xl font-extrabold text-slate-900 mt-1">How can candidates browse jobs smoothly?</h2>
+        </div>
+        <div class="badge-file">PublicJobsFeedClient.tsx & StructuredData.tsx</div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">📌 WHAT IT IS:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            A <strong>High-Performance Candidate Job Marketplace</strong> featuring server-rendered fast initial page loads, instant client-side multi-filtering, and schema.org Google Jobs SEO integration.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">💡 WHY IT IS USED:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Candidates bounce if job pages take more than 2 seconds to load or if search filters trigger page refreshes. Client-side filtering ensures **sub-10ms filter responses**.
+          </p>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="issue-box">
+          <h4 class="font-bold text-rose-900 text-sm mb-1">⚠️ Potential Risk / Challenge Addressed:</h4>
+          <p class="text-rose-800 text-sm leading-relaxed">
+            <strong>Poor SEO & Slow Database Search</strong>: Search bots failing to index job pages, or database CPU spikes from candidate search queries (`WHERE title LIKE %text%`).
+          </p>
+        </div>
+        <div class="solution-box">
+          <h4 class="font-bold text-emerald-900 text-sm mb-1">🛡️ How Our System Guarantees Safety:</h4>
+          <p class="text-emerald-800 text-sm leading-relaxed">
+            Active jobs are fetched once server-side and filtered in client memory by <span class="badge-func">PublicJobsFeedClient.tsx</span>. <span class="badge-func">StructuredData.tsx</span> injects schema.org <span class="badge-func">JobPosting</span> JSON-LD scripts so Google Search automatically indexes open positions.
+          </p>
+        </div>
+      </div>
+
+      <!-- Diagram -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-3">📊 Visual Candidate Experience & Search Pipeline:</h3>
+      <div class="diagram-box mb-6">
+        <div class="mermaid">
+flowchart TD
+    A["Candidate / Google Bot visits /acme-corp/careers/jobs"] --> B["app/(public)/[companySlug]/careers/jobs/page.tsx (Server Component)"]
+    B --> C["Fetch active jobs from PostgreSQL"]
+    
+    C --> D1["Render Fast Server HTML Shell"]
+    C --> D2["Pass jobs array to PublicJobsFeedClient.tsx (Client Component)"]
+    C --> D3["Inject Google Jobs JSON-LD via StructuredData.tsx"]
+
+    subgraph Client_Filter_Engine["⚡ Sub-10ms Client-Side Filter Engine"]
+        D2 --> E1["Search Text Input: title/description substring match"]
+        D2 --> E2["Department Filter: 'Engineering', 'Product'"]
+        D2 --> E3["Work Mode Filter: 'REMOTE', 'HYBRID', 'ON_SITE'"]
+        
+        E1 & E2 & E3 --> F["In-Memory Array Filter"]
+        F --> G["Re-render JobCard.tsx list instantly in real time!"]
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== QUESTION 5 ==================== -->
+    <section id="q5" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">System Design Question 5</span>
+          <h2 class="heading-font text-3xl font-extrabold text-slate-900 mt-1">How does your design adapt across devices?</h2>
+        </div>
+        <div class="badge-file">lib/templates/stylesResolver.ts</div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">📌 WHAT IT IS:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            A <strong>Device-Aware Responsive Inheritance & Math Engine</strong> combining target viewport simulation (Desktop/Tablet/Mobile) with automated layout adaptation.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">💡 WHY IT IS USED:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Over 60% of candidates apply to jobs from mobile smartphones. Layouts must scale typography, stack horizontal containers, and halve padding so text never overflows small mobile screens.
+          </p>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="issue-box">
+          <h4 class="font-bold text-rose-900 text-sm mb-1">⚠️ Potential Risk / Challenge Addressed:</h4>
+          <p class="text-rose-800 text-sm leading-relaxed">
+            <strong>Text Overflow & Horizontal Scrolling</strong>: Large 48px desktop titles causing horizontal scrollbars on 375px mobile phone viewports.
+          </p>
+        </div>
+        <div class="solution-box">
+          <h4 class="font-bold text-emerald-900 text-sm mb-1">🛡️ How Our System Guarantees Safety:</h4>
+          <p class="text-emerald-800 text-sm leading-relaxed">
+            If no explicit mobile font size is provided, <span class="badge-func">getResponsiveStyles()</span> automatically scales text $\ge 24\text{px}$ down by $0.65\times$ ($48\text{px} \rightarrow 31\text{px}$), converts horizontal flex rows into vertical columns, and enforces <span class="badge-func">maxWidth: 100%</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Comparison Table -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-3">📋 Target Device Responsive Comparison Table (Hero Title Concrete Example):</h3>
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-sm">
+          <thead>
+            <tr class="bg-slate-900 text-white font-semibold">
+              <th class="p-3.5 border border-slate-800">Property / Viewport</th>
+              <th class="p-3.5 border border-slate-800 text-teal-400">🖥️ Desktop Mode (1440px)</th>
+              <th class="p-3.5 border border-slate-800 text-cyan-400">📱 Tablet Mode (768px)</th>
+              <th class="p-3.5 border border-slate-800 text-emerald-400">📲 Mobile Mode (375px)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Canvas Frame Width</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">100% (Full Viewport)</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">768px Container</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">375px Mobile Frame</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Base Font Size</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-slate-50">48px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-slate-50">38px (Tablet Override)</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-slate-50">24px (Mobile Override)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Auto-Scaling Engine</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">Base Value</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">Explicit Override</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">If no override: 48px * 0.65x = 31px</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Layout Direction</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">flex-direction: row</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">flex-direction: row</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-amber-50 text-amber-900 font-semibold">flex-direction: column (Auto Stack)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Container Padding</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">64px 32px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">48px 24px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">24px 16px (Padding Halved)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Generated Inline React CSS</td>
+              <td class="p-3.5 border border-slate-200 font-mono text-xs text-teal-700">{ fontSize: "48px", paddingTop: "64px", flexDirection: "row" }</td>
+              <td class="p-3.5 border border-slate-200 font-mono text-xs text-cyan-700">{ fontSize: "38px", paddingTop: "48px", flexDirection: "row" }</td>
+              <td class="p-3.5 border border-slate-200 font-mono text-xs text-emerald-700">{ fontSize: "24px", paddingTop: "24px", flexDirection: "column" }</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== QUESTION 6 ==================== -->
+    <section id="q6" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">System Design Question 6</span>
+          <h2 class="heading-font text-3xl font-extrabold text-slate-900 mt-1">How would you scale if hundreds/thousands of companies used it?</h2>
+        </div>
+        <div class="badge-file">Enterprise Production Architecture</div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">📌 WHAT IT IS:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            A 4-tier scaling blueprint combining <strong>Read Replicas</strong>, <strong>PgBouncer Connection Pooling</strong>, <strong>Edge CDN Incremental Static Regeneration (ISR)</strong>, and <strong>S3/GCS Media Offloading</strong>.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+          <h4 class="font-bold text-slate-900 text-base mb-2">💡 WHY IT IS USED:</h4>
+          <p class="text-slate-700 text-sm leading-relaxed">
+            Candidate traffic grows exponentially (millions of views/month), while recruiter studio traffic remains low write volume. Decoupling reads from writes ensures **sub-15ms page loads worldwide**.
+          </p>
+        </div>
+      </div>
+
+      <!-- Problem & Solution -->
+      <div class="grid md:grid-cols-2 gap-6 mb-8">
+        <div class="issue-box">
+          <h4 class="font-bold text-rose-900 text-sm mb-1">⚠️ Potential Risk / Challenge Addressed:</h4>
+          <p class="text-rose-800 text-sm leading-relaxed">
+            <strong>Database Exhaustion & Bandwidth Spikes</strong>: High candidate traffic exhausting PostgreSQL database TCP connections or video/banner bandwidth crashing Node.js servers.
+          </p>
+        </div>
+        <div class="solution-box">
+          <h4 class="font-bold text-emerald-900 text-sm mb-1">🛡️ How Our System Guarantees Safety:</h4>
+          <p class="text-emerald-800 text-sm leading-relaxed">
+            Candidate queries hit PostgreSQL Read Replicas pooled via PgBouncer. Public pages are cached at Edge CDN POPs (Cloudflare/Vercel ISR). Videos and banners are offloaded directly to Cloudflare R2 / AWS S3 CDN.
+          </p>
+        </div>
+      </div>
+
+      <!-- Diagram -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-3">📊 Visual Enterprise Scalability Blueprint:</h3>
+      <div class="diagram-box mb-6">
+        <div class="mermaid">
+flowchart TD
+    subgraph Global_Traffic["1. Candidate Traffic (95% Reads)"]
+        Users["Millions of Candidates Worldwide"] --> EdgeCDN["Edge CDN POPs (Cloudflare / Vercel ISR)"]
+        EdgeCDN -- "Cache Hit (<15ms)" --> Served["Serve Pre-Compiled HTML directly from Edge"]
+    end
+
+    subgraph Data_Layer_Scaling["2. Database & Connection Pooling"]
+        EdgeCDN -- "Cache Miss" --> ReadReplicas["PostgreSQL Read Replicas"]
+        ReadReplicas --> PgBouncerRead["PgBouncer Connection Pooler"]
+    end
+
+    subgraph Recruiter_Writes["3. Recruiter Studio Traffic (5% Writes)"]
+        Recruiters["Recruiting Teams"] --> PrimaryDB["PostgreSQL Primary Database"]
+        PrimaryDB -- "Streaming Replication" --> ReadReplicas
+    end
+
+    subgraph Media_Offloading["4. Media Storage CDN"]
+        Recruiters -- "Upload Video/Logo" --> S3["Amazon S3 / Google Cloud Storage"]
+        S3 --> CloudflareR2["Cloudflare R2 Media CDN"]
+        CloudflareR2 -- "Serve Media" --> Users
+    end
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="mt-16 text-center text-slate-500 text-sm border-t border-slate-200 pt-8 mb-8">
+    WhiteCarrot Career Experience Studio &bull; Key System Design Questions & Master Reference Guide
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        darkMode: true,
+        background: '#0f172a',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#38bdf8',
+        secondaryColor: '#3b0764',
+        secondaryTextColor: '#ffffff',
+        secondaryBorderColor: '#c084fc',
+        tertiaryColor: '#064e3b',
+        tertiaryTextColor: '#ffffff',
+        tertiaryBorderColor: '#4ade80',
+        clusterBkg: '#1e293b',
+        clusterBorder: '#64748b',
+        defaultLinkColor: '#38bdf8',
+        titleColor: '#ffffff',
+        edgeLabelBackground: '#0f172a',
+        nodeBorder: '#38bdf8'
+      }
+    });
+  </script>
+</body>
+</html>

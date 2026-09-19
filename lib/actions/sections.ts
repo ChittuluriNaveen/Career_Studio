@@ -29,6 +29,7 @@ export async function saveAllSectionsAction(
     layoutVariant?: string;
     enabled?: boolean;
     orderIndex?: number;
+    version?: number;
   }>
 ) {
   const session = await auth();
@@ -39,12 +40,13 @@ export async function saveAllSectionsAction(
   const companyId = session.user.companyId;
 
   try {
-    await db.$transaction(
+    const results = await db.$transaction(
       sectionsInput.map((sec) =>
         db.pageSection.updateMany({
           where: {
             id: sec.id,
             companyId,
+            ...(sec.version !== undefined ? { version: sec.version } : {}),
           },
           data: {
             ...(sec.title !== undefined ? { title: sec.title } : {}),
@@ -53,10 +55,21 @@ export async function saveAllSectionsAction(
             ...(typeof sec.enabled === "boolean" ? { enabled: sec.enabled } : {}),
             ...(typeof sec.orderIndex === "number" ? { orderIndex: sec.orderIndex } : {}),
             isDraft: true,
+            version: { increment: 1 },
           },
         })
       )
     );
+
+    // Check for OCC version conflicts
+    const conflicts = results.filter((res, idx) => sectionsInput[idx].version !== undefined && res.count === 0);
+    if (conflicts.length > 0) {
+      return {
+        success: false,
+        conflict: true,
+        error: "Conflict Detected: Another teammate updated a section while you were editing. Please refresh to load the latest changes.",
+      };
+    }
 
     return { success: true };
   } catch (error: any) {

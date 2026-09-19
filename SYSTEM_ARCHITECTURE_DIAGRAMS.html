@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhiteCarrot Career Studio - Master System Architecture & Feature Reference Guide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap');
+    
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .heading-font {
+      font-family: 'Outfit', 'Inter', sans-serif;
+    }
+    .diagram-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+    }
+    .diagram-box {
+      background: #0f172a;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid #1e293b;
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      padding: 1rem;
+    }
+    /* FIX MERMAID DIAGRAM TEXT VISIBILITY FOR MAXIMUM HIGH CONTRAST */
+    .mermaid text {
+      fill: #ffffff !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+    }
+    .mermaid .edgeLabel text, .mermaid .edgeLabel {
+      fill: #38bdf8 !important;
+      color: #38bdf8 !important;
+      background-color: #0f172a !important;
+      font-weight: 700 !important;
+      font-size: 12px !important;
+    }
+    .mermaid .node rect, .mermaid .node circle, .mermaid .node polygon {
+      stroke-width: 2px !important;
+    }
+    .badge-file {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #0f172a;
+      color: #38bdf8;
+      border: 1px solid #1e293b;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .badge-func {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #f1f5f9;
+      color: #0f766e;
+      border: 1px solid #cbd5e1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+    .code-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      background: #090d16;
+      color: #38bdf8;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body class="p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
+
+  <!-- Main Header -->
+  <header class="mb-10 text-center bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
+    <div class="inline-flex flex-wrap items-center justify-center gap-2 mb-4">
+      <span class="px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-sm font-semibold">
+        ✨ Master Architecture, Features & Code Files Reference
+      </span>
+      <a href="KEY_DESIGN_QUESTIONS_GUIDE.html" class="px-4 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-sm font-bold transition">
+        💡 Open System Design Questions Guide &rarr;
+      </a>
+    </div>
+    <h1 class="heading-font text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
+      WhiteCarrot Career Experience Studio
+    </h1>
+    <p class="text-slate-600 text-lg max-w-3xl mx-auto leading-relaxed">
+      Complete presentation dashboard listing <strong>all 15 features</strong> with exact <strong>file paths aside</strong>, <strong>word-for-word interviewer scripts</strong>, and <strong>high-contrast graphic diagrams</strong>.
+    </p>
+  </header>
+
+  <!-- Interactive Table of Contents Links -->
+  <nav class="mb-12 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+    <h2 class="heading-font text-xl font-bold text-slate-900 mb-4 text-center">📌 Quick Jump to Features</h2>
+    <div class="flex flex-wrap gap-2 justify-center">
+      <a href="#feat-1" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">1. Split Domain Architecture</a>
+      <a href="#feat-2" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">2. Auth & Multi-Tenant Guard</a>
+      <a href="#feat-3" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">3. Next.js Server Cache</a>
+      <a href="#feat-4" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">4. JSON DB to DOM Hydration</a>
+      <a href="#feat-5" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">5. Luminance Theme Engine</a>
+      <a href="#feat-6" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">6. Target Device Simulation</a>
+      <a href="#feat-7" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">7. Device Responsive Table</a>
+      <a href="#feat-8" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">8. Draft vs Published Isolation</a>
+      <a href="#feat-9" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">9. Drag & Drop Reordering</a>
+      <a href="#feat-10" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">10. Preview Event Interception</a>
+      <a href="#feat-11" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">11. Template Layout System</a>
+      <a href="#feat-12" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">12. Dynamic Variable Engine</a>
+      <a href="#feat-13" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">13. Candidate Job Marketplace</a>
+      <a href="#feat-14" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">14. Candidate Applications</a>
+      <a href="#feat-15" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-sm font-medium border border-slate-200 transition">15. Google Jobs JSON-LD SEO</a>
+    </div>
+  </nav>
+
+  <div class="space-y-12">
+
+    <!-- Feature 1: High-Level Split Architecture -->
+    <section id="feat-1" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 1 &bull; Core Architecture</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Multi-Tenant Split Domain Ecosystem</h2>
+        </div>
+        <div class="badge-file">app/(dashboard)/ & app/(public)/</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "We engineered a two-tier ecosystem: an authenticated, state-heavy <strong>Recruiter Studio</strong> (<code>/company/acme-corp/design</code>) for designing employer branding, and a fast, public <strong>Candidate Portal</strong> (<code>/acme-corp/careers</code>). Both query a shared multi-tenant PostgreSQL database scoped strictly by <code>companyId</code>."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    subgraph Recruiter_Environment["🔑 RECRUITER ENVIRONMENT (Authenticated)"]
+        A["Recruiter Login (/login)"] --> B["Studio Editor (/company/acme-corp/design)"]
+        B --> C["Drag & Drop Reordering"]
+        B --> D["Brand Theme Engine"]
+        B --> E["Responsive Viewports (Desktop/Tablet/Mobile)"]
+        B --> F["SEO Panel"]
+    end
+
+    subgraph State_Management["⚙️ DRAFT STATE ENGINE"]
+        G["In-Memory Client State (React useState)"]
+        H["Server Actions (lib/actions/*)"]
+        I["PostgreSQL Database (Prisma ORM)"]
+        G <--> H
+        H <--> I
+    end
+
+    subgraph Candidate_Environment["🌐 CANDIDATE ENVIRONMENT (Public & Fast)"]
+        J["Company Story Page (/acme-corp/careers)"]
+        K["Job Marketplace (/acme-corp/careers/jobs)"]
+        L["Job Details & Application (/jobs/job-id)"]
+    end
+
+    Recruiter_Environment --> State_Management
+    State_Management -- "Save & Publish (revalidatePath)" --> Candidate_Environment
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 2: Auth & Multi-Tenant Security Guard -->
+    <section id="feat-2" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 2 &bull; Security</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Authentication & Multi-Tenant Data Guard</h2>
+        </div>
+        <div class="badge-file">lib/auth.ts & lib/auth-guard.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Recruiter credentials are validated using <code>bcryptjs</code> password hashing. NextAuth issues an encrypted JWT containing <code>companyId</code>. Every server action invokes <code>requireRecruiter()</code> to verify session claims before executing PostgreSQL queries, preventing cross-tenant data leakage."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor R as Recruiter
+    participant Page as app/(auth)/login/page.tsx
+    participant AuthAction as lib/actions/auth.ts (loginAction)
+    participant AuthJS as lib/auth.ts (NextAuth Credentials)
+    participant Guard as lib/auth-guard.ts (requireRecruiter)
+    participant DB as PostgreSQL (User & Company)
+
+    R->>Page: Enters Email & Password
+    Page->>AuthAction: Submits form data
+    AuthAction->>AuthJS: Invokes signIn("credentials")
+    AuthJS->>DB: prisma.user.findUnique({ where: { email } })
+    DB-->>AuthJS: Returns user record with hashed password & companyId
+    AuthJS->>AuthJS: Compares password with bcrypt.compare()
+    AuthJS-->>R: Issues Encrypted JWT Cookie (contains user.id, companyId, companySlug)
+    
+    Note over R, Guard: Subsequent Recruiter API Requests
+    R->>Guard: Calls Server Action (e.g., updateSectionAction)
+    Guard->>Guard: Decrypts JWT & extracts session.user.companyId
+    alt Valid Recruiter Session
+        Guard-->>DB: Executes query strictly scoped by companyId
+    else Invalid / Unauthenticated
+        Guard-->>R: Throws "Unauthorized" Error & redirects to /login
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 3: Next.js Cache & Revalidation Mechanics -->
+    <section id="feat-3" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">Feature 3 &bull; Performance</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Next.js Server Cache & Path Revalidation Mechanics</h2>
+        </div>
+        <div class="badge-file">lib/actions/publish.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Public pages are cached in server memory for 10ms response times. When recruiters click 'Save & Publish', <code>publishPageAction()</code> sets <code>isPublished = true</code> in PostgreSQL and invokes <code>revalidatePath('/[companySlug]/careers')</code> to flush old server HTML cache, compiling new published HTML immediately!"
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    subgraph Candidate_Request["1. Candidate Requests Page (/acme-corp/careers)"]
+        Req["Candidate Browser HTTP GET"] --> CacheCheck{"Is Page HTML in Next.js Server Cache?"}
+    end
+
+    subgraph Cache_Hit_Path["2. Cache Hit (Super Fast 10ms Response)"]
+        CacheCheck -- "YES (Cache Valid)" --> ServeCached["Return Pre-Compiled HTML directly from Server Memory Cache"]
+        ServeCached --> RenderCandidate["Candidate sees live page instantly"]
+    end
+
+    subgraph Recruiter_Publish["3. Recruiter Publishes New Edits in Studio"]
+        PublishClick["Recruiter clicks 'Save & Publish'"] --> ExecAction["publishPageAction() in lib/actions/publish.ts"]
+        ExecAction --> DBUpdate["PostgreSQL Transaction: Set isPublished = true & isDraft = true"]
+        DBUpdate --> RevalCall["Call Next.js revalidatePath('/[companySlug]/careers')"]
+        RevalCall --> PurgeCache["💥 FLUSH & PURGE Server Memory Cache Key"]
+    end
+
+    subgraph Fresh_Fetch_Path["4. Next Candidate Request (Cache Miss & Re-Compilation)"]
+        CacheCheck -- "NO (Cache Purged)" --> FetchDB["Fetch fresh published sections from PostgreSQL via Prisma"]
+        FetchDB --> CompileHTML["Next.js App Router renders fresh React Server Component to HTML"]
+        CompileHTML --> StoreCache["💾 Store fresh HTML in Next.js Server Cache Key"]
+        StoreCache --> ServeFresh["Return updated HTML to Candidate"]
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 4: PostgreSQL JSON to DOM Hydration -->
+    <section id="feat-4" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">Feature 4 &bull; Rendering</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">PostgreSQL JSON Database to React DOM Hydration</h2>
+        </div>
+        <div class="badge-file">components/preview/elements/ElementRenderer.tsx</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">Explanation
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ :</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Raw JSON trees stored in PostgreSQL are fetched by Prisma, deserialized into TypeScript props, merged with template defaults via <code>getElementStyles()</code>, interpolated for dynamic variables like <code>@company_name</code>, and mounted as clean inline React CSS properties."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant DB as PostgreSQL (content JSON column)
+    participant Prisma as Prisma ORM Client
+    participant ServerComp as CareersPageRenderer.tsx (Server Component)
+    participant Resolver as lib/templates/stylesResolver.ts (getElementStyles)
+    participant VarEngine as lib/templates/variables.ts (interpolateCompanyVariables)
+    participant DOM as Browser DOM (HTML Elements)
+
+    DB->>Prisma: Returns raw JSON string: {"type":"heading", "styles":{"typography":{"fontSize":"48px"}}}
+    Prisma->>ServerComp: Deserializes JSON string into TypeScript SectionElement object
+    ServerComp->>Resolver: Calls getElementStyles(element, deviceMode)
+    Resolver->>Resolver: Merges template defaults + user JSON styles + device overrides
+    Resolver-->>ServerComp: Returns React CSSProperties: { fontSize: "48px", color: "#06b6d4" }
+    ServerComp->>VarEngine: Calls interpolateCompanyVariables("Welcome to @company_name")
+    VarEngine-->>ServerComp: Replaces token -> "Welcome to Acme Corp"
+    ServerComp->>DOM: Mounts React Node: <h1 style={computedStyles}>Welcome to Acme Corp</h1>
+    DOM-->>DOM: Browser paints colored text element on screen at exact pixel coordinates!
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 5: Relative Luminance Math Engine -->
+    <section id="feat-5" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 5 &bull; Theme Engine</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Mathematical Relative Luminance Contrast Engine</h2>
+        </div>
+        <div class="badge-file">lib/themes/registry.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Recruiters can enter any custom hex background color. We parse the hex string into RGB values and evaluate ITU-R relative luminance Y = 0.2126R + 0.7152G + 0.0722B. If Y < 140, text automatically converts to high-contrast white `#f8fafc`. If Y >= 140, text converts to slate `#0f172a`, mathematically guaranteeing WCAG readability!"
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A["Recruiter inputs custom Hex Color: '#06b6d4'"] --> B["parseHexColor('#06b6d4') in lib/themes/registry.ts"]
+    
+    subgraph Hex_Parsing["1. Hex String Extraction & Bit Conversion"]
+        B --> B1["Clean string: remove '#' prefix -> '06b6d4'"]
+        B1 --> B2["Extract Red Hex: '06' -> parseInt('06', 16) = 6"]
+        B1 --> B3["Extract Green Hex: 'b6' -> parseInt('b6', 16) = 182"]
+        B1 --> B4["Extract Blue Hex: 'd4' -> parseInt('d4', 16) = 212"]
+        B2 & B3 & B4 --> C["Returns RGB Object: { r: 6, g: 182, b: 212 }"]
+    end
+
+    subgraph Math_Formula["2. ITU-R BT.709 Relative Luminance Formula"]
+        C --> D["calculateLuminance(6, 182, 212)"]
+        D --> D1["Y = (0.2126 * 6) + (0.7152 * 182) + (0.0722 * 212)"]
+        D1 --> D2["Y = 1.2756 + 130.1664 + 15.3064 = 146.748"]
+    end
+
+    subgraph Threshold_Check["3. Threshold Evaluation & CSS Generation"]
+        D2 --> E{"Is Y < 140?"}
+        E -- "NO (Y = 146.75 >= 140 -> Light Background)" --> F["Apply Custom Light Theme"]
+        F --> F1["textColor = '#0f172a' (Slate Dark)"]
+        F --> F2["cardBg = '#ffffff' (Solid White)"]
+        F --> F3["heroBg = linear-gradient(135deg, #06b6d4 0%, #06b6d418 100%)"]
+
+        E -- "YES (Y < 140 -> Dark Background)" --> G["Apply Custom Dark Theme"]
+        G --> G1["textColor = '#f8fafc' (High Contrast White)"]
+        G --> G2["cardBg = rgba(R+15, G+15, B+25, 0.85) Frosted Glass"]
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 6: Target Device Simulation -->
+    <section id="feat-6" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 6 &bull; Responsives</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Target Device Simulation & Responsive Style Pipeline</h2>
+        </div>
+        <div class="badge-file">lib/templates/stylesResolver.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Toggling Desktop, Tablet, or Mobile resizes the center container (375px/768px/100%). <code>getResponsiveStyles()</code> merges device overrides, auto-scales font sizes down by 0.65x for mobile text >= 24px, and converts horizontal flex rows into vertical columns."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A["Element JSON + Active deviceMode ('desktop' | 'tablet' | 'mobile')"] --> B["getElementStyles(element, deviceMode)"]
+    
+    B --> C["1. getTemplateDefaults(type) -> Get baseline element CSS"]
+    C --> D["2. mergeStyles(defaults, element.styles) -> Merge user desktop styles"]
+    
+    D --> E["3. getResponsiveStyles(styles, deviceMode)"]
+    
+    subgraph Responsive_Merging["📱 Responsive Device Merging Engine"]
+        E --> F{"deviceMode?"}
+        F -- "desktop" --> G["Use Base Desktop Styles"]
+        F -- "tablet" --> H["Merge Base + responsive.tablet overrides"]
+        F -- "mobile" --> I["Merge Base + responsive.tablet + responsive.mobile overrides"]
+        
+        I --> J{"Explicit mobile font size set?"}
+        J -- "NO & text >= 24px" --> K["Auto-Scale Font Size = fontSize * 0.65x"]
+        J -- "YES" --> L["Keep explicit mobile font size"]
+        
+        I --> M{"Layout flex-direction == 'row'?"}
+        M -- "YES" --> N["Convert to flex-direction: 'column' (Vertical Stack)"]
+    end
+    
+    G --> O["convertStylesToCSS() -> Converts to React CSSProperties"]
+    K --> O
+    L --> O
+    N --> O
+    O --> P["Mount to DOM node: style={computedStyles}"]
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 7: Device Comparison Table -->
+    <section id="feat-7" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 7 &bull; Concrete Example</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Target Device Responsive Comparison Table</h2>
+        </div>
+        <div class="badge-file">lib/templates/stylesResolver.ts</div>
+      </div>
+      <p class="text-slate-600 mb-6 leading-relaxed">
+        Below is a concrete comparison showing how a single <strong>Hero Title Element</strong> (<code>"Build Your Dream Career"</code>) behaves across Desktop, Tablet, and Mobile viewports:
+      </p>
+
+      <!-- Table -->
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left border-collapse border border-slate-200 rounded-xl overflow-hidden text-sm">
+          <thead>
+            <tr class="bg-slate-900 text-white font-semibold">
+              <th class="p-3.5 border border-slate-800">Property / Viewport</th>
+              <th class="p-3.5 border border-slate-800 text-teal-400">🖥️ Desktop Mode (1440px)</th>
+              <th class="p-3.5 border border-slate-800 text-cyan-400">📱 Tablet Mode (768px)</th>
+              <th class="p-3.5 border border-slate-800 text-emerald-400">📲 Mobile Mode (375px)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white">
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Canvas Frame Width</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">100% (Full Viewport)</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">768px Container</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">375px Mobile Frame</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Base Font Size</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-slate-50">48px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-slate-50">38px (Tablet Override)</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-slate-50">24px (Mobile Override)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Auto-Scaling Engine</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">Base Value</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">Explicit Override</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200">If no override: 48px * 0.65x = 31px</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Layout Direction</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">flex-direction: row</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">flex-direction: row</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs bg-amber-50 text-amber-900 font-semibold">flex-direction: column (Auto Stack)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Container Padding</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">64px 32px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">48px 24px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">24px 16px (Padding Halved)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Max Container Width</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">1200px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">720px</td>
+              <td class="p-3.5 text-slate-700 border border-slate-200 font-mono text-xs">100% (Enforced Mobile Width)</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="p-3.5 font-semibold text-slate-900 border border-slate-200">Generated Inline React CSS</td>
+              <td class="p-3.5 border border-slate-200 font-mono text-xs text-teal-700">{ fontSize: "48px", paddingTop: "64px", flexDirection: "row" }</td>
+              <td class="p-3.5 border border-slate-200 font-mono text-xs text-cyan-700">{ fontSize: "38px", paddingTop: "48px", flexDirection: "row" }</td>
+              <td class="p-3.5 border border-slate-200 font-mono text-xs text-emerald-700">{ fontSize: "24px", paddingTop: "24px", flexDirection: "column" }</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Concrete JSON Code Box -->
+      <h3 class="heading-font text-lg font-bold text-slate-900 mb-2">💾 Database JSON Representation in PostgreSQL (PageSection.content):</h3>
+      <div class="code-block overflow-x-auto">
+{
+  "id": "hero_heading_title",
+  "type": "heading",
+  "content": { "text": "Build Your Dream Career at @company_name" },
+  "styles": {
+    "typography": { "fontSize": "48px", "fontWeight": "800", "lineHeight": "1.2" },
+    "spacing": { "paddingTop": "64px", "paddingBottom": "32px" },
+    "layout": { "flexDirection": "row", "maxWidth": "1200px" },
+    "responsive": {
+      "tablet": {
+        "typography": { "fontSize": "38px" },
+        "spacing": { "paddingTop": "48px" }
+      },
+      "mobile": {
+        "typography": { "fontSize": "24px" },
+        "spacing": { "paddingTop": "24px" },
+        "layout": { "flexDirection": "column", "maxWidth": "100%" }
+      }
+    }
+  }
+}
+      </div>
+    </section>
+
+    <!-- Feature 8: Draft vs Published Isolation -->
+    <section id="feat-8" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 8 &bull; Data Isolation</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Draft vs. Published State Isolation & Preview Binding</h2>
+        </div>
+        <div class="badge-file">lib/actions/publish.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "The Studio Canvas Preview renders the recruiter's active in-memory React state array (<code>sections[]</code>) directly at 60 FPS as they edit. Edits persist as <code>isDraft = true, isPublished = false</code>. Public candidate routes execute <code>prisma.pageSection.findMany({ where: { isPublished: true } })</code>, so candidates never see draft edits until the recruiter clicks 'Save & Publish'."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor R as Recruiter
+    actor C as Candidate
+    participant Studio as Recruiter Studio (CareerStudioClient.tsx)
+    participant Action as lib/actions/sections.ts & publish.ts
+    participant DB as PostgreSQL Database
+    participant NextCache as Next.js Server Cache (revalidatePath)
+    participant CandidatePage as app/(public)/[companySlug]/careers/page.tsx
+
+    Note over R, DB: Phase 1: Draft Edits (Invisible to Candidates)
+    R->>Studio: Edits text / reorders sections
+    Studio->>Action: Calls updateSectionAction()
+    Action->>DB: Updates record with isDraft = true, isPublished = false
+    
+    C->>CandidatePage: Visits public careers page (/acme-corp/careers)
+    CandidatePage->>DB: prisma.pageSection.findMany({ where: { isPublished: true } })
+    DB-->>CandidatePage: Returns OLD published data
+    CandidatePage-->>C: Sees clean live site (Unaware of draft edits)
+
+    Note over R, NextCache: Phase 2: Save & Publish Event
+    R->>Studio: Clicks "Save & Publish"
+    Studio->>Action: Calls publishPageAction()
+    Action->>DB: Transaction: sets isPublished = true & isDraft = true for active sections
+    Action->>NextCache: Calls revalidatePath("/[companySlug]/careers")
+    NextCache-->>NextCache: Purges old server HTML cache
+
+    Note over C, CandidatePage: Phase 3: Immediate Live Update
+    C->>CandidatePage: Refreshes public careers page
+    CandidatePage->>DB: Fetches newly published sections
+    CandidatePage-->>C: Sees updated live site instantly!
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 9: Drag & Drop Inner Mechanics -->
+    <section id="feat-9" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">Feature 9 &bull; Drag & Drop</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Drag-and-Drop Inner Mechanics & Coordinate Vectors</h2>
+        </div>
+        <div class="badge-file">components/editor/SectionList.tsx</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "We use <code>@dnd-kit/sortable</code>. When a user drags a card, pointer displacement vectors are calculated. On drop, <code>arrayMove(sections, oldIndex, newIndex)</code> executes an in-memory array splice, re-indexing React state instantly at 60 FPS while debouncing a bulk PostgreSQL reorder server action."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor R as Recruiter
+    participant DND as @dnd-kit DndContext & SortableContext
+    participant ClientState as CareerStudioClient.tsx (sections[])
+    participant Canvas as Preview Canvas (CareersPageRenderer.tsx)
+    participant Action as lib/actions/sections.ts (reorderSectionsAction)
+    participant DB as PostgreSQL (PageSection table)
+
+    R->>DND: Grabs drag handle & moves mouse down 150px
+    DND->>DND: Computes delta vector (deltaY = +150px) & transforms item card UI visually
+    R->>DND: Releases mouse button (pointerup event)
+    DND->>ClientState: Triggers onDragEnd({ active, over }) -> finds oldIndex & newIndex
+    ClientState->>ClientState: Calls arrayMove(sections, oldIndex, newIndex)
+    Note over ClientState: Memory Swap: sections.splice(newIndex, 0, sections.splice(oldIndex, 1)[0])
+    ClientState->>Canvas: Re-renders React components in new order instantly (60 FPS)
+    ClientState->>Action: Debounced trigger reorderSectionsAction([id1, id2, id3])
+    Action->>DB: Bulk UPDATE "PageSection" SET "orderIndex" = CASE id ...
+    DB-->>Action: Returns updated records count
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 10: Preview Navigation Event Interception -->
+    <section id="feat-10" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md border border-purple-200">Feature 10 &bull; Studio Preview</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Studio Preview Navigation Event Interception</h2>
+        </div>
+        <div class="badge-file">components/preview/elements/ElementRenderer.tsx</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "In standard editors, clicking links inside a preview navigates the browser away and loses state. We intercept clicks using <code>e.preventDefault()</code> and <code>e.stopPropagation()</code>, updating internal canvas state (<code>activePage = 'jobs'</code>) without changing the browser URL bar!"
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A["Recruiter clicks 'Explore Open Roles' or Job Card inside Preview Canvas"] --> B["ElementRenderer.tsx handleElementClick(e)"]
+    
+    subgraph Event_Interception["1. DOM Event Interception"]
+        B --> C{"Is isPreviewMode == true?"}
+        C -- "YES (Inside Recruiter Studio)" --> D1["e.preventDefault() -> Stop standard browser link navigation"]
+        D1 --> D2["e.stopPropagation() -> Stop event bubbling to parent wrappers"]
+    end
+
+    subgraph State_Navigation["2. Virtual Canvas Navigation"]
+        D2 --> E["Invoke callback prop: onNavigatePage('jobs', jobId)"]
+        E --> F["CareerStudioClient.tsx updates state: activePage = 'jobs'"]
+        F --> G["Center Canvas re-renders Job Feed view inside preview container"]
+    end
+
+    subgraph Session_Persistence["3. Editor Session Protection"]
+        G --> P1["Main Browser URL remains /company/acme-corp/design"]
+        P1 --> P2["Recruiter editor session & state stay 100% persistent!"]
+    end
+    
+    C -- "NO (On Published Candidate Site)" --> H["Standard Next.js Router navigation: router.push('/acme-corp/careers/jobs')"]
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 11: Templates & Layout Variants System -->
+    <section id="feat-11" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 11 &bull; Templates</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Templates & Layout Variants System</h2>
+        </div>
+        <div class="badge-file">lib/templates/registry.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Pre-defines section types (<code>HERO</code>, <code>ABOUT_US</code>, <code>CULTURE_VIDEO</code>, <code>OPEN_ROLES</code>) combined with layout variants (<code>split-image</code>, <code>centered-bold</code>). Picking a template inserts default JSON element trees into the draft section."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A["Recruiter opens TemplatePickerPanel.tsx"] --> B["Selects Template (e.g. 'Split Hero with Video')"]
+    B --> C["Lookup template schema in lib/templates/registry.ts"]
+    C --> D["Construct default content JSON tree with heading, text, button, video elements"]
+    D --> E["Call createSectionAction(companyId, type, content)"]
+    E --> F["Insert new PageSection record into PostgreSQL draft"]
+    F --> G["Canvas preview mounts new template section instantly!"]
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 12: Dynamic Variable Replacement -->
+    <section id="feat-12" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 12 &bull; Variable Engine</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Live Dynamic Variable Replacement Engine</h2>
+        </div>
+        <div class="badge-file">lib/templates/variables.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Recruiters can insert string tokens like <code>@company_name</code> or <code>@jobs_count</code> into text inputs. At render time, <code>interpolateCompanyVariables()</code> parses text with regex and replaces tokens with live database values dynamically."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Input as Recruiter Text Input ("Join @company_name with @jobs_count open roles")
+    participant Engine as lib/templates/variables.ts (interpolateCompanyVariables)
+    participant Context as Company & Jobs DB Records
+    participant Output as Rendered DOM Text Node
+
+    Input->>Engine: Passes raw string token text
+    Engine->>Context: Fetches company.name ("Acme Corp") & jobsCount (14)
+    Engine->>Engine: Replaces /@company_name/g -> "Acme Corp"
+    Engine->>Engine: Replaces /@jobs_count/g -> "14"
+    Engine-->>Output: Emits parsed text: "Join Acme Corp with 14 open roles"
+    Output->>Output: Mounts clean string to browser HTML DOM node!
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 13: Candidate Search Filter Engine -->
+    <section id="feat-13" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 13 &bull; Candidate Portal</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Candidate Job Marketplace Multi-Filter Engine</h2>
+        </div>
+        <div class="badge-file">components/candidate/PublicJobsFeedClient.tsx</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Performs real-time multi-dimensional filtering across active jobs arrays combining search substring query, department, work mode (Remote/Hybrid/Onsite), and employment type."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A["Candidate visits /acme-corp/careers/jobs"] --> B["app/(public)/[companySlug]/careers/jobs/page.tsx (Server Component)"]
+    B --> C["Fetch active jobs: prisma.job.findMany({ where: { companyId, status: 'ACTIVE' } })"]
+    C --> D["Pass jobs array to PublicJobsFeedClient.tsx (Client Component)"]
+    
+    subgraph Client_Filter_Engine["⚡ Instant Client-Side Filter Engine"]
+        D --> E["Candidate types search query (e.g. 'Senior')"]
+        D --> F["Candidate selects Department filter (e.g. 'Engineering')"]
+        D --> G["Candidate selects Work Mode filter (e.g. 'Remote')"]
+        D --> H["Candidate selects Employment Type filter (e.g. 'Full-Time')"]
+        
+        E --> I["Filter Function: match search text against title, description, summary"]
+        F --> I
+        G --> I
+        H --> I
+        
+        I --> J["Render filtered JobCard.tsx list instantly in real time!"]
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 14: Application Submission -->
+    <section id="feat-14" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 14 &bull; Candidate Portal</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Candidate Application Submission & Zod Validation</h2>
+        </div>
+        <div class="badge-file">lib/actions/applications.ts</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ :Explanation</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Candidate submits job application. Server Action validates fields with Zod schema and inserts candidate record into PostgreSQL."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor C as Candidate
+    participant Form as Application Form Component
+    participant AppAction as lib/actions/applications.ts (submitApplicationAction)
+    participant Zod as Zod Schema Validator
+    participant DB as PostgreSQL (Application Table)
+
+    C->>Form: Fills Name, Email, Resume URL, Cover Letter
+    C->>Form: Clicks "Submit Application"
+    Form->>AppAction: Submits form data payload
+    AppAction->>Zod: Validates fields with applicationSchema
+    
+    alt Schema Validation Fails
+        Zod-->>Form: Returns field error messages
+        Form-->>C: Displays inline validation errors
+    else Schema Validation Passes
+        AppAction->>DB: prisma.application.create({ data: { jobId, companyId, candidateName, candidateEmail, resumeUrl } })
+        DB-->>AppAction: Returns created application record
+        AppAction-->>Form: Returns { success: true }
+        Form-->>C: Displays success confirmation modal!
+    end
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 15: Google Jobs JSON-LD SEO -->
+    <section id="feat-15" class="diagram-card rounded-2xl p-6 md:p-8">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200">Feature 15 &bull; SEO & Indexing</span>
+          <h2 class="heading-font text-2xl font-bold text-slate-900 mt-1">Google Jobs JSON-LD Schema Architecture</h2>
+        </div>
+        <div class="badge-file">components/candidate/StructuredData.tsx</div>
+      </div>
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+        <h4 class="font-bold text-slate-900 text-sm mb-1">🗣️ Explanation:</h4>
+        <p class="text-slate-700 text-sm leading-relaxed">
+          "Public job pages output schema.org compliant <code>JobPosting</code> JSON-LD scripts so Google Search bots automatically index open positions and salary ranges."
+        </p>
+      </div>
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A["Candidate or Search Bot visits /acme-corp/careers/jobs/job-123"] --> B["Server Component fetches Job and Company records"]
+    B --> C["Render Job Details UI"]
+    B --> D["Mount StructuredData React Component (job, company)"]
+    Google Jobs JSON-LD Schema Architecture
+    D --> E["Construct JSON-LD Payload"]
+    
+    subgraph JSON_LD_Schema["JSON-LD Schema Payload"]
+        E --> F1["@context: https://schema.org"]
+        E --> F2["@type: JobPosting"]
+        E --> F3["title: job.title"]
+        E --> F4["description: job.description"]
+        E --> F5["datePosted: job.createdAt"]
+        E --> F6["employmentType: job.employmentType"]
+        E --> F7["hiringOrganization: Organization name"]
+        E --> F8["jobLocation: Place address"]
+        E --> F9["baseSalary: Currency and Salary Range"]
+    end
+    
+    F1 --> G["Output JSON-LD script tag in HTML head"]
+    G --> H["Google Jobs Bot parses JSON-LD and displays role in Google Search Results!"]
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="mt-16 text-center text-slate-500 text-sm border-t border-slate-200 pt-8 mb-8">
+    WhiteCarrot Career Experience Studio Architecture Documentation &bull; Generated for Technical Presentation
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        darkMode: true,
+        background: '#0f172a',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#38bdf8',
+        secondaryColor: '#3b0764',
+        secondaryTextColor: '#ffffff',
+        secondaryBorderColor: '#c084fc',
+        tertiaryColor: '#064e3b',
+        tertiaryTextColor: '#ffffff',
+        tertiaryBorderColor: '#4ade80',
+        clusterBkg: '#1e293b',
+        clusterBorder: '#64748b',
+        defaultLinkColor: '#38bdf8',
+        titleColor: '#ffffff',
+        edgeLabelBackground: '#0f172a',
+        nodeBorder: '#38bdf8'
+      }
+    });
+  </script>
+</body>
+</html>
