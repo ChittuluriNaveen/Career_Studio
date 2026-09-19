@@ -40,38 +40,50 @@ export async function saveAllSectionsAction(
   const companyId = session.user.companyId;
 
   try {
-    const results = await db.$transaction(
-      sectionsInput.map((sec) =>
-        db.pageSection.updateMany({
-          where: {
-            id: sec.id,
-            companyId,
-            ...(sec.version !== undefined ? { version: sec.version } : {}),
-          },
-          data: {
-            ...(sec.title !== undefined ? { title: sec.title } : {}),
-            ...(sec.content !== undefined ? { content: sec.content } : {}),
-            ...(sec.layoutVariant ? { layoutVariant: sec.layoutVariant } : {}),
-            ...(typeof sec.enabled === "boolean" ? { enabled: sec.enabled } : {}),
-            ...(typeof sec.orderIndex === "number" ? { orderIndex: sec.orderIndex } : {}),
-            isDraft: true,
-            version: { increment: 1 },
-          },
-        })
-      )
+    // Only target persistent database sections (filter temporary optimistic frontend section IDs)
+    const dbSectionsInput = sectionsInput.filter(
+      (s) => !s.id.startsWith("sec-temp-") && !s.id.startsWith("job-sec-")
     );
 
-    // Check for OCC version conflicts
-    const conflicts = results.filter((res, idx) => sectionsInput[idx].version !== undefined && res.count === 0);
-    if (conflicts.length > 0) {
-      return {
-        success: false,
-        conflict: true,
-        error: "Conflict Detected: Another teammate updated a section while you were editing. Please refresh to load the latest changes.",
-      };
+    if (dbSectionsInput.length > 0) {
+      const results = await db.$transaction(
+        dbSectionsInput.map((sec) =>
+          db.pageSection.updateMany({
+            where: {
+              id: sec.id,
+              companyId,
+              ...(sec.version !== undefined ? { version: sec.version } : {}),
+            },
+            data: {
+              ...(sec.title !== undefined ? { title: sec.title } : {}),
+              ...(sec.content !== undefined ? { content: sec.content } : {}),
+              ...(sec.layoutVariant ? { layoutVariant: sec.layoutVariant } : {}),
+              ...(typeof sec.enabled === "boolean" ? { enabled: sec.enabled } : {}),
+              ...(typeof sec.orderIndex === "number" ? { orderIndex: sec.orderIndex } : {}),
+              isDraft: true,
+              version: { increment: 1 },
+            },
+          })
+        )
+      );
+
+      // Check for OCC version conflicts
+      const conflicts = results.filter((res, idx) => dbSectionsInput[idx].version !== undefined && res.count === 0);
+      if (conflicts.length > 0) {
+        return {
+          success: false,
+          conflict: true,
+          error: "Conflict Detected: Another teammate updated a section while you were editing. Please refresh to load the latest changes.",
+        };
+      }
     }
 
-    return { success: true };
+    const updatedSections = await db.pageSection.findMany({
+      where: { companyId },
+      orderBy: { orderIndex: "asc" },
+    });
+
+    return { success: true, sections: updatedSections };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to save sections" };
   }

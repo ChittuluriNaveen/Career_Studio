@@ -732,10 +732,14 @@ export default function CareerStudioClient({ companySlug }: CareerStudioClientPr
             layoutVariant: s.layoutVariant,
             enabled: s.enabled,
             orderIndex: s.orderIndex,
+            version: s.version,
           }))
         );
 
         if (res.success) {
+          if (res.sections && Array.isArray(res.sections)) {
+            setSections(res.sections);
+          }
           setSaveStatus("saved");
           showToast("All changes saved successfully!");
         } else {
